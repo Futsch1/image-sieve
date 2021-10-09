@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2" # avoid dependency conflicts on some platforms
+
+members = [
+    "image_sieve",
+    "item_sort_list"
+]

@@ -1,0 +1,108 @@
+import { ListView, Button, LineEdit, GroupBox, VerticalBox, ScrollView } from "sixtyfps_widgets.60";
+
+
+struct Event := {
+    name: string,
+    start-date: string,
+    end-date: string
+}
+
+EventsView := ScrollView { 
+    property <[Event]> events-model;
+    callback add-event(string, string, string) -> bool;
+    callback date-valid(string) -> bool;
+    callback remove-event(int);
+
+    VerticalBox { 
+        alignment: start;
+
+        for item[i] in events-model: GroupBox { 
+            title: item.name + ", " + item.start-date + " - " + item.end-date;
+            GridLayout {
+                spacing: 5px;
+                Text {
+                    text: "Event name";
+                    vertical-alignment: center;
+                }
+                event-name := LineEdit { 
+                    text: item.name;
+                    accepted => {
+                        item.name = event-name.text;
+                    }
+                }
+                Text {
+                    text: "\u{1F4C5} Start date";
+                    row: 1;
+                    vertical-alignment: center;
+                }
+                start-date := LineEdit { 
+                    text: item.start-date;
+                    accepted => {
+                        if (date-valid(start-date.text)) {
+                            item.start-date = start-date.text;
+                        }
+                        else {
+                            start-date.text = item.start-date;
+                        }
+                    }
+                }
+                Text {
+                    text: "\u{1F4C5} End date";
+                    row: 2;
+                    vertical-alignment: center;
+                }
+                end-date := LineEdit { 
+                    text: item.end-date;
+                    accepted => {
+                        if (date-valid(end-date.text)) {
+                            item.end-date = end-date.text;
+                        }
+                        else {
+                            end-date.text = item.end-date;
+                        }
+                    }
+                }
+            }
+            Button {
+                width: 300px;
+                text: "\u{1F5D1} Remove";
+                clicked => { remove-event(i) }
+            }
+        }
+        GroupBox { 
+
+            title: "New event";
+            VerticalBox { 
+                alignment: start;
+                new-name := LineEdit { 
+                    text: "Name";
+                }
+                new-start-date := LineEdit { 
+                    text: "Start date";
+                }
+                new-end-date := LineEdit { 
+                    text: "End date";
+                }
+                Button {
+                    text: "\u{2795} Add";
+                    width: 300px;
+                    clicked => { 
+                        if (add-event(new-name.text, new-start-date.text, new-end-date.text)) {
+                            new-name.text = "Name";
+                            new-start-date.text = "Start date";
+                            new-end-date.text = "End date";
+                            invalid-date.visible = false;
+                        } else {
+                            invalid-date.visible = true;
+                        }
+                    }
+                }
+                invalid-date := Text {
+                    text: "Invalid date";
+                    color: red;
+                    visible: false;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,20 @@
+[package]
+name = "image_sieve"
+version = "0.0.2"
+authors = ["Florian Fetz <florian.fetz@googlemail.com>"]
+build = "build.rs"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+sixtyfps = "0.1.2"
+rfd = "0.4.0"
+json = "0.12"
+image = "0.23"
+item_sort_list = { path = "../item_sort_list"}
+num-traits = "0.2"
+
+[build-dependencies]
+sixtyfps-build = "0.1.2"
+embed-resource = "1.6"

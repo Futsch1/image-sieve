@@ -1,0 +1,68 @@
+import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox } from "sixtyfps_widgets.60";
+
+export global CommitMethodValues := {
+    property <[string]> values: ["Copy to target directory", 
+                                "Move to target directory", 
+                                "Move to target directory and delete in source directory",
+                                "Delete in source directory"];
+}
+
+export CommitView := VerticalBox { 
+    property target-directory <=> target-directory-edit.text;
+    property commit-method <=> commit-method-combo-box.current-index;
+    property commit-method-value <=> commit-method-combo-box.current-value;
+
+    // Commit
+    property <string> commit-message;
+    property <bool> commit-running;
+
+    // Called when the commit button was pressed
+    callback commit;
+
+    // Called when source or target was browsed
+    callback browse-target;
+
+    alignment: start;
+    padding: 5px;
+    spacing: 5px;
+
+    GroupBox { 
+        title: "Target directory";
+        enabled: commit-method-combo-box.current-index != 3;
+
+        target-directory-edit := LineEdit { 
+            width: 400px;
+        }
+        Button {
+            text: "\u{1F4C2} Browse...";
+            width: 200px;
+            enabled: !commit-running && commit-method-combo-box.current-index != 3;
+            clicked => { 
+                browse-target();
+            }
+        }
+    }
+    GroupBox { 
+        title: "Commit method";
+        commit-method-combo-box := ComboBox {
+            width: 400px;
+            model: CommitMethodValues.values;
+        }
+    }
+
+    Text {
+        text: "Progress: " + commit-message;
+        visible: commit-running;
+    }
+
+    HorizontalBox { 
+        Button {
+            text: "\u{2705} Start";
+            width: 300px;
+            enabled: !commit-running;
+            clicked => { 
+                commit();                    
+            }
+        }
+    }
+}

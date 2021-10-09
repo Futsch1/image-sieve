@@ -1,0 +1,100 @@
+import { ListView, Button, LineEdit, TabWidget, GroupBox, VerticalBox, HorizontalBox, ScrollView, ComboBox } from "sixtyfps_widgets.60";
+
+
+
+import { SortView } from "sort.60";
+import { EventsView } from "events.60";
+import { CommitView, CommitMethodValues } from "commit.60";
+
+export { CommitMethodValues }
+
+ImageSieve := Window {
+    min-width: 1600px;
+    min-height: 800px;
+    title: "ImageSieve";
+
+    property <string> window-title <=> root.title;
+    property <bool> loading: true;
+
+    // Map properties of SortView
+    property images-list-model <=> sort-view.images-list-model;
+    property current-list-item <=> sort-view.current-list-item;
+    property num-list-items <=> sort-view.num-list-items;
+    property images-model <=> sort-view.images-model;
+    property num-images <=> sort-view.num-images;
+    property current-image <=> sort-view.current-image;
+    property current-image-index <=> sort-view.current-image-index;
+    property current-image-text <=> sort-view.current-image-text;
+    property source-directory <=> sort-view.source-directory;
+    callback item-selected <=> sort-view.item-selected;
+    callback browse-source <=> sort-view.browse-source;
+    callback take-over-toggle <=> sort-view.take-over-toggle;
+
+    // Map properties of EventsView
+    property events-model <=> events-view.events-model;
+    callback add-event <=> events-view.add-event;
+    callback date-valid <=> events-view.date-valid;
+    callback remove-event <=> events-view.remove-event;
+
+    // Map properties of CommitView
+    property target-directory <=> commit-view.target-directory;
+    property commit-method <=> commit-view.commit-method;
+    property commit-method-value <=> commit-view.commit-method-value;
+    property commit-message <=> commit-view.commit-message;
+    property commit-running <=> commit-view.commit-running;
+    callback commit <=> commit-view.commit;
+    callback browse-target <=> commit-view.browse-target;
+
+    forward-focus: key-handler;
+    key-handler:= FocusScope {  
+        key-pressed(event) => {
+            if (event.text == "\u{000E}")
+            {
+                if (current-list-item > 0) {
+                    sort-view.prev-clicked();
+                }
+            }
+            if (event.text == "\u{000F}")
+            {
+                if (num-list-items > 0 && current-list-item < num-list-items - 1) {
+                    sort-view.next-clicked();
+                }
+            }
+            if (event.text == " ")
+            {
+                sort-view.selected-clicked()
+            }
+            accept
+        }
+    }
+
+    Text {
+        text: "Please wait, loading...";
+        visible: loading;
+    }
+
+    TabWidget { 
+        visible: !loading;
+        Tab {
+            title: "\u{1F4F7} \u{1F4F9}  Sort";
+            
+            sort-view := SortView {
+            }
+        }
+
+        Tab {
+            title: "\u{1F4C5}  Events";
+
+            events-view := EventsView {
+            }
+        }
+
+        Tab {
+            title: "\u{1F4BE}  Commit";
+            
+            commit-view := CommitView {
+            }
+        }
+    }
+}
+

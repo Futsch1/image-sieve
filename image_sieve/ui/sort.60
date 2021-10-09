@@ -1,0 +1,144 @@
+import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView } from "sixtyfps_widgets.60";
+
+struct SortImage := {
+    image: image,
+    take-over: bool,
+}
+
+export SortView := HorizontalBox {
+
+    // List of image file names
+    property <[string]> images-list-model;
+    // Index in image list
+    property current-list-item <=> image-list.current-item;
+
+    // Overall number of list items
+    property <int> num-list-items;
+
+    // Model of similar images selected
+    property <[SortImage]> images-model;
+    // Number of images in the model
+    property <int> num-images;
+
+    // Currently displayed large image
+    property <SortImage> current-image;
+    property <int> current-image-index;
+    property <string> current-image-text;
+
+    // Current source directory
+    property source-directory <=> source-directory-edit.text;
+
+    callback next-clicked <=> next-button.clicked;
+    callback prev-clicked <=> previous-button.clicked;
+    callback selected-clicked <=> selected-image-touch.clicked;
+
+    // Called when an item from the list of image files has been selected or next/previous have been pressed
+    callback item-selected(int);
+    // Called when the current image was pressed
+    callback take-over-toggle(int);
+    // Called when browse button was pressed
+    callback browse-source;
+
+    spacing: 5px;
+
+    VerticalLayout {
+        spacing: 5px;
+        width: root.width - 300px;
+
+        selected := Image {
+            source: current-image.image;
+            opacity: current-image.take-over ? 1.0 : 0.2;
+            image-fit: contain;
+            selected-image-touch := TouchArea { 
+                clicked => {
+                    if (num-list-items > 0) {
+                        current-image.take-over = !current-image.take-over;
+                        take-over-toggle(current-image-index);
+                    }
+                }
+            }                        
+        }
+
+        Text {
+            text: current-image-text;
+        }
+    
+        ScrollView {
+            viewport-height: 100px;
+            viewport-width: num-images * 200px;
+            height: 120px;
+            HorizontalBox { 
+            for item[i] in images-model:
+                Image {                
+                    source: item.image;
+                    opacity: item.take-over ? 1.0 : 0.2;
+                    image-fit: contain;
+                    height: 100px;
+                    TouchArea { 
+                        clicked => {
+                            current-image.image = item.image;
+                            current-image.take-over = item.take-over;
+                            current-image-index = i;
+                        }
+                    }
+                    if (i == current-image-index) : Rectangle { opacity: 0.5; background: blue;}
+                }
+            }
+        }                
+
+        HorizontalLayout { 
+            previous-button := Button {
+                text: "\u{2B05} Previous";
+                enabled: current-list-item > 0;
+                clicked => { 
+                    current-list-item -= 1;
+                    item-selected(current-list-item);
+                }
+            }
+            next-button := Button {
+                text: "Next \u{27A1}";
+                enabled: num-list-items > 0 && current-list-item < num-list-items - 1;
+                clicked => { 
+                    current-list-item += 1;
+                    item-selected(current-list-item);
+                }
+            }
+        }
+    }            
+
+    VerticalLayout { 
+        width: 300px;
+
+        source-directory-edit := LineEdit { 
+        }
+        Button {
+            text: "\u{1F4C2} Browse...";
+            width: 200px;
+            clicked => { 
+                browse-source();
+            }
+        }
+
+        image-list := ListView {
+            property<int> current-item: -1;
+
+            for item[i] in images-list-model: Rectangle {
+                padding: 2px;
+                height: 20px;
+                width: parent.width;
+                background: i == parent.current-item ? grey : white;
+                HorizontalLayout { 
+                    Text { 
+                        text: item;
+                    }
+                }
+                TouchArea { 
+                    clicked => {
+                        image-list.current-item = i;
+                        item-selected(i);
+                    }
+                }
+            }
+        }   
+    }  
+}
