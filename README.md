@@ -23,11 +23,11 @@ Precompiled Windows binaries are available for every release for download. Linux
 To get started, first select a folder containing images in the "Sort" tab using the upper right "Browse" button. ImageSieve will now search for files and order them according to their creation date. Depending on the amount of images, this might take a while.
 Once the folder has been processed, a list of file names will appear in the box to the right. This list contains the files that have been found in the folder and that will be considered in the sieving process. Each file has a set of icons that indicate its state. 
 The following icons are used (exact rendering depends on platform/font):
-- &#1F4F7;: The file is an image
-- &#1F4F9;: The file is a video
-- &#1F5D1;: The file is discarded
-- &#1F500;: There are similar files to this one
-- &#1F4C5;: File is in the date range of an event
+- &#x1F4F7;: The file is an image
+- &#x1F4F9;: The file is a video
+- &#x1F5D1;: The file is discarded
+- &#x1F500;: There are similar files to this one
+- &#x1F4C5;: File is in the date range of an event
 
 To select a file, click it and it will be shown in the image area. Below the image, some details about the file are listed. In order to discard an image, just click it and it will be displayed in a translucent way. As an alternative, you can hit the space bar to toggle between discarded and kept state. To navigate between images, you can use the "Previous" and "Next" buttons or hit the left and right key on your keyboard.
 If an image belongs to a group of similar images, all these similar images are displayed below the current image. The currently selected one is highlighted in blue.
