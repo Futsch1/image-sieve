@@ -109,7 +109,7 @@ impl FileItem {
 
     pub fn is_image(&self) -> bool {
         match self.extension.as_str() {
-            "jpg" | "png" => true,
+            "jpg" | "png" | "tif" => true,
             _ => false,
         }
     }
@@ -121,8 +121,8 @@ impl FileItem {
         }
     }
 
-    pub fn get_extensions() -> [&'static str; 5] {
-        ["jpg", "png", "mp4", "avi", "mts"]
+    pub fn get_extensions() -> [&'static str; 6] {
+        ["jpg", "png", "tif", "mp4", "avi", "mts"]
     }
 
     fn extension_to_string(&self) -> &str {
