@@ -27,13 +27,14 @@ export CommitView := VerticalBox {
     spacing: 5px;
 
     GroupBox { 
-        padding: 5px;
-        
+        spacing: 5px;
+
         title: "Target directory";
         enabled: commit-method-combo-box.current-index != 3;
 
         target-directory-edit := LineEdit { 
             width: 400px;
+            enabled: !commit-running && commit-method-combo-box.current-index != 3;
         }
         Button {
             text: "\u{1F4C2} Browse...";
