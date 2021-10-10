@@ -7,7 +7,9 @@ use sixtyfps::VecModel;
 use crate::images::get_empty_image;
 use crate::json_persistence::get_project_filename;
 use crate::json_persistence::JsonPersistence;
+use crate::main_window::synchronize_event_list_model;
 use crate::main_window::synchronize_item_list_model;
+use crate::main_window::Event;
 use crate::main_window::ImageSieve;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
@@ -65,6 +67,13 @@ fn synchronize_run(
                     h.get_images_list_model()
                         .as_any()
                         .downcast_ref::<VecModel<SharedString>>()
+                        .unwrap(),
+                );
+                synchronize_event_list_model(
+                    &item_list,
+                    h.get_events_model()
+                        .as_any()
+                        .downcast_ref::<VecModel<Event>>()
                         .unwrap(),
                 );
                 let num_items = { item_list.items.len() as i32 };

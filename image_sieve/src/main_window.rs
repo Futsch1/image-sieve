@@ -190,6 +190,7 @@ impl MainWindow {
         self.window.on_browse_source({
             // Browse source was clicked, select new path
             let item_list_model = self.item_list_model.clone();
+            let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
             let window_weak = self.window.as_weak();
             let synchronizer = Synchronizer::new(self.item_list.clone(), &self.window);
@@ -211,6 +212,7 @@ impl MainWindow {
 
                         let source_path = folder.to_str().unwrap();
                         empty_model(item_list_model.clone());
+                        empty_model(events_model.clone());
 
                         // Synchronize in a background thread
                         window_weak.unwrap().set_loading(true);
@@ -293,7 +295,7 @@ impl MainWindow {
     }
 }
 
-fn empty_model(item_list_model: Rc<sixtyfps::VecModel<SharedString>>) {
+fn empty_model<T: 'static + Clone>(item_list_model: Rc<sixtyfps::VecModel<T>>) {
     for _ in 0..item_list_model.row_count() {
         item_list_model.remove(0);
     }
@@ -314,6 +316,26 @@ pub fn synchronize_item_list_model(
             item_list_model.push(SharedString::from(item_string));
         } else {
             item_list_model.set_row_data(index, SharedString::from(item_string));
+        }
+    }
+}
+
+pub fn synchronize_event_list_model(
+    item_list: &ItemList,
+    event_list_model: &sixtyfps::VecModel<Event>,
+) {
+    let empty_model = event_list_model.row_count() == 0;
+    // Event model
+    for (index, event) in item_list.events.iter().enumerate() {
+        let _event = Event {
+            name: SharedString::from(event.name.clone()),
+            start_date: SharedString::from(event.start_date_as_string()),
+            end_date: SharedString::from(event.end_date_as_string()),
+        };
+        if empty_model {
+            event_list_model.push(_event);
+        } else {
+            event_list_model.set_row_data(index, _event);
         }
     }
 }
