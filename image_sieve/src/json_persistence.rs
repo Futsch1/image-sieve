@@ -9,7 +9,7 @@ use item_sort_list::{Event, ItemList, EVENT_DATE_FORMAT};
 const SETTINGS_FILE: &str = "settings.json";
 
 /// Name of the project settings file
-const ITEM_LIST_FILE: &str = "imgsort.json";
+const ITEM_LIST_FILE: &str = "image_sieve.json";
 
 pub fn get_settings_filename() -> &'static str {
     SETTINGS_FILE
