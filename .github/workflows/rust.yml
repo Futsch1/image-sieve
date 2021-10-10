@@ -37,7 +37,7 @@ jobs:
       run: cargo build --release
     - uses: papeloto/action-zip@v1
       with:
-        files: target/release/*.exe
+        files: target/release/image_sieve.exe
         dest: ImageSieve_Windows.zip
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/v')
