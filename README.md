@@ -1,5 +1,7 @@
 # ImageSieve
-GUI based tool to sort out and categorize images written in Rust
+GUI based tool to sort out and categorize images written in Rust.
+
+![Screenshot](doc/screenshot.png?raw=true "ImageSieve")
 
 ImageSieve aims to help in the process of sorting through images taken by several people with several devices and collect the images worth
 keeping in a folder structure suitable for achiving. The tool runs on Windows, Linux and macOS.
@@ -49,11 +51,14 @@ Depending on the mode, you need to indicate a target directory that is used for 
 
 ## Known issues and TODOs
 - Overlapping events are not reported
+- When many events are added, the view is not properly extended/scrolled
 - The indication of problems during sieving is not implemented
 - Videos should get a button to view them with a player
 - Navigation with previous/next through similar items can be improved
-- An additional warning message when starting to sieve in certain modes should be issued (data will be lost)
 
 ## Details
 This is the first software I've ever written in Rust, so there might be room for improvement. If you want to help, clone and pull-request.
 The tool uses the [sixtyfps](https://github.com/sixtyfpsui/sixtyfps) GUI framework.
+
+## Disclaimer
+This tool is free software. The author does not take any responsibility or liability for data lost due to bugs or faulty use of the software. Note that the software is in constant development and may contain bugs. Use at your own risk!
