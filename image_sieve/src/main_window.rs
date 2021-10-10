@@ -278,6 +278,25 @@ impl MainWindow {
                 item_sort_list::Event::is_date_valid(date.to_string().as_str())
             });
 
+        self.window.on_update_event({
+            let item_list_model = self.item_list_model.clone();
+            let events_model = self.events_model.clone();
+            let item_list = self.item_list.clone();
+
+            move |index| {
+                let index = index as usize;
+                let event = events_model.row_data(index);
+                let mut item_list = item_list.lock().unwrap();
+                if item_list.events[index].update(
+                    event.name.to_string(),
+                    event.start_date.as_str(),
+                    event.end_date.as_str(),
+                ) {
+                    synchronize_item_list_model(&item_list, &item_list_model.clone());
+                }
+            }
+        });
+
         self.window.on_remove_event({
             // Event was removed
             let item_list_model = self.item_list_model.clone();

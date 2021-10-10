@@ -12,6 +12,7 @@ EventsView := ScrollView {
     callback add-event(string, string, string) -> bool;
     callback date-valid(string) -> bool;
     callback remove-event(int);
+    callback update-event(int);
 
     VerticalBox { 
         alignment: start;
@@ -31,6 +32,7 @@ EventsView := ScrollView {
                     text: item.name;
                     accepted => {
                         item.name = event-name.text;
+                        update-event(i);
                     }
                 }
                 Text {
@@ -43,6 +45,7 @@ EventsView := ScrollView {
                     accepted => {
                         if (date-valid(start-date.text)) {
                             item.start-date = start-date.text;
+                            update-event(i);
                         }
                         else {
                             start-date.text = item.start-date;
@@ -59,6 +62,7 @@ EventsView := ScrollView {
                     accepted => {
                         if (date-valid(end-date.text)) {
                             item.end-date = end-date.text;
+                            update-event(i);
                         }
                         else {
                             end-date.text = item.end-date;

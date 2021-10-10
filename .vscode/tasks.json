@@ -4,10 +4,7 @@
 		{
 			"type": "cargo",
 			"command": "run",
-			"args": [
-				"/home/flo/image_sorter_data",
-				"/home/flo/image_sorter_result",
-			],
+			"args": [],
 			"problemMatcher": [
 				"$rustc"
 			],
@@ -17,9 +14,7 @@
 			"type": "cargo",
 			"command": "run",
 			"args": [
-				"--release",
-				"/home/flo/image_sorter_data",
-				"/home/flo/image_sorter_result",
+				"--release"
 			],
 			"problemMatcher": [
 				"$rustc"

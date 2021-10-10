@@ -22,6 +22,19 @@ impl Event {
         })
     }
 
+    pub fn update(&mut self, name: String, start_date: &str, end_date: &str) -> bool {
+        let start_date = Event::parse_date(start_date);
+        let end_date = Event::parse_date(end_date);
+        if start_date.is_ok() && end_date.is_ok() {
+            self.start_date = start_date.unwrap();
+            self.end_date = end_date.unwrap();
+            self.name = name;
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn is_date_valid(date: &str) -> bool {
         Self::parse_date(date).is_ok()
     }
