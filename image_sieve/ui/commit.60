@@ -27,6 +27,8 @@ export CommitView := VerticalBox {
     spacing: 5px;
 
     GroupBox { 
+        padding: 5px;
+        
         title: "Target directory";
         enabled: commit-method-combo-box.current-index != 3;
 
@@ -43,7 +45,7 @@ export CommitView := VerticalBox {
         }
     }
     GroupBox { 
-        title: "Commit method";
+        title: "Sieve method";
         commit-method-combo-box := ComboBox {
             width: 400px;
             model: CommitMethodValues.values;

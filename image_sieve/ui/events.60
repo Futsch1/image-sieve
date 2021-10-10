@@ -16,10 +16,13 @@ EventsView := ScrollView {
     VerticalBox { 
         alignment: start;
 
-        for item[i] in events-model: GroupBox { 
+        for item[i] in events-model: GroupBox {             
             title: item.name + ", " + item.start-date + " - " + item.end-date;
+            spacing: 5px;
+            padding: 5px;
             GridLayout {
                 spacing: 5px;
+                padding: 5px;
                 Text {
                     text: "Event name";
                     vertical-alignment: center;

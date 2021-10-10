@@ -76,7 +76,7 @@ ImageSieve := Window {
     TabWidget { 
         visible: !loading;
         Tab {
-            title: "\u{1F4F7} \u{1F4F9}  Sort";
+            title: "\u{1F4F7} \u{1F4F9}  Images";
             
             sort-view := SortView {
             }
@@ -90,7 +90,7 @@ ImageSieve := Window {
         }
 
         Tab {
-            title: "\u{1F4BE}  Commit";
+            title: "\u{1F4BE}  Sieve";
             
             commit-view := CommitView {
             }

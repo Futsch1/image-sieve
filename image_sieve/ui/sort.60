@@ -43,7 +43,7 @@ export SortView := HorizontalBox {
 
     VerticalLayout {
         spacing: 5px;
-        width: root.width - 300px;
+        width: root.width - 320px;
 
         selected := Image {
             source: current-image.image;
@@ -87,6 +87,8 @@ export SortView := HorizontalBox {
         }                
 
         HorizontalLayout { 
+            spacing: 5px;
+
             previous-button := Button {
                 text: "\u{2B05} Previous";
                 enabled: current-list-item > 0;
@@ -108,6 +110,7 @@ export SortView := HorizontalBox {
 
     VerticalLayout { 
         width: 300px;
+        spacing: 5px;
 
         source-directory-edit := LineEdit { 
         }
