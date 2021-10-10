@@ -10,11 +10,14 @@ export global CommitMethodValues := {
 export CommitView := VerticalBox { 
     property target-directory <=> target-directory-edit.text;
     property commit-method <=> commit-method-combo-box.current-index;
-    property commit-method-value <=> commit-method-combo-box.current-value;
+    property commit-method-value <=> commit-method-combo-box.current-value;    
 
     // Commit
     property <string> commit-message;
-    property <bool> commit-running;
+    property <bool> commit-running: false;
+
+    // Warning
+    property <bool> show-warning: false;
 
     // Called when the commit button was pressed
     callback commit;
@@ -23,33 +26,36 @@ export CommitView := VerticalBox {
     callback browse-target;
 
     alignment: start;
-    padding: 5px;
-    spacing: 5px;
 
     GroupBox { 
-        spacing: 5px;
-
         title: "Target directory";
         enabled: commit-method-combo-box.current-index != 3;
-
-        target-directory-edit := LineEdit { 
-            width: 400px;
-            enabled: !commit-running && commit-method-combo-box.current-index != 3;
-        }
-        Button {
-            text: "\u{1F4C2} Browse...";
-            width: 200px;
-            enabled: !commit-running && commit-method-combo-box.current-index != 3;
-            clicked => { 
-                browse-target();
+        
+        HorizontalBox { 
+            spacing: 5px;
+            target-directory-edit := LineEdit { 
+                width: 400px;
+                enabled: !commit-running && commit-method-combo-box.current-index != 3;
+            }
+            Button {
+                text: "\u{1F4C2} Browse...";
+                width: 200px;
+                enabled: !commit-running && commit-method-combo-box.current-index != 3;
+                clicked => { 
+                    browse-target();
+                }
             }
         }
     }
     GroupBox { 
         title: "Sieve method";
-        commit-method-combo-box := ComboBox {
-            width: 400px;
-            model: CommitMethodValues.values;
+        HorizontalBox { 
+            spacing: 5px;
+            commit-method-combo-box := ComboBox {
+                enabled: !commit-running;
+                width: 400px;
+                model: CommitMethodValues.values;
+            }
         }
     }
 
@@ -58,14 +64,36 @@ export CommitView := VerticalBox {
         visible: commit-running;
     }
 
-    HorizontalBox { 
-        Button {
-            text: "\u{2705} Start";
-            width: 300px;
-            enabled: !commit-running;
-            clicked => { 
+    Button {
+        text: "\u{2705} Start";
+        width: 300px;
+        enabled: !commit-running;
+        clicked => {
+            if (commit-method-combo-box.current-index == 2 || commit-method-combo-box.current-index == 3) {
+                show-warning = true;
+                commit-running = true;
+                commit-message = "Warning";
+            } else {
+                commit-message = "Starting";
                 commit();                    
             }
         }
     }
+
+    GroupBox {
+        title: "Warning! The desired sieve method will delete files that cannot be recovered. Are you sure you want to proceed?";
+        visible: show-warning;
+        Button {
+            text: "\u{2705} Yes";
+            width: 300px;
+            visible: show-warning;
+            clicked => {            
+                show-warning = false;
+                commit-message = "Starting";
+                commit();                    
+            }
+        }
+    }
+
+    
 }
