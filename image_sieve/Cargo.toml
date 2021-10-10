@@ -1,6 +1,6 @@
 [package]
 name = "image_sieve"
-version = "0.0.2"
+version = "0.1.0"
 authors = ["Florian Fetz <florian.fetz@googlemail.com>"]
 build = "build.rs"
 edition = "2018"
