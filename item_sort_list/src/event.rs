@@ -17,15 +17,15 @@ impl Event {
         let end_date = Event::parse_date(end_date)?;
         Ok(Self {
             name,
-            start_date: start_date,
-            end_date: end_date,
+            start_date,
+            end_date,
         })
     }
 
     pub fn update(&mut self, name: String, start_date: &str, end_date: &str) -> bool {
         let start_date = Event::parse_date(start_date);
         let end_date = Event::parse_date(end_date);
-        if start_date.is_ok() && end_date.is_ok() {
+        if matches!(end_date, Result::Ok(_)) && matches!(start_date, Result::Ok(_)) {
             self.start_date = start_date.unwrap();
             self.end_date = end_date.unwrap();
             self.name = name;
@@ -42,10 +42,9 @@ impl Event {
     fn parse_date(date: &str) -> Result<NaiveDate, String> {
         let possible_fmts = [EVENT_DATE_FORMAT, "%Y-%_m-%_d", "%d.%m.%Y", "%_d.%_m.%Y"];
         for fmt in possible_fmts {
-            match chrono::NaiveDate::parse_from_str(&date, fmt) {
-                Ok(parsed_date) => return Ok(parsed_date),
-                Err(_) => (),
-            };
+            if let Ok(parsed_date) = chrono::NaiveDate::parse_from_str(date, fmt) {
+                return Ok(parsed_date);
+            }
         }
         Err(format!("Cannot parse string {}", date))
     }

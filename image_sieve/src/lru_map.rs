@@ -18,8 +18,7 @@ where
 
     pub fn get(&mut self, key: K) -> Option<&T> {
         let val = self.map.get_mut(&key);
-        if val.is_some() {
-            let (t, counter) = val.unwrap();
+        if let Some((t, counter)) = val {
             self.counter += 1;
             *counter = self.counter;
             return Some(t);
@@ -30,8 +29,8 @@ where
     pub fn put(&mut self, key: K, t: T) {
         if self.map.len() == S {
             let lru_key = self.get_lru_key();
-            if lru_key.is_some() {
-                self.map.remove(&lru_key.unwrap());
+            if let Some(lru_key) = lru_key {
+                self.map.remove(&lru_key);
             }
         }
         self.counter += 1;

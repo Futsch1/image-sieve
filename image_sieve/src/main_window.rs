@@ -38,7 +38,7 @@ impl MainWindow {
     pub fn new() -> Self {
         // Load settings and item list
         let settings: Settings =
-            JsonPersistence::load(get_settings_filename()).unwrap_or_else(|| Settings::new());
+            JsonPersistence::load(get_settings_filename()).unwrap_or_else(Settings::new);
 
         let item_list = ItemList {
             items: vec![],
@@ -60,8 +60,8 @@ impl MainWindow {
 
         let main_window = Self {
             window: image_sieve,
-            item_list: item_list,
-            item_list_model: item_list_model,
+            item_list,
+            item_list_model,
             similar_items_model: Rc::new(sixtyfps::VecModel::<SortImage>::default()),
             items_model_map: Rc::new(RefCell::new(HashMap::new())),
             events_model: event_list_model,
@@ -118,7 +118,7 @@ impl MainWindow {
             source_directory: self.window.get_source_directory().to_string(),
             target_directory: self.window.get_target_directory().to_string(),
             commit_method: FromPrimitive::from_i32(self.window.get_commit_method())
-                .unwrap_or_else(|| CommitMethod::Copy),
+                .unwrap_or(CommitMethod::Copy),
         };
         JsonPersistence::save(get_settings_filename(), &settings);
 
@@ -197,32 +197,29 @@ impl MainWindow {
 
             move || {
                 let file_dialog = FileDialog::new();
-                match file_dialog.pick_folder() {
-                    Some(folder) => {
-                        {
-                            // Save current item list
-                            let item_list = item_list.lock().unwrap();
-                            if item_list.items.len() > 0 {
-                                JsonPersistence::save(
-                                    &get_project_filename(item_list.path.as_str()),
-                                    &item_list.clone(),
-                                );
-                            }
+                if let Some(folder) = file_dialog.pick_folder() {
+                    {
+                        // Save current item list
+                        let item_list = item_list.lock().unwrap();
+                        if !item_list.items.is_empty() {
+                            JsonPersistence::save(
+                                &get_project_filename(item_list.path.as_str()),
+                                &item_list.clone(),
+                            );
                         }
-
-                        let source_path = folder.to_str().unwrap();
-                        empty_model(item_list_model.clone());
-                        empty_model(events_model.clone());
-
-                        // Synchronize in a background thread
-                        window_weak.unwrap().set_loading(true);
-                        synchronizer.synchronize(source_path);
-
-                        window_weak
-                            .unwrap()
-                            .set_source_directory(SharedString::from(source_path));
                     }
-                    None => {}
+
+                    let source_path = folder.to_str().unwrap();
+                    empty_model(item_list_model.clone());
+                    empty_model(events_model.clone());
+
+                    // Synchronize in a background thread
+                    window_weak.unwrap().set_loading(true);
+                    synchronizer.synchronize(source_path);
+
+                    window_weak
+                        .unwrap()
+                        .set_source_directory(SharedString::from(source_path));
                 }
             }
         });
@@ -233,15 +230,12 @@ impl MainWindow {
 
             move || {
                 let file_dialog = FileDialog::new();
-                match file_dialog.pick_folder() {
-                    Some(folder) => {
-                        let target_path = &String::from(folder.to_str().unwrap());
+                if let Some(folder) = file_dialog.pick_folder() {
+                    let target_path = &String::from(folder.to_str().unwrap());
 
-                        window_weak
-                            .unwrap()
-                            .set_target_directory(SharedString::from(target_path));
-                    }
-                    None => {}
+                    window_weak
+                        .unwrap()
+                        .set_target_directory(SharedString::from(target_path));
                 }
             }
         });
@@ -253,17 +247,17 @@ impl MainWindow {
             let item_list = self.item_list.clone();
 
             move |name, start_date: SharedString, end_date: SharedString| -> bool {
-                let name_s = name.clone().to_string();
+                let name_s = name.to_string();
                 let event =
                     item_sort_list::Event::new(name_s, start_date.as_str(), end_date.as_str());
-                if event.is_ok() {
+                if let Ok(event) = event {
                     events_model.push(Event {
                         name,
                         start_date,
                         end_date,
                     });
                     let mut item_list = item_list.lock().unwrap();
-                    item_list.events.push(event.unwrap());
+                    item_list.events.push(event);
                     // Synchronize the item list to update the icons of the entries
                     synchronize_item_list_model(&item_list, &item_list_model.clone());
                     true
@@ -383,7 +377,7 @@ fn synchronize_images_model(
         let image = image_cache.load(item);
 
         let sort_image_struct = SortImage {
-            image: image,
+            image,
             take_over: item.get_take_over(),
         };
         similar_items_model.push(sort_image_struct);
@@ -441,7 +435,7 @@ pub fn commit(item_list: &ItemList, window_weak: sixtyfps::Weak<ImageSieve>) {
     let item_list_copy = item_list.to_owned();
     let target_path = window_weak.unwrap().get_target_directory().to_string();
     let commit_method = FromPrimitive::from_i32(window_weak.unwrap().get_commit_method())
-        .unwrap_or_else(|| CommitMethod::Copy);
+        .unwrap_or(CommitMethod::Copy);
 
     thread::spawn(move || {
         let progress_callback = |progress: String| {

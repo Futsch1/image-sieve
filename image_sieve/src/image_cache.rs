@@ -38,7 +38,7 @@ impl ImageCache {
             let item_path = item.get_path().to_str().unwrap();
             let mut map = self.images.lock().unwrap();
             match map.get(String::from(item_path)) {
-                Some(image) => crate::images::get_sixtyfps_image(&image),
+                Some(image) => crate::images::get_sixtyfps_image(image),
                 None => {
                     let image = crate::images::get_image_buffer(item);
                     let sixtyfps_image = crate::images::get_sixtyfps_image(&image);

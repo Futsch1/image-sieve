@@ -98,8 +98,8 @@ impl PropertyResolver for ExifResolver {
                 let orientation_field: Option<&exif::Field> =
                     exif.get_field(Tag::Orientation, In::PRIMARY);
 
-                if orientation_field.is_some() {
-                    let orientation_value = orientation_field.unwrap().value.get_uint(0).unwrap();
+                if let Some(orientation_value) = orientation_field {
+                    let orientation_value = orientation_value.value.get_uint(0).unwrap();
                     let orientation = match orientation_value {
                         1 => Orientation::Landscape,
                         6 => Orientation::Portrait90,

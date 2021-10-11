@@ -25,12 +25,12 @@ impl FileItem {
         let extension = extension(&path);
         let orientation = property_resolver.get_orientation();
         Self {
-            path: path,
+            path,
             timestamp,
-            take_over: take_over,
+            take_over,
             similar: vec![],
-            extension: extension,
-            orientation: orientation,
+            extension,
+            orientation,
         }
     }
 
@@ -38,7 +38,7 @@ impl FileItem {
     pub fn dummy(timestamp: i64) -> Self {
         Self {
             path: String::from(""),
-            timestamp: timestamp,
+            timestamp,
             orientation: None,
             take_over: false,
             similar: vec![],
@@ -90,8 +90,8 @@ impl FileItem {
 
     pub fn get_item_string(&self, base_path: &str) -> String {
         let path = Path::new(&self.path);
-        let path = path.strip_prefix(base_path).unwrap_or_else(|_| path);
-        let similars_str = if self.get_similars().len() > 0 {
+        let path = path.strip_prefix(base_path).unwrap_or(path);
+        let similars_str = if !self.get_similars().is_empty() {
             "\u{1F500} "
         } else {
             ""
@@ -108,17 +108,11 @@ impl FileItem {
     }
 
     pub fn is_image(&self) -> bool {
-        match self.extension.as_str() {
-            "jpg" | "png" | "tif" => true,
-            _ => false,
-        }
+        matches!(self.extension.as_str(), "jpg" | "png" | "tif")
     }
 
     pub fn is_video(&self) -> bool {
-        match self.extension.as_str() {
-            "mp4" | "avi" | "mts" => true,
-            _ => false,
-        }
+        matches!(self.extension.as_str(), "mp4" | "avi" | "mts")
     }
 
     pub fn get_extensions() -> [&'static str; 6] {

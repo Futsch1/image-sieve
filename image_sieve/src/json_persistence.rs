@@ -37,10 +37,8 @@ impl JsonPersistence for Settings {
             Ok(json) => Some(Settings {
                 source_directory: json["source_directory"].to_string(),
                 target_directory: json["target_directory"].to_string(),
-                commit_method: FromPrimitive::from_i32(
-                    json["commit_method"].as_i32().unwrap_or_else(|| 0),
-                )
-                .unwrap(),
+                commit_method: FromPrimitive::from_i32(json["commit_method"].as_i32().unwrap_or(0))
+                    .unwrap(),
             }),
             _ => None,
         }
@@ -73,7 +71,7 @@ impl JsonPersistence for ItemList {
                         if std::path::Path::new(&item_path).exists() {
                             item_list.add_item(
                                 item_path,
-                                json_item["take_over"].as_bool().unwrap_or_else(|| true),
+                                json_item["take_over"].as_bool().unwrap_or(true),
                             );
                         }
                     }
@@ -85,8 +83,8 @@ impl JsonPersistence for ItemList {
                             json_event["start_date"].as_str().unwrap(),
                             json_event["end_date"].as_str().unwrap(),
                         );
-                        if event.is_ok() {
-                            item_list.events.push(event.unwrap());
+                        if let Ok(event) = event {
+                            item_list.events.push(event);
                         }
                     }
                 }

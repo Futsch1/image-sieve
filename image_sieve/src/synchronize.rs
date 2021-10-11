@@ -27,7 +27,7 @@ impl Synchronizer {
         std::thread::spawn({
             let handle_weak = image_sieve.as_weak();
             move || {
-                synchronize_run(item_list, receiver, handle_weak.clone());
+                synchronize_run(item_list, receiver, handle_weak);
             }
         });
         Self { channel }
@@ -52,8 +52,8 @@ fn synchronize_run(
             // Check if folder already contains an item list
             let loaded_item_list: Option<ItemList> =
                 JsonPersistence::load(&get_project_filename(&path));
-            if loaded_item_list.is_some() {
-                item_list_loc.clone_from(&loaded_item_list.unwrap());
+            if let Some(loaded_item_list) = loaded_item_list {
+                item_list_loc.clone_from(&loaded_item_list);
             }
 
             item_list_loc.synchronize(&path);

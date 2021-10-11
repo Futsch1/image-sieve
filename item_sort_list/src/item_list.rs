@@ -29,24 +29,19 @@ pub struct ItemList {
 impl ItemList {
     /// Synchronize an existing items list with the items found in a path
     pub fn synchronize(&mut self, path: &str) {
-        let mut found_item_paths = find_items(&path);
+        let mut found_item_paths = find_items(path);
 
         self.items = self
             .items
             .drain(..)
-            .filter(|i| i.get_path().exists() && found_item_paths.contains(&i.get_path_as_str()))
+            .filter(|i| i.get_path().exists() && found_item_paths.contains(i.get_path_as_str()))
             .collect();
 
         // Add all newly found
         for item_path in found_item_paths.drain(..) {
             let item = Self::create_item(item_path, true);
             let path = item.get_path();
-            if self
-                .items
-                .iter()
-                .position(|i| i.get_path() == path)
-                .is_none()
-            {
+            if !self.items.iter().any(|i| i.get_path() == path) {
                 self.items.push(item);
             }
         }
@@ -113,7 +108,7 @@ impl ItemList {
         &self,
         path: &str,
         commit_method: CommitMethod,
-        progress_callback: impl Fn(String) -> (),
+        progress_callback: impl Fn(String),
     ) {
         // TODO: Refactor maybe
         use std::fs::{copy, remove_file, rename};
@@ -175,8 +170,7 @@ impl ItemList {
 
     pub fn get_sub_path(&self, item: &file_item::FileItem) -> String {
         let event = self.get_event(item);
-        if event.is_some() {
-            let event = event.unwrap();
+        if let Some(event) = event {
             if event.start_date != event.end_date {
                 return format!(
                     "{} - {} {}",
@@ -188,11 +182,9 @@ impl ItemList {
                 return format!("{} {}", event.start_date.format("%Y-%m-%d"), event.name);
             }
         }
-        String::from(
-            NaiveDateTime::from_timestamp(item.get_timestamp(), 0)
-                .format("%Y-%m")
-                .to_string(),
-        )
+        NaiveDateTime::from_timestamp(item.get_timestamp(), 0)
+            .format("%Y-%m")
+            .to_string()
     }
 
     pub fn get_event(&self, item: &file_item::FileItem) -> Option<&event::Event> {
@@ -270,7 +262,7 @@ mod tests {
             ));
         }
         let mut item_list = ItemList {
-            items: items,
+            items,
             events: vec![],
             path: String::from(""),
         };
@@ -295,18 +287,18 @@ mod tests {
             events: vec![
                 event::Event {
                     name: String::from("Test1"),
-                    start_date: NaiveDate::from_ymd(2021, 09, 14),
-                    end_date: NaiveDate::from_ymd(2021, 09, 14),
+                    start_date: NaiveDate::from_ymd(2021, 9, 14),
+                    end_date: NaiveDate::from_ymd(2021, 9, 14),
                 },
                 event::Event {
                     name: String::from("Test2"),
-                    start_date: NaiveDate::from_ymd(2021, 09, 20),
-                    end_date: NaiveDate::from_ymd(2021, 09, 21),
+                    start_date: NaiveDate::from_ymd(2021, 9, 20),
+                    end_date: NaiveDate::from_ymd(2021, 9, 21),
                 },
                 event::Event {
                     name: String::from("Test3"),
-                    start_date: NaiveDate::from_ymd(2021, 09, 24),
-                    end_date: NaiveDate::from_ymd(2021, 09, 27),
+                    start_date: NaiveDate::from_ymd(2021, 9, 24),
+                    end_date: NaiveDate::from_ymd(2021, 9, 27),
                 },
             ],
             path: String::from(""),
