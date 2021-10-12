@@ -1,7 +1,7 @@
 extern crate image;
 extern crate sixtyfps;
 
-use item_sort_list::FileItem;
+use crate::item_sort_list::FileItem;
 
 pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
@@ -9,10 +9,10 @@ pub fn get_image_buffer(item: &FileItem) -> ImageBuffer {
     let path = item.get_path();
     let rotation = match item.get_orientation() {
         Some(orientation) => match orientation {
-            item_sort_list::Orientation::Landscape => 0,
-            item_sort_list::Orientation::Portrait90 => 90,
-            item_sort_list::Orientation::Landscape180 => 180,
-            item_sort_list::Orientation::Portrait270 => 270,
+            crate::item_sort_list::Orientation::Landscape => 0,
+            crate::item_sort_list::Orientation::Portrait90 => 90,
+            crate::item_sort_list::Orientation::Landscape180 => 180,
+            crate::item_sort_list::Orientation::Portrait270 => 270,
         },
         None => 0,
     };

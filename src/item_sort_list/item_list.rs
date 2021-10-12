@@ -7,9 +7,9 @@ use std::collections::HashMap;
 use std::ops::Range;
 use std::path::Path;
 
-use crate::event;
-use crate::file_item;
-use crate::resolvers;
+use super::event;
+use super::file_item;
+use super::resolvers;
 
 #[derive(PartialEq, Eq, FromPrimitive, ToPrimitive)]
 pub enum CommitMethod {
@@ -231,7 +231,7 @@ fn find_items(path: &str) -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::item_traits::PropertyResolver;
+    use crate::item_sort_list::item_traits::PropertyResolver;
 
     static mut CALL_COUNT: usize = 0;
 
@@ -246,7 +246,7 @@ mod tests {
             }
         }
 
-        fn get_orientation(&self) -> Option<crate::Orientation> {
+        fn get_orientation(&self) -> Option<crate::item_sort_list::Orientation> {
             None
         }
     }

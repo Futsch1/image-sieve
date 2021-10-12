@@ -2,8 +2,8 @@ use json::JsonValue;
 use num_traits::{FromPrimitive, ToPrimitive};
 use std::{fs, path::Path};
 
-use crate::settings::Settings;
-use item_sort_list::{Event, ItemList, EVENT_DATE_FORMAT};
+use super::settings::Settings;
+use crate::item_sort_list::{Event, ItemList, EVENT_DATE_FORMAT};
 
 /// Name of the global settings file
 const SETTINGS_FILE: &str = "settings.json";

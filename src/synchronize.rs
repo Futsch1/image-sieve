@@ -1,16 +1,16 @@
-use item_sort_list::ItemList;
+use crate::item_sort_list::ItemList;
 use sixtyfps::ComponentHandle;
 use sixtyfps::Model;
 use sixtyfps::SharedString;
 use sixtyfps::VecModel;
 
-use crate::images::get_empty_image;
-use crate::json_persistence::get_project_filename;
-use crate::json_persistence::JsonPersistence;
 use crate::main_window::synchronize_event_list_model;
 use crate::main_window::synchronize_item_list_model;
 use crate::main_window::Event;
 use crate::main_window::ImageSieve;
+use crate::misc::images::get_empty_image;
+use crate::persistence::json::get_project_filename;
+use crate::persistence::json::JsonPersistence;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 use std::sync::Mutex;

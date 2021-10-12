@@ -1,4 +1,3 @@
-extern crate item_sort_list;
 extern crate rfd;
 extern crate sixtyfps;
 
@@ -11,12 +10,12 @@ use std::sync::Mutex;
 use std::thread;
 use std::{cell::RefCell, sync::Arc};
 
-use crate::image_cache::ImageCache;
-use crate::json_persistence::JsonPersistence;
-use crate::json_persistence::{get_project_filename, get_settings_filename};
-use crate::settings::Settings;
+use crate::item_sort_list::{CommitMethod, ItemList};
+use crate::misc::image_cache::ImageCache;
+use crate::persistence::json::JsonPersistence;
+use crate::persistence::json::{get_project_filename, get_settings_filename};
+use crate::persistence::settings::Settings;
 use crate::synchronize::Synchronizer;
-use item_sort_list::{CommitMethod, ItemList};
 
 sixtyfps::include_modules!();
 
@@ -31,6 +30,12 @@ pub struct MainWindow {
     items_model_map: Rc<RefCell<ImagesModelMap>>,
     events_model: Rc<sixtyfps::VecModel<Event>>,
     image_cache: Rc<ImageCache>,
+}
+
+impl Default for MainWindow {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MainWindow {
@@ -248,8 +253,11 @@ impl MainWindow {
 
             move |name, start_date: SharedString, end_date: SharedString| -> bool {
                 let name_s = name.to_string();
-                let event =
-                    item_sort_list::Event::new(name_s, start_date.as_str(), end_date.as_str());
+                let event = crate::item_sort_list::Event::new(
+                    name_s,
+                    start_date.as_str(),
+                    end_date.as_str(),
+                );
                 if let Ok(event) = event {
                     events_model.push(Event {
                         name,
@@ -269,7 +277,7 @@ impl MainWindow {
 
         self.window
             .on_date_valid(|date: sixtyfps::SharedString| -> bool {
-                item_sort_list::Event::is_date_valid(date.to_string().as_str())
+                crate::item_sort_list::Event::is_date_valid(date.to_string().as_str())
             });
 
         self.window.on_update_event({

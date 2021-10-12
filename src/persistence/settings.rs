@@ -1,4 +1,4 @@
-use item_sort_list::CommitMethod;
+use crate::item_sort_list::CommitMethod;
 use std::env;
 
 pub struct Settings {

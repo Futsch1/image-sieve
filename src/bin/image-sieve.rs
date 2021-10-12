@@ -1,10 +1,6 @@
-mod image_cache;
-mod images;
-mod json_persistence;
-mod lru_map;
-mod main_window;
-mod settings;
-mod synchronize;
+extern crate image_sieve;
+
+use image_sieve::main_window;
 
 fn main() {
     let main_window = main_window::MainWindow::new();

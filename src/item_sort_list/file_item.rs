@@ -2,8 +2,8 @@ use std::cmp::Ordering;
 use std::fmt::Debug;
 use std::path::Path;
 
-use crate::item_traits::Orientation;
-use crate::item_traits::PropertyResolver;
+use super::item_traits::Orientation;
+use super::item_traits::PropertyResolver;
 
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub struct FileItem {

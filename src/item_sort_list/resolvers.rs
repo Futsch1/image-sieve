@@ -4,7 +4,7 @@ extern crate exif;
 use self::chrono::NaiveDateTime;
 use self::exif::{In, Tag};
 
-use crate::item_traits::{Orientation, PropertyResolver};
+use super::item_traits::{Orientation, PropertyResolver};
 use std::path::Path;
 use std::time::SystemTime;
 
