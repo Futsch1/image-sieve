@@ -29,6 +29,7 @@ ImageSieve := Window {
     callback item-selected <=> sort-view.item-selected;
     callback browse-source <=> sort-view.browse-source;
     callback take-over-toggle <=> sort-view.take-over-toggle;
+    callback open <=> sort-view.open;
 
     // Map properties of EventsView
     property events-model <=> events-view.events-model;

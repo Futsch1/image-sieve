@@ -313,6 +313,14 @@ impl MainWindow {
                 synchronize_item_list_model(&item_list, &item_list_model.clone());
             }
         });
+
+        self.window.on_open({
+            let item_list = self.item_list.clone();
+            move |i: i32| {
+                let item_list = item_list.lock().unwrap();
+                opener::open(item_list.items[i as usize].get_path()).ok();
+            }
+        });
     }
 }
 

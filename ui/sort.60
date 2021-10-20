@@ -38,6 +38,8 @@ export SortView := HorizontalBox {
     callback take-over-toggle(int);
     // Called when browse button was pressed
     callback browse-source;
+    // Called when the open button was pressed
+    callback open(int);
 
     spacing: 5px;
 
@@ -97,6 +99,13 @@ export SortView := HorizontalBox {
                     item-selected(current-list-item);
                 }
             }
+            open-button := Button {
+                text: "\u{1F4C2} Open";
+                enabled: num-list-items > 0;
+                clicked => { 
+                    open(current-list-item);
+                }
+            }
             next-button := Button {
                 text: "Next \u{27A1}";
                 enabled: num-list-items > 0 && current-list-item < num-list-items - 1;
@@ -123,7 +132,7 @@ export SortView := HorizontalBox {
         }
 
         image-list := ListView {
-            property<int> current-item: -1;
+            property<int> current-item: 0;
 
             for item[i] in images-list-model: Rectangle {
                 padding: 2px;
