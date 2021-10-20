@@ -1,3 +1,6 @@
+![Build](https://github.com/Futsch1/image-sieve/workflows/Build/badge.svg)
+[![Crates.io](https://img.shields.io/crates/v/image_sieve.svg)](https://crates.io/crates/image_sieve)
+
 # ImageSieve
 GUI based tool to sort out and categorize images written in Rust.
 
