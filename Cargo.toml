@@ -1,6 +1,6 @@
 [package]
 name = "image_sieve"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Florian Fetz <florian.fetz@googlemail.com>"]
 description = "GUI based tool to sort out and categorize images"
 repository = "https://github.com/Futsch1/image-sieve"
@@ -8,6 +8,7 @@ license = "GPL-3.0"
 categories = ["multimedia::images"]
 build = "build.rs"
 edition = "2018"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
