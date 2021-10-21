@@ -16,7 +16,7 @@ pub fn get_image_buffer(item: &FileItem) -> ImageBuffer {
         },
         None => 0,
     };
-    load_image_and_rotate(path, rotation)
+    load_image_and_rotate(path, rotation).unwrap_or_else(|_| ImageBuffer::new(1, 1))
 }
 
 pub fn get_empty_image() -> sixtyfps::Image {
@@ -33,15 +33,18 @@ pub fn get_sixtyfps_image(buffer: &ImageBuffer) -> sixtyfps::Image {
     sixtyfps::Image::from_rgba8(buffer)
 }
 
-fn load_image_and_rotate(path: &std::path::Path, rotate: i32) -> ImageBuffer {
-    let cat_image = image::open(path).expect("Error loading image").into_rgba8();
+fn load_image_and_rotate(
+    path: &std::path::Path,
+    rotate: i32,
+) -> Result<ImageBuffer, image::ImageError> {
+    let cat_image = image::open(path)?.into_rgba8();
 
-    match rotate {
+    Ok(match rotate {
         90 => image::imageops::rotate90(&cat_image),
         180 => image::imageops::rotate180(&cat_image),
         270 => image::imageops::rotate270(&cat_image),
         _ => cat_image,
-    }
+    })
 }
 
 /// Draw a greyish image from a pixel buffer

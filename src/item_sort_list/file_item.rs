@@ -65,7 +65,11 @@ impl FileItem {
     }
 
     pub fn get_size(&self) -> u64 {
-        self.get_path().metadata().unwrap().len()
+        let result = self.get_path().metadata();
+        match result {
+            Ok(metadata) => metadata.len(),
+            Err(_) => 0,
+        }
     }
 
     pub fn get_path(&self) -> &Path {
