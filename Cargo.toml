@@ -29,5 +29,5 @@ sixtyfps-build = "0.1.2"
 embed-resource = "1.6"
 
 [[bin]]
-name = "image-sieve"
+name = "image_sieve"
 doc = false
