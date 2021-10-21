@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
- - 
+ - Renamed executable to image_sieve instead of image-sieve
 
 ### Fixed
 

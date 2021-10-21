@@ -24,7 +24,7 @@ Precompiled Windows binaries are available for every release for download. Linux
 
 After the compilation, you can run the tool by typing
 
-``` image-sieve ```
+``` image_sieve ```
 
 ## Operation
 
