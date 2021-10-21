@@ -20,7 +20,11 @@ keeping in a folder structure suitable for achiving. The tool runs on Windows, L
 ## Installation
 Precompiled Windows binaries are available for every release for download. Linux and macOS users need to install [Rust](https://rustup.rs/), clone the repository and run
 
-``` cargo run --release ```
+``` cargo install image_sieve ```
+
+After the compilation, you can run the tool by typing
+
+``` image-sieve ```
 
 ## Operation
 
@@ -35,6 +39,7 @@ The following icons are used (exact rendering depends on platform/font):
 - &#x1F4C5;: File is in the date range of an event
 
 To select a file, click it and it will be shown in the image area. Below the image, some details about the file are listed. In order to discard an image, just click it and it will be displayed in a translucent way. As an alternative, you can hit the space bar to toggle between discarded and kept state. To navigate between images, you can use the "Previous" and "Next" buttons or hit the left and right key on your keyboard.
+If you want to open an image or a video with the default application in your OS, click the "Open" button.
 If an image belongs to a group of similar images, all these similar images are displayed below the current image. The currently selected one is highlighted in blue.
 Note that video files are also displayed in the list of images, but cannot be previewed. However, they are also kept or discarded in the sieving process as are the image files.
 
