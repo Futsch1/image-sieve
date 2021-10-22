@@ -57,7 +57,7 @@ fn synchronize_run(
             }
 
             item_list_loc.synchronize(&path);
-            item_list_loc.find_similar(5);
+            item_list_loc.find_similar(0, 20);
         }
         image_sieve.clone().upgrade_in_event_loop({
             let item_list = item_list.lock().unwrap().to_owned();

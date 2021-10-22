@@ -2,6 +2,9 @@ use std::cmp::Ordering;
 use std::fmt::Debug;
 use std::path::Path;
 
+use img_hash::{Hasher, HasherConfig, ImageHash};
+use num_traits::abs;
+
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
 
@@ -13,6 +16,7 @@ pub struct FileItem {
     similar: Vec<usize>,
     extension: String,
     orientation: Option<Orientation>,
+    hash: Option<ImageHash<Vec<u8>>>,
 }
 
 impl FileItem {
@@ -20,10 +24,21 @@ impl FileItem {
         path: String,
         property_resolver: Box<dyn PropertyResolver>,
         take_over: bool,
+        encoded_hash: Option<String>,
     ) -> Self {
         let timestamp = property_resolver.get_timestamp();
         let extension = extension(&path);
         let orientation = property_resolver.get_orientation();
+        let hash = if let Some(encoded_hash) = encoded_hash {
+            if let Ok(hash) = ImageHash::from_base64(&encoded_hash) {
+                Some(hash)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
         Self {
             path,
             timestamp,
@@ -31,6 +46,7 @@ impl FileItem {
             similar: vec![],
             extension,
             orientation,
+            hash,
         }
     }
 
@@ -43,6 +59,7 @@ impl FileItem {
             take_over: false,
             similar: vec![],
             extension: String::from(""),
+            hash: None,
         }
     }
 
@@ -80,8 +97,8 @@ impl FileItem {
         &self.path
     }
 
-    pub fn set_similars(&mut self, similar: Vec<usize>) {
-        self.similar = similar;
+    pub fn add_similar(&mut self, other_index: usize) {
+        self.similar.push(other_index);
     }
 
     pub fn get_similars(&self) -> &Vec<usize> {
@@ -131,6 +148,38 @@ impl FileItem {
         } else {
             ""
         }
+    }
+
+    pub fn calc_hash(&mut self) {
+        if self.is_image() && self.hash.is_none() {
+            let image = image::open(self.get_path()).unwrap();
+            let hasher: Hasher<Vec<u8>> = HasherConfig::with_bytes_type().to_hasher();
+            self.hash = Some(hasher.hash_image(&image));
+            println!("Hash: {}", self.hash.as_ref().unwrap().to_base64());
+        }
+    }
+
+    pub fn is_similar(&self, other: &FileItem, max_diff_seconds: i64, max_diff_hash: u32) -> bool {
+        let distance = self
+            .hash
+            .as_ref()
+            .unwrap()
+            .dist(other.hash.as_ref().unwrap());
+        println!(
+            "Distance: {}: {} <-> {}",
+            distance,
+            self.get_path_as_str(),
+            other.get_path_as_str()
+        );
+        return abs(self.timestamp - other.timestamp) < max_diff_seconds
+            || (self.hash.is_some()
+                && other.hash.is_some()
+                && self
+                    .hash
+                    .as_ref()
+                    .unwrap()
+                    .dist(other.hash.as_ref().unwrap())
+                    < max_diff_hash);
     }
 }
 

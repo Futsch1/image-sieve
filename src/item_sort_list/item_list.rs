@@ -3,8 +3,6 @@ extern crate glob;
 
 use self::chrono::NaiveDateTime;
 use num_derive::{FromPrimitive, ToPrimitive};
-use std::collections::HashMap;
-use std::ops::Range;
 use std::path::Path;
 
 use super::event;
@@ -57,47 +55,27 @@ impl ItemList {
     /// Internal function to create a new file item
     fn create_item(item_path: String, take_over: bool) -> file_item::FileItem {
         let resolver = resolvers::get_resolver(&item_path);
-        file_item::FileItem::new(item_path, resolver, take_over)
+        file_item::FileItem::new(item_path, resolver, take_over, None)
     }
 
     /// Go through all images and find similar ones by comparing the timestamp
-    pub fn find_similar(&mut self, max_diff_seconds: i64) {
-        // TODO: Also be able to tell similarity from histogram comparison
-        let mut timestamp: i64 = 0;
-        let mut similars: HashMap<usize, Vec<usize>> = HashMap::new();
-        let mut start_similar_index: usize = 0;
-        let items = &mut self.items;
-
-        let mut collect_similars = |index_range: Range<usize>| {
-            let loop_range: Range<usize> = index_range.clone();
-            for similar_index in loop_range {
-                let local_range: Range<usize> = index_range.clone();
-                let without_myself: Vec<usize> =
-                    local_range.filter(|i| *i != similar_index).collect();
-                similars.insert(similar_index, without_myself);
-            }
-        };
-
-        // Find similars based on the taken time
-        for (item_index, item) in items.iter().enumerate() {
-            if timestamp == 0 {
-                timestamp = item.get_timestamp();
-                start_similar_index = item_index;
-            } else {
-                if timestamp + max_diff_seconds < item.get_timestamp() {
-                    collect_similars(start_similar_index..item_index);
-                    start_similar_index = item_index;
-                }
-                timestamp = item.get_timestamp();
-            }
+    pub fn find_similar(&mut self, max_diff_seconds: i64, max_diff_hash: u32) {
+        for item in self.items.iter_mut() {
+            item.calc_hash();
         }
-        collect_similars(start_similar_index..items.len());
 
-        // Update similars
-        for (item_index, item) in &mut items.iter_mut().enumerate() {
-            if similars.contains_key(&item_index) {
-                let similar_vec = similars.remove_entry(&item_index).unwrap().1.to_owned();
-                item.set_similars(similar_vec);
+        for index in 0..self.items.len() {
+            for other_index in index + 1..self.items.len() {
+                if other_index != index
+                    && self.items[index].is_similar(
+                        &self.items[other_index],
+                        max_diff_seconds,
+                        max_diff_hash,
+                    )
+                {
+                    self.items[index].add_similar(other_index);
+                    self.items[other_index].add_similar(index);
+                }
             }
         }
     }
@@ -259,6 +237,7 @@ mod tests {
                 String::from(""),
                 Box::new(MockResolver {}),
                 true,
+                None,
             ));
         }
         let mut item_list = ItemList {
@@ -267,7 +246,7 @@ mod tests {
             path: String::from(""),
         };
 
-        item_list.find_similar(5);
+        item_list.find_similar(5, 6);
 
         assert_eq!(2, item_list.items[0].get_similars().len());
         assert_eq!(2, item_list.items[1].get_similars().len());
