@@ -160,17 +160,6 @@ impl FileItem {
     }
 
     pub fn is_similar(&self, other: &FileItem, max_diff_seconds: i64, max_diff_hash: u32) -> bool {
-        let distance = self
-            .hash
-            .as_ref()
-            .unwrap()
-            .dist(other.hash.as_ref().unwrap());
-        println!(
-            "Distance: {}: {} <-> {}",
-            distance,
-            self.get_path_as_str(),
-            other.get_path_as_str()
-        );
         return abs(self.timestamp - other.timestamp) < max_diff_seconds
             || (self.hash.is_some()
                 && other.hash.is_some()
