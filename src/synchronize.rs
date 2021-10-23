@@ -112,6 +112,7 @@ fn synchronize_run(
                         .downcast_ref::<VecModel<SharedString>>()
                         .unwrap(),
                 );
+                h.set_calculating_similarities(false);
             }
         });
     }

@@ -26,6 +26,7 @@ ImageSieve := Window {
     property current-image-index <=> sort-view.current-image-index;
     property current-image-text <=> sort-view.current-image-text;
     property source-directory <=> sort-view.source-directory;
+    property calculating-similarities <=> sort-view.calculating-similarities;
     callback item-selected <=> sort-view.item-selected;
     callback browse-source <=> sort-view.browse-source;
     callback take-over-toggle <=> sort-view.take-over-toggle;

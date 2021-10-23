@@ -28,6 +28,9 @@ export SortView := HorizontalBox {
     // Current source directory
     property source-directory <=> source-directory-edit.text;
 
+    // Visibility of similarity calculation text
+    property <bool> calculating-similarities: true;
+
     callback next-clicked <=> next-button.clicked;
     callback prev-clicked <=> previous-button.clicked;
     callback selected-clicked <=> selected-image-touch.clicked;
@@ -63,6 +66,10 @@ export SortView := HorizontalBox {
 
         Text {
             text: current-image-text;
+        }
+        Text {
+            text: "\u{231B} Please wait, calculating similarities...";
+            visible: calculating-similarities;
         }
     
         ScrollView {
