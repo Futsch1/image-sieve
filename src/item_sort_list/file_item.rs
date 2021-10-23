@@ -155,7 +155,6 @@ impl FileItem {
             let image = image::open(self.get_path()).unwrap();
             let hasher: Hasher<Vec<u8>> = HasherConfig::with_bytes_type().to_hasher();
             self.hash = Some(hasher.hash_image(&image));
-            println!("Hash: {}", self.hash.as_ref().unwrap().to_base64());
         }
     }
 
