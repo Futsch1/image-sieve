@@ -14,6 +14,8 @@ use crate::persistence::json::JsonPersistence;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::thread;
+use std::time::Duration;
 
 pub struct Synchronizer {
     channel: Sender<String>,
@@ -57,7 +59,6 @@ fn synchronize_run(
             }
 
             item_list_loc.synchronize(&path);
-            item_list_loc.find_similar(0, 20);
         }
         image_sieve.clone().upgrade_in_event_loop({
             let item_list = item_list.lock().unwrap().to_owned();
@@ -93,6 +94,24 @@ fn synchronize_run(
                 }
 
                 h.set_loading(false);
+            }
+        });
+        thread::sleep(Duration::from_millis(1000));
+        {
+            let mut item_list_loc = item_list.lock().unwrap();
+
+            item_list_loc.find_similar(5, 20);
+        }
+        image_sieve.clone().upgrade_in_event_loop({
+            let item_list = item_list.lock().unwrap().to_owned();
+            move |h| {
+                synchronize_item_list_model(
+                    &item_list,
+                    h.get_images_list_model()
+                        .as_any()
+                        .downcast_ref::<VecModel<SharedString>>()
+                        .unwrap(),
+                );
             }
         });
     }
