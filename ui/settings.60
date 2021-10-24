@@ -1,0 +1,50 @@
+import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox } from "sixtyfps_widgets.60";
+
+export SettingsView := VerticalBox { 
+    property use-timestamp <=> use-timestamp-checkbox.checked;
+    property timestamp-difference <=> timestamp-difference-edit.text;
+    property use-similarity <=> use-similarity-checkbox.checked;
+    property similarity-sensitivity <=> sensitivity-combobox.current-value;    
+
+    alignment: start;
+
+    GroupBox { 
+        alignment: start;
+        title: "Similar pictures";
+        HorizontalBox { 
+            alignment: start;
+            
+            GridLayout {             
+                spacing: 5px;
+                use-timestamp-checkbox := CheckBox { 
+                    text: "Use timestamps";
+                }
+                Text {
+                    text: "Maximum timestamp difference (s): ";                
+                    vertical-alignment: center;
+                    row: 2;
+                }
+                timestamp-difference-edit := LineEdit {
+                    text: "5";
+                    width: 50px;
+                    enabled: use-timestamp-checkbox.checked;
+                }
+
+                use-similarity-checkbox := CheckBox { 
+                    text: "Use image similarity";
+                    row: 4;
+                }
+                Text {
+                    text: "Sensitivity: ";
+                    vertical-alignment: center;
+                    row: 5;
+                }
+                sensitivity-combobox := ComboBox {
+                    model: ["Low", "Medium", "High"];
+                    current-value: "Medium";                
+                    enabled: use-similarity-checkbox.checked;
+                }
+            }
+        }
+    }    
+}
