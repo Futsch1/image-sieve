@@ -3,7 +3,6 @@ use std::fmt::Debug;
 use std::path::Path;
 
 use img_hash::{Hasher, HasherConfig, ImageHash};
-use num_traits::abs;
 
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
@@ -158,16 +157,15 @@ impl FileItem {
         }
     }
 
-    pub fn is_similar(&self, other: &FileItem, max_diff_seconds: i64, max_diff_hash: u32) -> bool {
-        return abs(self.timestamp - other.timestamp) < max_diff_seconds
-            || (self.hash.is_some()
-                && other.hash.is_some()
-                && self
-                    .hash
-                    .as_ref()
-                    .unwrap()
-                    .dist(other.hash.as_ref().unwrap())
-                    < max_diff_hash);
+    pub fn is_hash_similar(&self, other: &FileItem, max_diff_hash: u32) -> bool {
+        return self.hash.is_some()
+            && other.hash.is_some()
+            && self
+                .hash
+                .as_ref()
+                .unwrap()
+                .dist(other.hash.as_ref().unwrap())
+                < max_diff_hash;
     }
 }
 
