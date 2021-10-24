@@ -63,15 +63,15 @@ export SortView := HorizontalBox {
                 }
             }                        
         }
-
-        Text {
-            text: current-image-text;
+        HorizontalLayout { 
+            Text {
+                text: current-image-text;
+            }
+            Text {
+                text: "\u{231B} Please wait, calculating similarities...";
+                visible: calculating-similarities;
+            }
         }
-        Text {
-            text: "\u{231B} Please wait, calculating similarities...";
-            visible: calculating-similarities;
-        }
-    
         ScrollView {
             viewport-height: 100px;
             viewport-width: num-images * 200px;

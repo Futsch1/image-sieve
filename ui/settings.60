@@ -22,6 +22,7 @@ export SettingsView := VerticalBox {
                 Text {
                     text: "Maximum timestamp difference (s): ";                
                     vertical-alignment: center;
+                    horizontal-alignment: right;
                     row: 2;
                 }
                 timestamp-difference-edit := LineEdit {
@@ -37,6 +38,7 @@ export SettingsView := VerticalBox {
                 Text {
                     text: "Sensitivity: ";
                     vertical-alignment: center;
+                    horizontal-alignment: right;
                     row: 5;
                 }
                 sensitivity-combobox := ComboBox {
