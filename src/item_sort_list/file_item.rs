@@ -97,7 +97,9 @@ impl FileItem {
     }
 
     pub fn add_similar(&mut self, other_index: usize) {
-        self.similar.push(other_index);
+        if !self.similar.contains(&other_index) {
+            self.similar.push(other_index);
+        }
     }
 
     pub fn get_similars(&self) -> &Vec<usize> {
