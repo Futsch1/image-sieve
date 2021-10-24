@@ -37,7 +37,7 @@ impl ItemList {
 
         // Add all newly found
         for item_path in found_item_paths.drain(..) {
-            let item = Self::create_item(item_path, true);
+            let item = Self::create_item(item_path, true, "");
             let path = item.get_path();
             if !self.items.iter().any(|i| i.get_path() == path) {
                 self.items.push(item);
@@ -48,14 +48,15 @@ impl ItemList {
     }
 
     /// Adds an item to the list
-    pub fn add_item(&mut self, item_path: String, take_over: bool) {
-        self.items.push(Self::create_item(item_path, take_over));
+    pub fn add_item(&mut self, item_path: String, take_over: bool, encoded_hash: &str) {
+        self.items
+            .push(Self::create_item(item_path, take_over, encoded_hash));
     }
 
     /// Internal function to create a new file item
-    fn create_item(item_path: String, take_over: bool) -> file_item::FileItem {
+    fn create_item(item_path: String, take_over: bool, encoded_hash: &str) -> file_item::FileItem {
         let resolver = resolvers::get_resolver(&item_path);
-        file_item::FileItem::new(item_path, resolver, take_over, None)
+        file_item::FileItem::new(item_path, resolver, take_over, encoded_hash)
     }
 
     /// Go through all images and find similar ones by comparing the timestamp
@@ -258,7 +259,7 @@ mod tests {
                 String::from(""),
                 Box::new(MockResolver {}),
                 true,
-                None,
+                "",
             ));
         }
         let mut item_list = ItemList {

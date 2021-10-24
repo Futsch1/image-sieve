@@ -51,8 +51,8 @@ impl Settings {
     }
 
     pub fn to_window(&self, window: &ImageSieve) {
-        window.set_source_directory(SharedString::from(self.source_directory));
-        window.set_target_directory(SharedString::from(self.target_directory));
+        window.set_source_directory(SharedString::from(self.source_directory.clone()));
+        window.set_target_directory(SharedString::from(self.target_directory.clone()));
         let commit_index = ToPrimitive::to_i32(&self.commit_method).unwrap();
         window.set_commit_method(commit_index);
         let values: ModelHandle<SharedString> = window.global::<CommitMethodValues>().get_values();

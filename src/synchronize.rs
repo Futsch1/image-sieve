@@ -119,6 +119,7 @@ fn synchronize_run(
 
             image_sieve.clone().upgrade_in_event_loop({
                 let item_list = item_list.lock().unwrap().to_owned();
+                let use_hash = settings.use_hash;
                 move |h| {
                     synchronize_item_list_model(
                         &item_list,
@@ -127,7 +128,7 @@ fn synchronize_run(
                             .downcast_ref::<VecModel<SharedString>>()
                             .unwrap(),
                     );
-                    h.set_calculating_similarities(false);
+                    h.set_calculating_similarities(use_hash);
                 }
             });
         }
@@ -138,7 +139,7 @@ fn synchronize_run(
             {
                 let item_list_loc = item_list.lock().unwrap();
                 for item in &item_list_loc.items {
-                    if item.is_image() {
+                    if item.is_image() && !item.has_hash() {
                         image_paths.push(item.get_path_as_str().clone());
                     }
                 }
