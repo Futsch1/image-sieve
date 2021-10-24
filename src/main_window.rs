@@ -93,6 +93,18 @@ impl MainWindow {
         main_window
             .window
             .set_commit_method_value(values.row_data(commit_index as usize));
+        main_window
+            .window
+            .set_use_timestamps(settings.use_timestamps);
+        main_window
+            .window
+            .set_timestamp_difference(SharedString::from(settings.timestamp_max_diff.to_string()));
+        main_window.window.set_use_similarity(settings.use_hash);
+        main_window
+            .window
+            .set_similarity_sensitivity(SharedString::from(convert_u32_to_sensitivity(
+                settings.hash_max_diff,
+            )));
 
         // Set model references
         main_window
@@ -124,6 +136,15 @@ impl MainWindow {
             target_directory: self.window.get_target_directory().to_string(),
             commit_method: FromPrimitive::from_i32(self.window.get_commit_method())
                 .unwrap_or(CommitMethod::Copy),
+            use_timestamps: self.window.get_use_timestamps(),
+            timestamp_max_diff: convert_timestamp_difference(
+                &self.window.get_timestamp_difference().to_string(),
+            )
+            .unwrap_or(5),
+            use_hash: self.window.get_use_similarity(),
+            hash_max_diff: convert_sensitivity_to_u32(
+                &self.window.get_similarity_sensitivity().to_string(),
+            ),
         };
         JsonPersistence::save(get_settings_filename(), &settings);
 
@@ -465,4 +486,30 @@ pub fn commit(item_list: &ItemList, window_weak: sixtyfps::Weak<ImageSieve>) {
         };
         item_list_copy.commit(&target_path, commit_method, progress_callback);
     });
+}
+
+fn convert_timestamp_difference(timestamp_difference: &str) -> Option<u64> {
+    if let Ok(timestamp_difference) = timestamp_difference.parse::<u64>() {
+        Some(timestamp_difference)
+    } else {
+        None
+    }
+}
+
+fn convert_sensitivity_to_u32(sensitivity: &str) -> u32 {
+    match sensitivity {
+        "Low" => 20,
+        "Medium" => 15,
+        "High" => 10,
+        _ => 15,
+    }
+}
+
+fn convert_u32_to_sensitivity(sensitivity: u32) -> &'static str {
+    match sensitivity {
+        20 => "Low",
+        15 => "Medium",
+        10 => "High",
+        _ => "Medium",
+    }
 }

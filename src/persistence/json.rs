@@ -39,6 +39,10 @@ impl JsonPersistence for Settings {
                 target_directory: json["target_directory"].to_string(),
                 commit_method: FromPrimitive::from_i32(json["commit_method"].as_i32().unwrap_or(0))
                     .unwrap(),
+                use_timestamps: json["use_timestamps"].as_bool().unwrap_or(true),
+                timestamp_max_diff: json["timestamp_max_diff"].as_u64().unwrap_or(5),
+                use_hash: json["use_hash"].as_bool().unwrap_or(false),
+                hash_max_diff: json["hash_max_diff"].as_u32().unwrap_or(15),
             }),
             _ => None,
         }

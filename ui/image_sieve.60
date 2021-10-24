@@ -49,7 +49,7 @@ ImageSieve := Window {
     callback browse-target <=> commit-view.browse-target;
 
     // Map properties of SettingsView
-    property use-timestamp <=> settings-view.use-timestamp;
+    property use-timestamps <=> settings-view.use-timestamps;
     property timestamp-difference <=> settings-view.timestamp-difference;
     property use-similarity <=> settings-view.use-similarity;
     property similarity-sensitivity <=> settings-view.similarity-sensitivity;    
