@@ -4,7 +4,9 @@ export SettingsView := VerticalBox {
     property use-timestamps <=> use-timestamps-checkbox.checked;
     property timestamp-difference <=> timestamp-difference-edit.text;
     property use-similarity <=> use-similarity-checkbox.checked;
-    property similarity-sensitivity <=> sensitivity-combobox.current-value;    
+    property similarity-sensitivity <=> sensitivity-combobox.current-value;
+
+    callback recheck-similarities;
 
     alignment: start;
 
@@ -18,6 +20,9 @@ export SettingsView := VerticalBox {
                 spacing: 5px;
                 use-timestamps-checkbox := CheckBox { 
                     text: "Use timestamps";
+                    toggled => {
+                        recheck-similarities();
+                    }
                 }
                 Text {
                     text: "Maximum timestamp difference (s): ";                
@@ -29,10 +34,16 @@ export SettingsView := VerticalBox {
                     text: "5";
                     width: 50px;
                     enabled: use-timestamps-checkbox.checked;
+                    accepted => { 
+                        recheck-similarities();
+                    }
                 }
 
                 use-similarity-checkbox := CheckBox { 
                     text: "Use image similarity";
+                    toggled => {
+                        recheck-similarities();
+                    }
                     row: 4;
                 }
                 Text {
@@ -45,6 +56,9 @@ export SettingsView := VerticalBox {
                     model: ["Low", "Medium", "High"];
                     current-value: "Medium";                
                     enabled: use-similarity-checkbox.checked;
+                    selected => { 
+                        recheck_similarities();
+                    }
                 }
             }
         }

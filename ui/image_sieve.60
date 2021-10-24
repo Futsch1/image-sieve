@@ -52,7 +52,8 @@ ImageSieve := Window {
     property use-timestamps <=> settings-view.use-timestamps;
     property timestamp-difference <=> settings-view.timestamp-difference;
     property use-similarity <=> settings-view.use-similarity;
-    property similarity-sensitivity <=> settings-view.similarity-sensitivity;    
+    property similarity-sensitivity <=> settings-view.similarity-sensitivity;
+    callback recheck-similarities <=> settings-view.recheck-similarities;
 
     forward-focus: key-handler;
     key-handler:= FocusScope {  

@@ -156,7 +156,9 @@ fn synchronize_run(
                 let mut item_list_loc = item_list.lock().unwrap();
                 for item in &mut item_list_loc.items {
                     let hash = hashes.remove(item.get_path_as_str());
-                    item.set_hash(hash);
+                    if hash.is_some() {
+                        item.set_hash(hash);
+                    }
                 }
                 item_list_loc.find_similar_hashes(settings.hash_max_diff);
             }

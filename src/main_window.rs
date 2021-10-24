@@ -306,6 +306,22 @@ impl MainWindow {
                 opener::open(item_list.items[i as usize].get_path()).ok();
             }
         });
+
+        self.window.on_recheck_similarities({
+            // Browse source was clicked, select new path
+            let window_weak = self.window.as_weak();
+            let synchronizer = Synchronizer::new(
+                self.item_list.clone(),
+                &self.window,
+                Settings::from_window(&self.window),
+            );
+
+            move || {
+                // Synchronize in a background thread
+                window_weak.unwrap().set_calculating_similarities(true);
+                synchronizer.synchronize("");
+            }
+        });
     }
 }
 
