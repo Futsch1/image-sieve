@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::fmt::Debug;
 use std::path::Path;
 
-use img_hash::{Hasher, HasherConfig, ImageHash};
+use img_hash::ImageHash;
 
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
@@ -151,12 +151,8 @@ impl FileItem {
         }
     }
 
-    pub fn calc_hash(&mut self) {
-        if self.is_image() && self.hash.is_none() {
-            let image = image::open(self.get_path()).unwrap();
-            let hasher: Hasher<Vec<u8>> = HasherConfig::with_bytes_type().to_hasher();
-            self.hash = Some(hasher.hash_image(&image));
-        }
+    pub fn set_hash(&mut self, hash: Option<ImageHash<Vec<u8>>>) {
+        self.hash = hash;
     }
 
     pub fn is_hash_similar(&self, other: &FileItem, max_diff_hash: u32) -> bool {

@@ -9,7 +9,7 @@ use super::event;
 use super::file_item;
 use super::resolvers;
 
-#[derive(PartialEq, Eq, FromPrimitive, ToPrimitive)]
+#[derive(PartialEq, Eq, FromPrimitive, ToPrimitive, Clone)]
 pub enum CommitMethod {
     Copy = 0,
     Move,
@@ -59,12 +59,7 @@ impl ItemList {
     }
 
     /// Go through all images and find similar ones by comparing the timestamp
-    pub fn find_similar(&mut self, max_diff_seconds: i64, max_diff_hash: u32) {
-        for item in self.items.iter_mut() {
-            // TODO: calc_hash needs to be moved out of here and done without needing to access item_list
-            item.calc_hash();
-        }
-
+    pub fn find_similar(&mut self, max_diff_seconds: i64) {
         // Find similars based on the taken time
         let mut timestamp: i64 = 0;
         let mut start_similar_index: usize = 0;
@@ -91,7 +86,9 @@ impl ItemList {
                 }
             }
         }
+    }
 
+    pub fn find_similar_hashes(&mut self, max_diff_hash: u32) {
         for index in 0..self.items.len() {
             for other_index in index + 1..self.items.len() {
                 if other_index != index
@@ -270,7 +267,7 @@ mod tests {
             path: String::from(""),
         };
 
-        item_list.find_similar(5, 50);
+        item_list.find_similar(5);
 
         assert_eq!(2, item_list.items[0].get_similars().len());
         assert_eq!(2, item_list.items[1].get_similars().len());
