@@ -15,6 +15,17 @@ All notable changes to this project will be documented in this file.
 
  - 
 
+## [0.2.0] - 2021-10-25
+
+### Added
+
+ - Image hashing to calculate similarities in image contents
+ - Settings tab for tuning the similarity calculation
+
+### Fixed
+
+ - 
+
 ## [0.1.3] - 2021-10-21
 
 ### Added

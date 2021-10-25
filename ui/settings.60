@@ -53,7 +53,7 @@ export SettingsView := VerticalBox {
                     row: 5;
                 }
                 sensitivity-combobox := ComboBox {
-                    model: ["Low", "Medium", "High"];
+                    model: ["Very low", "Low", "Medium", "High", "Very high"];
                     current-value: "Medium";                
                     enabled: use-similarity-checkbox.checked;
                     selected => { 
