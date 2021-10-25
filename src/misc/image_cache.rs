@@ -8,12 +8,14 @@ use super::lru_map::LruMap;
 use crate::item_sort_list::FileItem;
 use sixtyfps::{Image, Rgb8Pixel, SharedPixelBuffer};
 
-type ImagesMutex = Mutex<LruMap<crate::misc::images::ImageBuffer, String, 16>>;
+type ImagesMutex = Mutex<LruMap<crate::misc::images::ImageBuffer, String, 64>>;
 
 pub struct ImageCache {
     images: Arc<ImagesMutex>,
     unknown_image: Image,
-    sender: mpsc::Sender<FileItem>,
+    sender: mpsc::Sender<(FileItem, u32, u32)>,
+    max_width: u32,
+    max_height: u32,
 }
 
 impl ImageCache {
@@ -30,6 +32,16 @@ impl ImageCache {
             images: mutex,
             unknown_image: Image::from_rgb8(pixel_buffer),
             sender: tx,
+            max_width: 0,
+            max_height: 0,
+        }
+    }
+
+    pub fn restrict_size(&mut self, max_width: u32, max_height: u32) {
+        if max_width > self.max_width || max_height > self.max_height {
+            self.images.lock().unwrap().clear();
+            self.max_width = max_width;
+            self.max_height = max_height;
         }
     }
 
@@ -40,7 +52,11 @@ impl ImageCache {
             match map.get(String::from(item_path)) {
                 Some(image) => crate::misc::images::get_sixtyfps_image(image),
                 None => {
-                    let image = crate::misc::images::get_image_buffer(item);
+                    let image = crate::misc::images::get_image_buffer(
+                        item,
+                        self.max_width,
+                        self.max_height,
+                    );
                     let sixtyfps_image = crate::misc::images::get_sixtyfps_image(&image);
                     map.put(String::from(item_path), image);
                     sixtyfps_image
@@ -52,16 +68,19 @@ impl ImageCache {
     }
 
     pub fn prefetch(&self, item: &FileItem) {
-        self.sender.send(item.clone()).ok();
+        self.sender
+            .send((item.clone(), self.max_width, self.max_height))
+            .ok();
     }
 }
 
-fn prefetch_thread(mutex: Arc<ImagesMutex>, receiver: mpsc::Receiver<FileItem>) {
-    for prefetch_item in receiver {
+fn prefetch_thread(mutex: Arc<ImagesMutex>, receiver: mpsc::Receiver<(FileItem, u32, u32)>) {
+    for (prefetch_item, max_width, max_height) in receiver {
         let item_path = prefetch_item.get_path().to_str().unwrap();
         let mut map = mutex.lock().unwrap();
         if map.get(String::from(item_path)).is_none() {
-            let image = crate::misc::images::get_image_buffer(&prefetch_item);
+            let image =
+                crate::misc::images::get_image_buffer(&prefetch_item, max_width, max_height);
             map.put(String::from(item_path), image);
         }
     }

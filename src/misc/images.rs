@@ -1,11 +1,15 @@
 extern crate image;
 extern crate sixtyfps;
 
+use std::cmp::min;
+
+use image::{imageops, GenericImageView};
+
 use crate::item_sort_list::FileItem;
 
 pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
-pub fn get_image_buffer(item: &FileItem) -> ImageBuffer {
+pub fn get_image_buffer(item: &FileItem, max_width: u32, max_height: u32) -> ImageBuffer {
     let path = item.get_path();
     let rotation = match item.get_orientation() {
         Some(orientation) => match orientation {
@@ -16,7 +20,8 @@ pub fn get_image_buffer(item: &FileItem) -> ImageBuffer {
         },
         None => 0,
     };
-    load_image_and_rotate(path, rotation).unwrap_or_else(|_| ImageBuffer::new(1, 1))
+    load_image_and_rotate(path, rotation, max_width, max_height)
+        .unwrap_or_else(|_| ImageBuffer::new(1, 1))
 }
 
 pub fn get_empty_image() -> sixtyfps::Image {
@@ -36,9 +41,28 @@ pub fn get_sixtyfps_image(buffer: &ImageBuffer) -> sixtyfps::Image {
 fn load_image_and_rotate(
     path: &std::path::Path,
     rotate: i32,
+    max_width: u32,
+    max_height: u32,
 ) -> Result<ImageBuffer, image::ImageError> {
-    let cat_image = image::open(path)?.into_rgba8();
+    let cat_image = image::open(path)?;
+    let width = cat_image.width();
+    let height = cat_image.height();
+    let ratio = width as f32 / height as f32;
 
+    let mut new_width = 0;
+    let mut new_height = 0;
+    if width > height && max_width > 0 {
+        new_width = min(width, max_width);
+        new_height = (new_width as f32 / ratio) as u32;
+    }
+    if height > width && max_height > 0 {
+        new_height = min(height, max_height);
+        new_width = (new_height as f32 * ratio) as u32;
+    }
+
+    let cat_image = cat_image.resize(new_width, new_height, imageops::FilterType::Nearest);
+
+    let cat_image = cat_image.into_rgba8();
     Ok(match rotate {
         90 => image::imageops::rotate90(&cat_image),
         180 => image::imageops::rotate180(&cat_image),

@@ -37,6 +37,11 @@ where
         self.map.insert(key, (t, self.counter));
     }
 
+    pub fn clear(&mut self) {
+        self.map.clear();
+        self.counter = 0;
+    }
+
     fn get_lru_key(&self) -> Option<K> {
         let mut lru_key: Option<K> = None;
         let mut lru_counter = u32::MAX;
@@ -78,5 +83,8 @@ mod tests {
 
         assert!(list.get(5).is_none());
         assert_eq!(*list.get(4).unwrap(), 4);
+
+        list.clear();
+        assert!(list.get(4).is_none());
     }
 }

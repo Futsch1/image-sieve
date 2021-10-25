@@ -64,6 +64,8 @@ impl MainWindow {
 
         // Start synchronization in a background thread
         synchronizer.synchronize(&settings.source_directory, settings.clone());
+        let mut cache = ImageCache::new();
+        cache.restrict_size(1600, 1000);
 
         let main_window = Self {
             window: image_sieve,
@@ -72,7 +74,7 @@ impl MainWindow {
             similar_items_model: Rc::new(sixtyfps::VecModel::<SortImage>::default()),
             items_model_map: Rc::new(RefCell::new(HashMap::new())),
             events_model: event_list_model,
-            image_cache: Rc::new(ImageCache::new()),
+            image_cache: Rc::new(cache),
         };
 
         // Set initial values
