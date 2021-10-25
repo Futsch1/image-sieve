@@ -20,23 +20,24 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 use std::sync::Mutex;
 
+struct PathAndSettings {
+    pub path: Option<String>,
+    pub settings: Settings,
+}
+
 pub struct Synchronizer {
-    channel: Sender<Option<String>>,
+    channel: Sender<PathAndSettings>,
 }
 
 impl Synchronizer {
     /// Creates a new synchronizer that is used to update the contents of an item list and
     /// set the resulting states in the ImageSieve window
-    pub fn new(
-        item_list: Arc<Mutex<ItemList>>,
-        image_sieve: &ImageSieve,
-        settings: Settings,
-    ) -> Self {
+    pub fn new(item_list: Arc<Mutex<ItemList>>, image_sieve: &ImageSieve) -> Self {
         let (channel, receiver) = mpsc::channel();
         std::thread::spawn({
             let handle_weak = image_sieve.as_weak();
             move || {
-                synchronize_run(item_list, receiver, handle_weak, settings);
+                synchronize_run(item_list, receiver, handle_weak);
             }
         });
         Self { channel }
@@ -44,21 +45,22 @@ impl Synchronizer {
 
     /// Perform synchronization of the item list with a given path in a background thread. If the path is
     /// a zero length string, only check for similarities
-    pub fn synchronize(&self, path: &str) {
+    pub fn synchronize(&self, path: &str, settings: Settings) {
         let path = String::from(path);
         let path = if !path.is_empty() { Some(path) } else { None };
-        self.channel.send(path).ok();
+        self.channel.send(PathAndSettings { path, settings }).ok();
     }
 }
 
 /// Synchronization thread function
 fn synchronize_run(
     item_list: Arc<Mutex<ItemList>>,
-    receiver: Receiver<Option<String>>,
+    receiver: Receiver<PathAndSettings>,
     image_sieve: sixtyfps::Weak<ImageSieve>,
-    settings: Settings,
 ) {
-    for path in receiver {
+    for path_and_settings in receiver {
+        let path = path_and_settings.path;
+        let settings = path_and_settings.settings;
         if let Some(path) = path {
             {
                 let mut item_list_loc = item_list.lock().unwrap();
@@ -108,6 +110,14 @@ fn synchronize_run(
                     h.set_loading(false);
                 }
             });
+        }
+
+        // In any case, reset similarities first
+        {
+            let mut item_list_loc = item_list.lock().unwrap();
+            for item in &mut item_list_loc.items {
+                item.reset_similars();
+            }
         }
 
         // First, find similars based on times, this is usually quick
@@ -162,20 +172,20 @@ fn synchronize_run(
                 }
                 item_list_loc.find_similar_hashes(settings.hash_max_diff);
             }
-
-            image_sieve.clone().upgrade_in_event_loop({
-                let item_list = item_list.lock().unwrap().to_owned();
-                move |h| {
-                    synchronize_item_list_model(
-                        &item_list,
-                        h.get_images_list_model()
-                            .as_any()
-                            .downcast_ref::<VecModel<SharedString>>()
-                            .unwrap(),
-                    );
-                    h.set_calculating_similarities(false);
-                }
-            });
         }
+
+        image_sieve.clone().upgrade_in_event_loop({
+            let item_list = item_list.lock().unwrap().to_owned();
+            move |h| {
+                synchronize_item_list_model(
+                    &item_list,
+                    h.get_images_list_model()
+                        .as_any()
+                        .downcast_ref::<VecModel<SharedString>>()
+                        .unwrap(),
+                );
+                h.set_calculating_similarities(false);
+            }
+        });
     }
 }

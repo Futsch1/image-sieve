@@ -58,10 +58,10 @@ impl MainWindow {
 
         // Construct main window
         let image_sieve = ImageSieve::new();
-        let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve, settings.clone());
+        let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve);
 
         // Start synchronization in a background thread
-        synchronizer.synchronize(&settings.source_directory);
+        synchronizer.synchronize(&settings.source_directory, settings.clone());
 
         let main_window = Self {
             window: image_sieve,
@@ -179,11 +179,7 @@ impl MainWindow {
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
             let window_weak = self.window.as_weak();
-            let synchronizer = Synchronizer::new(
-                self.item_list.clone(),
-                &self.window,
-                Settings::from_window(&self.window),
-            );
+            let synchronizer = Synchronizer::new(self.item_list.clone(), &self.window);
 
             move || {
                 let file_dialog = FileDialog::new();
@@ -205,7 +201,8 @@ impl MainWindow {
 
                     // Synchronize in a background thread
                     window_weak.unwrap().set_loading(true);
-                    synchronizer.synchronize(source_path);
+                    synchronizer
+                        .synchronize(source_path, Settings::from_window(&window_weak.unwrap()));
 
                     window_weak
                         .unwrap()
@@ -310,16 +307,12 @@ impl MainWindow {
         self.window.on_recheck_similarities({
             // Browse source was clicked, select new path
             let window_weak = self.window.as_weak();
-            let synchronizer = Synchronizer::new(
-                self.item_list.clone(),
-                &self.window,
-                Settings::from_window(&self.window),
-            );
+            let synchronizer = Synchronizer::new(self.item_list.clone(), &self.window);
 
             move || {
                 // Synchronize in a background thread
                 window_weak.unwrap().set_calculating_similarities(true);
-                synchronizer.synchronize("");
+                synchronizer.synchronize("", Settings::from_window(&window_weak.unwrap()));
             }
         });
     }

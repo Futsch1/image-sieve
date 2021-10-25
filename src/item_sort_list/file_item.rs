@@ -100,6 +100,10 @@ impl FileItem {
         &self.similar
     }
 
+    pub fn reset_similars(&mut self) {
+        self.similar.clear()
+    }
+
     pub fn get_orientation(&self) -> Option<&Orientation> {
         self.orientation.as_ref()
     }
