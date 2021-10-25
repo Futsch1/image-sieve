@@ -68,7 +68,7 @@ impl FileItem {
         self.timestamp
     }
 
-    pub fn get_date_str(&self) -> String {
+    fn get_date_str(&self) -> String {
         chrono::NaiveDateTime::from_timestamp(self.timestamp, 0)
             .format("%Y-%m-%d %H:%M:%S")
             .to_string()
@@ -178,6 +178,14 @@ impl FileItem {
         } else {
             u32::MAX
         }
+    }
+
+    pub fn get_text(&self, event_str: &str) -> String {
+        let mut item_text = self.get_item_string(&String::from(""));
+        let item_size = self.get_size() / 1024;
+        let item_date = self.get_date_str();
+        item_text += format!(" - {}, {} KB {}", item_date, item_size, event_str).as_str();
+        item_text
     }
 }
 

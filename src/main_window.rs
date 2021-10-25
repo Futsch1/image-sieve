@@ -386,12 +386,12 @@ fn synchronize_images_model(
 
     let mut add_item = |item_index: &usize| {
         let item = &item_list.items[*item_index];
-        // TODO: The image is only required as a thumbnail, use another image cache for that or even write them to disk
         let image = image_cache.load(item);
 
         let sort_image_struct = SortImage {
             image,
             take_over: item.get_take_over(),
+            text: get_item_text(*item_index, item_list),
         };
         similar_items_model.push(sort_image_struct);
         item_model_map.insert(model_index, *item_index);
@@ -427,21 +427,17 @@ fn synchronize_images_model(
         .unwrap()
         .set_current_image(similar_items_model.row_data(0));
     window.unwrap().set_current_image_index(0);
+}
 
-    let item = &item_list.items[selected_item_index];
-    let mut item_text = item.get_item_string(&String::from(""));
-    let item_size = item.get_size() / 1024;
-    let item_date = item.get_date_str();
+pub fn get_item_text(index: usize, item_list: &ItemList) -> SharedString {
+    let item = &item_list.items[index];
     let event = item_list.get_event(item);
     let event_str = if let Some(event) = event {
         event.name.as_str()
     } else {
         ""
     };
-    item_text += format!(" - {}, {} KB {}", item_date, item_size, event_str).as_str();
-    window
-        .unwrap()
-        .set_current_image_text(SharedString::from(item_text));
+    SharedString::from(item.get_text(event_str))
 }
 
 pub fn commit(item_list: &ItemList, window_weak: sixtyfps::Weak<ImageSieve>) {

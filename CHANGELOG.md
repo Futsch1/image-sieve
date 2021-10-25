@@ -17,6 +17,10 @@ All notable changes to this project will be documented in this file.
 
 ## [0.2.0] - 2021-10-25
 
+### Changed
+
+ - Now using sixtyfps v0.1.4
+
 ### Added
 
  - Image hashing to calculate similarities in image contents
@@ -25,6 +29,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
  - If an image has many similar images, a maximum of six are displayed at the same time since the GUI was blocked otherwise
+ - Fixed showing the correct text when one of the similar images was selected
+ - Fixed event scrollview
 
 ## [0.1.3] - 2021-10-21
 

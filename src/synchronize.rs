@@ -100,10 +100,10 @@ fn synchronize_run(
                         let empty_image = crate::main_window::SortImage {
                             image: get_empty_image(),
                             take_over: true,
+                            text: SharedString::from("No images found"),
                         };
                         h.set_current_image(empty_image);
                         h.set_current_image_index(0);
-                        h.set_current_image_text(sixtyfps::SharedString::from("No images found"));
                     }
 
                     h.set_loading(false);

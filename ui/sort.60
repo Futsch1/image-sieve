@@ -3,6 +3,7 @@ import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, Scrol
 struct SortImage := {
     image: image,
     take-over: bool,
+    text: string
 }
 
 export SortView := HorizontalBox {
@@ -18,8 +19,6 @@ export SortView := HorizontalBox {
     // Currently displayed large image
     property <SortImage> current-image;
     property <int> current-image-index;
-    // TODO: move this into SortImage in order to change the text when selecting an image from the similarity view
-    property <string> current-image-text;
 
     // Current source directory
     property source-directory <=> source-directory-edit.text;
@@ -61,7 +60,7 @@ export SortView := HorizontalBox {
         }
         HorizontalLayout { 
             Text {
-                text: current-image-text;
+                text: current-image.text;
             }
             Text {
                 text: "\u{231B} Please wait, calculating similarities...";
@@ -85,6 +84,7 @@ export SortView := HorizontalBox {
                         clicked => {
                             current-image.image = item.image;
                             current-image.take-over = item.take-over;
+                            current-image.text = item.text;
                             current-image-index = i;
                         }
                     }
