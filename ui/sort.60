@@ -12,13 +12,8 @@ export SortView := HorizontalBox {
     // Index in image list
     property current-list-item <=> image-list.current-item;
 
-    // Overall number of list items
-    property <int> num-list-items;
-
     // Model of similar images selected
     property <[SortImage]> images-model;
-    // Number of images in the model
-    property <int> num-images;
 
     // Currently displayed large image
     property <SortImage> current-image;
@@ -57,7 +52,7 @@ export SortView := HorizontalBox {
             image-fit: contain;
             selected-image-touch := TouchArea { 
                 clicked => {
-                    if (num-list-items > 0) {
+                    if (images-list-model.length > 0) {
                         current-image.take-over = !current-image.take-over;
                         take-over-toggle(current-image-index);
                     }
@@ -75,14 +70,16 @@ export SortView := HorizontalBox {
         }
         ScrollView {
             viewport-height: 100px;
-            viewport-width: num-images * 200px;
             height: 120px;
+
             HorizontalBox { 
+                alignment: start;
             for item[i] in images-model:
-                Image {                
+                Image {
                     source: item.image;
                     opacity: item.take-over ? 1.0 : 0.2;
                     image-fit: contain;
+                    width: 200px;
                     height: 100px;
                     TouchArea { 
                         clicked => {
@@ -91,7 +88,7 @@ export SortView := HorizontalBox {
                             current-image-index = i;
                         }
                     }
-                    if (i == current-image-index) : Rectangle { opacity: 0.5; background: blue;}
+                    if (i == current-image-index) : Rectangle { opacity: 0.4; background: blue;}
                 }
             }
         }                
@@ -109,14 +106,14 @@ export SortView := HorizontalBox {
             }
             open-button := Button {
                 text: "\u{1F4C2} Open";
-                enabled: num-list-items > 0;
+                enabled: images-list-model.length > 0;
                 clicked => { 
                     open(current-list-item);
                 }
             }
             next-button := Button {
                 text: "Next \u{27A1}";
-                enabled: num-list-items > 0 && current-list-item < num-list-items - 1;
+                enabled: images-list-model.length > 0 && current-list-item < images-list-model.length - 1;
                 clicked => { 
                     current-list-item += 1;
                     item-selected(current-list-item);

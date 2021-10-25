@@ -63,7 +63,6 @@ Depending on the mode, you need to indicate a target directory that is used for 
 
 ## Known issues and TODOs
 - Overlapping events are not reported
-- When many events are added, the view is not properly extended/scrolled
 - The indication of problems during sieving is not implemented
 - Navigation with previous/next through similar items can be improved
 

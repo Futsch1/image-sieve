@@ -425,9 +425,6 @@ fn synchronize_images_model(
         .unwrap()
         .set_current_image(similar_items_model.row_data(0));
     window.unwrap().set_current_image_index(0);
-    window
-        .unwrap()
-        .set_num_images(similar_items_model.row_count() as i32);
 
     let item = &item_list.items[selected_item_index];
     let mut item_text = item.get_item_string(&String::from(""));

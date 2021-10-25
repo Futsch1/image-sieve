@@ -93,7 +93,6 @@ fn synchronize_run(
                             .unwrap(),
                     );
                     let num_items = { item_list.items.len() as i32 };
-                    h.set_num_list_items(num_items);
 
                     if num_items > 0 {
                         h.invoke_item_selected(0);
@@ -104,7 +103,6 @@ fn synchronize_run(
                         };
                         h.set_current_image(empty_image);
                         h.set_current_image_index(0);
-                        h.set_num_images(0);
                         h.set_current_image_text(sixtyfps::SharedString::from("No images found"));
                     }
 

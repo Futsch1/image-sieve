@@ -19,9 +19,7 @@ ImageSieve := Window {
     // Map properties of SortView
     property images-list-model <=> sort-view.images-list-model;
     property current-list-item <=> sort-view.current-list-item;
-    property num-list-items <=> sort-view.num-list-items;
     property images-model <=> sort-view.images-model;
-    property num-images <=> sort-view.num-images;
     property current-image <=> sort-view.current-image;
     property current-image-index <=> sort-view.current-image-index;
     property current-image-text <=> sort-view.current-image-text;
@@ -66,7 +64,7 @@ ImageSieve := Window {
             }
             if (event.text == "\u{000F}")
             {
-                if (num-list-items > 0 && current-list-item < num-list-items - 1) {
+                if (images-list-model.length > 0 && current-list-item < images-list-model.length - 1) {
                     sort-view.next-clicked();
                 }
             }
