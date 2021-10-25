@@ -3,15 +3,13 @@ extern crate glob;
 
 use self::chrono::NaiveDateTime;
 use num_derive::{FromPrimitive, ToPrimitive};
-use std::collections::HashMap;
-use std::ops::Range;
 use std::path::Path;
 
 use super::event;
 use super::file_item;
 use super::resolvers;
 
-#[derive(PartialEq, Eq, FromPrimitive, ToPrimitive)]
+#[derive(PartialEq, Eq, FromPrimitive, ToPrimitive, Clone)]
 pub enum CommitMethod {
     Copy = 0,
     Move,
@@ -39,7 +37,7 @@ impl ItemList {
 
         // Add all newly found
         for item_path in found_item_paths.drain(..) {
-            let item = Self::create_item(item_path, true);
+            let item = Self::create_item(item_path, true, "");
             let path = item.get_path();
             if !self.items.iter().any(|i| i.get_path() == path) {
                 self.items.push(item);
@@ -50,54 +48,57 @@ impl ItemList {
     }
 
     /// Adds an item to the list
-    pub fn add_item(&mut self, item_path: String, take_over: bool) {
-        self.items.push(Self::create_item(item_path, take_over));
+    pub fn add_item(&mut self, item_path: String, take_over: bool, encoded_hash: &str) {
+        self.items
+            .push(Self::create_item(item_path, take_over, encoded_hash));
     }
 
     /// Internal function to create a new file item
-    fn create_item(item_path: String, take_over: bool) -> file_item::FileItem {
+    fn create_item(item_path: String, take_over: bool, encoded_hash: &str) -> file_item::FileItem {
         let resolver = resolvers::get_resolver(&item_path);
-        file_item::FileItem::new(item_path, resolver, take_over)
+        file_item::FileItem::new(item_path, resolver, take_over, encoded_hash)
     }
 
     /// Go through all images and find similar ones by comparing the timestamp
     pub fn find_similar(&mut self, max_diff_seconds: i64) {
-        // TODO: Also be able to tell similarity from histogram comparison
-        let mut timestamp: i64 = 0;
-        let mut similars: HashMap<usize, Vec<usize>> = HashMap::new();
-        let mut start_similar_index: usize = 0;
-        let items = &mut self.items;
-
-        let mut collect_similars = |index_range: Range<usize>| {
-            let loop_range: Range<usize> = index_range.clone();
-            for similar_index in loop_range {
-                let local_range: Range<usize> = index_range.clone();
-                let without_myself: Vec<usize> =
-                    local_range.filter(|i| *i != similar_index).collect();
-                similars.insert(similar_index, without_myself);
-            }
-        };
-
         // Find similars based on the taken time
-        for (item_index, item) in items.iter().enumerate() {
+        let mut timestamp: i64 = 0;
+        let mut start_similar_index: usize = 0;
+        for index in 0..self.items.len() + 1 {
             if timestamp == 0 {
-                timestamp = item.get_timestamp();
-                start_similar_index = item_index;
+                timestamp = self.items[index].get_timestamp();
+                start_similar_index = index;
             } else {
-                if timestamp + max_diff_seconds < item.get_timestamp() {
-                    collect_similars(start_similar_index..item_index);
-                    start_similar_index = item_index;
+                if (index == self.items.len())
+                    || (timestamp + max_diff_seconds < self.items[index].get_timestamp())
+                {
+                    // The item has a larger diff, so set all items between start_similar_index and index to be similar to each other
+                    for similar_index in start_similar_index..index {
+                        for other_index in start_similar_index..index {
+                            if similar_index != other_index {
+                                self.items[similar_index].add_similar(other_index);
+                            }
+                        }
+                    }
+                    start_similar_index = index;
                 }
-                timestamp = item.get_timestamp();
+                if index < self.items.len() {
+                    timestamp = self.items[index].get_timestamp();
+                }
             }
         }
-        collect_similars(start_similar_index..items.len());
+    }
 
-        // Update similars
-        for (item_index, item) in &mut items.iter_mut().enumerate() {
-            if similars.contains_key(&item_index) {
-                let similar_vec = similars.remove_entry(&item_index).unwrap().1.to_owned();
-                item.set_similars(similar_vec);
+    pub fn find_similar_hashes(&mut self, max_diff_hash: u32) {
+        // TODO: Use a more clever algorithm: Add those images with the highest similarity first and use max diff as a cutoff point
+        for index in 0..self.items.len() {
+            for other_index in index + 1..self.items.len() {
+                if other_index != index
+                    && self.items[index].is_hash_similar(&self.items[other_index], max_diff_hash)
+                {
+                    self.items[index].add_similar(other_index);
+                    self.items[other_index].add_similar(index);
+                }
             }
         }
     }
@@ -259,6 +260,7 @@ mod tests {
                 String::from(""),
                 Box::new(MockResolver {}),
                 true,
+                "",
             ));
         }
         let mut item_list = ItemList {

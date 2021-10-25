@@ -23,10 +23,14 @@ export SortView := HorizontalBox {
     // Currently displayed large image
     property <SortImage> current-image;
     property <int> current-image-index;
+    // TODO: move this into SortImage in order to change the text when selecting an image from the similarity view
     property <string> current-image-text;
 
     // Current source directory
     property source-directory <=> source-directory-edit.text;
+
+    // Visibility of similarity calculation text
+    property <bool> calculating-similarities: true;
 
     callback next-clicked <=> next-button.clicked;
     callback prev-clicked <=> previous-button.clicked;
@@ -60,11 +64,15 @@ export SortView := HorizontalBox {
                 }
             }                        
         }
-
-        Text {
-            text: current-image-text;
+        HorizontalLayout { 
+            Text {
+                text: current-image-text;
+            }
+            Text {
+                text: "\u{231B} Please wait, calculating similarities...";
+                visible: calculating-similarities;
+            }
         }
-    
         ScrollView {
             viewport-height: 100px;
             viewport-width: num-images * 200px;

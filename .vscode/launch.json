@@ -7,15 +7,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'imgsort'",
+            "name": "Debug executable 'image_sieve'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=imgsort",
-                    "--package=imgsort"
+                    "--bin=image_sieve",
+                    "--package=image_sieve"
                 ],
                 "filter": {
-                    "name": "imgsort",
+                    "name": "image_sieve",
                     "kind": "bin"
                 }
             },
@@ -25,36 +25,17 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'image_sort_60fps'",
+            "name": "Debug unit tests in executable 'image_sieve'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=image_sort_60fps",
-                    "--package=image_sort_60fps"
+                    "--bin=image_sieve",
+                    "--package=image_sieve"
                 ],
                 "filter": {
-                    "name": "image_sort_60fps",
+                    "name": "image_sieve",
                     "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in library 'image_sort_list'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--lib",
-                    "--package=image_sort_list"
-                ],
-                "filter": {
-                    "name": "image_sort_list",
-                    "kind": "lib"
                 }
             },
             "args": [],

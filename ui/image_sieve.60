@@ -1,10 +1,10 @@
 import { ListView, Button, LineEdit, TabWidget, GroupBox, VerticalBox, HorizontalBox, ScrollView, ComboBox } from "sixtyfps_widgets.60";
 
 
-
 import { SortView } from "sort.60";
 import { EventsView } from "events.60";
 import { CommitView, CommitMethodValues } from "commit.60";
+import { SettingsView } from "settings.60";
 
 export { CommitMethodValues }
 
@@ -26,6 +26,7 @@ ImageSieve := Window {
     property current-image-index <=> sort-view.current-image-index;
     property current-image-text <=> sort-view.current-image-text;
     property source-directory <=> sort-view.source-directory;
+    property calculating-similarities <=> sort-view.calculating-similarities;
     callback item-selected <=> sort-view.item-selected;
     callback browse-source <=> sort-view.browse-source;
     callback take-over-toggle <=> sort-view.take-over-toggle;
@@ -46,6 +47,13 @@ ImageSieve := Window {
     property commit-running <=> commit-view.commit-running;
     callback commit <=> commit-view.commit;
     callback browse-target <=> commit-view.browse-target;
+
+    // Map properties of SettingsView
+    property use-timestamps <=> settings-view.use-timestamps;
+    property timestamp-difference <=> settings-view.timestamp-difference;
+    property use-similarity <=> settings-view.use-similarity;
+    property similarity-sensitivity <=> settings-view.similarity-sensitivity;
+    callback recheck-similarities <=> settings-view.recheck-similarities;
 
     forward-focus: key-handler;
     key-handler:= FocusScope {  
@@ -95,6 +103,13 @@ ImageSieve := Window {
             title: "\u{1F4BE}  Sieve";
             
             commit-view := CommitView {
+            }
+        }
+
+        Tab {
+            title: "\u{2699} Settings";
+            
+            settings-view := SettingsView {                
             }
         }
     }

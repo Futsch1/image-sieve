@@ -1,9 +1,9 @@
 extern crate rfd;
 extern crate sixtyfps;
 
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_traits::FromPrimitive;
 use rfd::FileDialog;
-use sixtyfps::{Model, ModelHandle, SharedString};
+use sixtyfps::{Model, SharedString};
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Mutex;
@@ -61,7 +61,7 @@ impl MainWindow {
         let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve);
 
         // Start synchronization in a background thread
-        synchronizer.synchronize(&settings.source_directory);
+        synchronizer.synchronize(&settings.source_directory, settings.clone());
 
         let main_window = Self {
             window: image_sieve,
@@ -78,21 +78,7 @@ impl MainWindow {
         main_window
             .window
             .set_window_title(SharedString::from("ImageSieve v") + version);
-        main_window
-            .window
-            .set_source_directory(SharedString::from(settings.source_directory));
-        main_window
-            .window
-            .set_target_directory(SharedString::from(settings.target_directory));
-        let commit_index = ToPrimitive::to_i32(&settings.commit_method).unwrap();
-        main_window.window.set_commit_method(commit_index);
-        let values: ModelHandle<SharedString> = main_window
-            .window
-            .global::<CommitMethodValues>()
-            .get_values();
-        main_window
-            .window
-            .set_commit_method_value(values.row_data(commit_index as usize));
+        settings.to_window(&main_window.window);
 
         // Set model references
         main_window
@@ -119,12 +105,7 @@ impl MainWindow {
         self.window.run();
 
         // Save settings when program exits
-        let settings = Settings {
-            source_directory: self.window.get_source_directory().to_string(),
-            target_directory: self.window.get_target_directory().to_string(),
-            commit_method: FromPrimitive::from_i32(self.window.get_commit_method())
-                .unwrap_or(CommitMethod::Copy),
-        };
+        let settings = Settings::from_window(&self.window);
         JsonPersistence::save(get_settings_filename(), &settings);
 
         // and save item list
@@ -220,7 +201,8 @@ impl MainWindow {
 
                     // Synchronize in a background thread
                     window_weak.unwrap().set_loading(true);
-                    synchronizer.synchronize(source_path);
+                    synchronizer
+                        .synchronize(source_path, Settings::from_window(&window_weak.unwrap()));
 
                     window_weak
                         .unwrap()
@@ -321,6 +303,18 @@ impl MainWindow {
                 opener::open(item_list.items[i as usize].get_path()).ok();
             }
         });
+
+        self.window.on_recheck_similarities({
+            // Browse source was clicked, select new path
+            let window_weak = self.window.as_weak();
+            let synchronizer = Synchronizer::new(self.item_list.clone(), &self.window);
+
+            move || {
+                // Synchronize in a background thread
+                window_weak.unwrap().set_calculating_similarities(true);
+                synchronizer.synchronize("", Settings::from_window(&window_weak.unwrap()));
+            }
+        });
     }
 }
 
@@ -390,6 +384,7 @@ fn synchronize_images_model(
 
     let mut add_item = |item_index: &usize| {
         let item = &item_list.items[*item_index];
+        // TODO: The image is only required as a thumbnail, use another image cache for that or even write them to disk
         let image = image_cache.load(item);
 
         let sort_image_struct = SortImage {
@@ -404,7 +399,10 @@ fn synchronize_images_model(
     add_item(&selected_item_index);
 
     for image_index in similars {
-        add_item(image_index);
+        // TODO: This should be done in a different thread instead of limiting this here
+        if similar_items_model.row_count() < 6 {
+            add_item(image_index);
+        }
     }
 
     // Prefetch next two images

@@ -2,8 +2,12 @@ use std::cmp::Ordering;
 use std::fmt::Debug;
 use std::path::Path;
 
+use img_hash::ImageHash;
+
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
+
+pub type HashType = ImageHash<Vec<u8>>;
 
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub struct FileItem {
@@ -13,6 +17,7 @@ pub struct FileItem {
     similar: Vec<usize>,
     extension: String,
     orientation: Option<Orientation>,
+    hash: Option<HashType>,
 }
 
 impl FileItem {
@@ -20,10 +25,13 @@ impl FileItem {
         path: String,
         property_resolver: Box<dyn PropertyResolver>,
         take_over: bool,
+        encoded_hash: &str,
     ) -> Self {
         let timestamp = property_resolver.get_timestamp();
         let extension = extension(&path);
         let orientation = property_resolver.get_orientation();
+        let hash = process_encoded_hash(encoded_hash);
+
         Self {
             path,
             timestamp,
@@ -31,6 +39,7 @@ impl FileItem {
             similar: vec![],
             extension,
             orientation,
+            hash,
         }
     }
 
@@ -43,6 +52,7 @@ impl FileItem {
             take_over: false,
             similar: vec![],
             extension: String::from(""),
+            hash: None,
         }
     }
 
@@ -80,12 +90,18 @@ impl FileItem {
         &self.path
     }
 
-    pub fn set_similars(&mut self, similar: Vec<usize>) {
-        self.similar = similar;
+    pub fn add_similar(&mut self, other_index: usize) {
+        if !self.similar.contains(&other_index) {
+            self.similar.push(other_index);
+        }
     }
 
     pub fn get_similars(&self) -> &Vec<usize> {
         &self.similar
+    }
+
+    pub fn reset_similars(&mut self) {
+        self.similar.clear()
     }
 
     pub fn get_orientation(&self) -> Option<&Orientation> {
@@ -132,6 +148,37 @@ impl FileItem {
             ""
         }
     }
+
+    pub fn set_hash(&mut self, hash: Option<ImageHash<Vec<u8>>>) {
+        self.hash = hash;
+    }
+
+    pub fn set_encoded_hash(&mut self, encoded_hash: &str) {
+        self.hash = process_encoded_hash(encoded_hash);
+    }
+
+    pub fn get_encoded_hash(&self) -> String {
+        if let Some(hash) = self.hash.clone() {
+            hash.to_base64()
+        } else {
+            String::new()
+        }
+    }
+
+    pub fn has_hash(&self) -> bool {
+        self.hash.is_some()
+    }
+
+    pub fn is_hash_similar(&self, other: &FileItem, max_diff_hash: u32) -> bool {
+        return self.has_hash()
+            && other.has_hash()
+            && self
+                .hash
+                .as_ref()
+                .unwrap()
+                .dist(other.hash.as_ref().unwrap())
+                < max_diff_hash;
+    }
 }
 
 impl PartialOrd for FileItem {
@@ -150,4 +197,16 @@ fn extension(path: &str) -> String {
     let path = Path::new(path);
     let extension = path.extension().unwrap_or_default().to_ascii_lowercase();
     String::from(extension.to_str().unwrap())
+}
+
+fn process_encoded_hash(encoded_hash: &str) -> Option<HashType> {
+    if !encoded_hash.is_empty() {
+        if let Ok(hash) = ImageHash::from_base64(encoded_hash) {
+            Some(hash)
+        } else {
+            None
+        }
+    } else {
+        None
+    }
 }

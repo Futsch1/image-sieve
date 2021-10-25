@@ -39,6 +39,10 @@ impl JsonPersistence for Settings {
                 target_directory: json["target_directory"].to_string(),
                 commit_method: FromPrimitive::from_i32(json["commit_method"].as_i32().unwrap_or(0))
                     .unwrap(),
+                use_timestamps: json["use_timestamps"].as_bool().unwrap_or(true),
+                timestamp_max_diff: json["timestamp_max_diff"].as_i64().unwrap_or(5),
+                use_hash: json["use_hash"].as_bool().unwrap_or(false),
+                hash_max_diff: json["hash_max_diff"].as_u32().unwrap_or(15),
             }),
             _ => None,
         }
@@ -47,7 +51,12 @@ impl JsonPersistence for Settings {
     /// Try saving the settings to a json file
     fn save(file_name: &str, settings: &Settings) {
         let json = json::object! {source_directory: settings.source_directory.clone(),
-        target_directory: settings.target_directory.clone(), commit_method: ToPrimitive::to_i32(&settings.commit_method)};
+        target_directory: settings.target_directory.clone(),
+        commit_method: ToPrimitive::to_i32(&settings.commit_method),
+        use_timestamps: settings.use_timestamps,
+        timestamp_max_diff: settings.timestamp_max_diff,
+        use_hash: settings.use_hash,
+        hash_max_diff: settings.hash_max_diff};
         fs::write(file_name, json::stringify_pretty(json, 4)).ok();
     }
 }
@@ -72,6 +81,7 @@ impl JsonPersistence for ItemList {
                             item_list.add_item(
                                 item_path,
                                 json_item["take_over"].as_bool().unwrap_or(true),
+                                json_item["hash_value"].as_str().unwrap_or(""),
                             );
                         }
                     }
@@ -98,7 +108,9 @@ impl JsonPersistence for ItemList {
     fn save(file_name: &str, item_list: &ItemList) {
         let mut json_file_list = JsonValue::new_array();
         for file_item in &item_list.items {
-            let json_file_item = json::object! {file_name: file_item.get_path().to_str(), take_over: file_item.get_take_over()};
+            let json_file_item = json::object! {file_name: file_item.get_path().to_str(),
+            take_over: file_item.get_take_over(),
+            hash_value: file_item.get_encoded_hash()};
             json_file_list.push(json_file_item).ok();
         }
 
