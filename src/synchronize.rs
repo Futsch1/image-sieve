@@ -1,5 +1,6 @@
 use crate::item_sort_list::ItemList;
 use crate::persistence::settings::Settings;
+use img_hash::HashAlg;
 use img_hash::Hasher;
 use img_hash::HasherConfig;
 use img_hash::ImageHash;
@@ -158,7 +159,9 @@ fn synchronize_run(
             let mut hashes: HashMap<String, ImageHash<Vec<u8>>> = HashMap::new();
             for image_path in image_paths {
                 let image = image::open(&image_path).unwrap();
-                let hasher: Hasher<Vec<u8>> = HasherConfig::with_bytes_type().to_hasher();
+                let hasher: Hasher<Vec<u8>> = HasherConfig::with_bytes_type()
+                    .hash_alg(HashAlg::DoubleGradient)
+                    .to_hasher();
                 hashes.insert(image_path, hasher.hash_image(&image));
             }
 

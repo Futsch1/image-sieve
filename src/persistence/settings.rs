@@ -28,7 +28,7 @@ impl Settings {
             use_timestamps: true,
             timestamp_max_diff: 5,
             use_hash: false,
-            hash_max_diff: 10,
+            hash_max_diff: 12,
         }
     }
 
@@ -77,7 +77,7 @@ fn convert_timestamp_difference(timestamp_difference: &str) -> Option<i64> {
 fn convert_sensitivity_to_u32(sensitivity: &str) -> u32 {
     match sensitivity {
         "Low" => 15,
-        "Medium" => 10,
+        "Medium" => 12,
         "High" => 8,
         _ => 15,
     }
@@ -86,7 +86,7 @@ fn convert_sensitivity_to_u32(sensitivity: &str) -> u32 {
 fn convert_u32_to_sensitivity(sensitivity: u32) -> &'static str {
     match sensitivity {
         15 => "Low",
-        10 => "Medium",
+        12 => "Medium",
         8 => "High",
         _ => "Medium",
     }
