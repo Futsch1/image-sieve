@@ -17,6 +17,8 @@ use crate::persistence::json::{get_project_filename, get_settings_filename};
 use crate::persistence::settings::Settings;
 use crate::synchronize::Synchronizer;
 
+const MAX_SIMILARS: usize = 5;
+
 sixtyfps::include_modules!();
 
 type ImagesModelMap = HashMap<usize, usize>;
@@ -400,7 +402,7 @@ fn synchronize_images_model(
 
     for image_index in similars {
         // TODO: This should be done in a different thread instead of limiting this here
-        if similar_items_model.row_count() < 6 {
+        if similar_items_model.row_count() <= MAX_SIMILARS {
             add_item(image_index);
         }
     }

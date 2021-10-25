@@ -3,6 +3,7 @@ extern crate glob;
 
 use self::chrono::NaiveDateTime;
 use num_derive::{FromPrimitive, ToPrimitive};
+use std::collections::HashMap;
 use std::path::Path;
 
 use super::event;
@@ -90,15 +91,32 @@ impl ItemList {
     }
 
     pub fn find_similar_hashes(&mut self, max_diff_hash: u32) {
-        // TODO: Use a more clever algorithm: Add those images with the highest similarity first and use max diff as a cutoff point
+        let mut similar_lists: HashMap<usize, Vec<(u32, usize)>> = HashMap::new();
+        for index in 0..self.items.len() {
+            similar_lists.insert(index, vec![]);
+        }
         for index in 0..self.items.len() {
             for other_index in index + 1..self.items.len() {
-                if other_index != index
-                    && self.items[index].is_hash_similar(&self.items[other_index], max_diff_hash)
-                {
-                    self.items[index].add_similar(other_index);
-                    self.items[other_index].add_similar(index);
+                if other_index != index {
+                    let distance = self.items[index].get_hash_distance(&self.items[other_index]);
+                    if distance < max_diff_hash {
+                        similar_lists
+                            .get_mut(&index)
+                            .unwrap()
+                            .push((distance, other_index));
+                        similar_lists
+                            .get_mut(&other_index)
+                            .unwrap()
+                            .push((distance, index));
+                    }
                 }
+            }
+        }
+        for index in 0..self.items.len() {
+            let similar_list = similar_lists.get_mut(&index).unwrap();
+            similar_list.sort_unstable();
+            for (_, other_index) in similar_list {
+                self.items[index].add_similar(*other_index);
             }
         }
     }

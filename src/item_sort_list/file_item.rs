@@ -169,15 +169,15 @@ impl FileItem {
         self.hash.is_some()
     }
 
-    pub fn is_hash_similar(&self, other: &FileItem, max_diff_hash: u32) -> bool {
-        return self.has_hash()
-            && other.has_hash()
-            && self
-                .hash
+    pub fn get_hash_distance(&self, other: &FileItem) -> u32 {
+        if self.has_hash() && other.has_hash() {
+            self.hash
                 .as_ref()
                 .unwrap()
                 .dist(other.hash.as_ref().unwrap())
-                < max_diff_hash;
+        } else {
+            u32::MAX
+        }
     }
 }
 
