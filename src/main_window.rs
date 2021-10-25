@@ -384,6 +384,7 @@ fn synchronize_images_model(
 
     let mut add_item = |item_index: &usize| {
         let item = &item_list.items[*item_index];
+        // TODO: The image is only required as a thumbnail, use another image cache for that or even write them to disk
         let image = image_cache.load(item);
 
         let sort_image_struct = SortImage {

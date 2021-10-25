@@ -23,6 +23,7 @@ export SortView := HorizontalBox {
     // Currently displayed large image
     property <SortImage> current-image;
     property <int> current-image-index;
+    // TODO: move this into SortImage in order to change the text when selecting an image from the similarity view
     property <string> current-image-text;
 
     // Current source directory

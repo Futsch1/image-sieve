@@ -24,7 +24,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - 
+ - If an image has many similar images, a maximum of six are displayed at the same time since the GUI was blocked otherwise
 
 ## [0.1.3] - 2021-10-21
 

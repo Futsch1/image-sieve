@@ -6,13 +6,12 @@ GUI based tool to sort out and categorize images written in Rust.
 
 ![Screenshot](doc/screenshot.png?raw=true "ImageSieve")
 
-ImageSieve aims to help in the process of sorting through images taken by several people with several devices and collect the images worth
-keeping in a folder structure suitable for achiving. The tool runs on Windows, Linux and macOS.
+ImageSieve aims to help in the process of sorting through images taken by several people with several devices and collect the images worth keeping in a folder structure suitable for achiving or to eliminate potential duplicates or irrelevant images from a folder structure. The tool runs on Windows, Linux and macOS.
 
 ## Features
 - Browse images in jpg, tiff or png format and videos in mp4, avi and mts format from a folder structure in the order of their creation
 - Select which images to keep and which to discard
-- Images being taken within 5 seconds time are considered similar and are highlighted to support sorting
+- Images which resemble each other and images being taken within a customizable number of seconds are considered similar and are highlighted to support sorting
 - Manage events with a name, a start and an end date for the images to sort to automatically assign the images to an event
 - Discarded images and events are saved so that the sorting process can resume later
 - Sieve the images by either deleting discarded ones, copying or moving kept images to a target folder
@@ -48,6 +47,11 @@ Per default, the images will be sorted in folders corresponding to the months th
 To add an event, fill the start date, end date and name text box and click the "Add" button. Valid date formats are YYYY-MM-DD or DD.MM.YYYY. You can edit existing events by modifying their fields and pressing enter - the updated values will be visible in the event's caption. To remove an event, click the "Remove" button.
 Be aware that the events are saved in the currently selected folder and belong to the currently displayed images.
 
+### Settings
+In the settings tab, you can specify the behavior of the similarity detection process. You can turn on and off both the use of the file/capture
+date as an indicator for similarity and the similarity calculation.
+Note that the similarity calculation takes some time and will not be available right from the start of the tool, especially if the number of files is huge. The similarity can be tweaked in order to provide better results.
+
 ### Sieve
 When you are done sorting the images, the sieving process can be started. Go to the "Sieve" tab and select a sieving mode. The following modes are supported:
 - Copy to target directory: Copies only the kept items to the target directory creating folders for the items, the source directory will be left untouched.
@@ -61,7 +65,6 @@ Depending on the mode, you need to indicate a target directory that is used for 
 - Overlapping events are not reported
 - When many events are added, the view is not properly extended/scrolled
 - The indication of problems during sieving is not implemented
-- Videos should get a button to view them with a player
 - Navigation with previous/next through similar items can be improved
 
 ## Details
