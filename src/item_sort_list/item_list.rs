@@ -90,6 +90,7 @@ impl ItemList {
     }
 
     pub fn find_similar_hashes(&mut self, max_diff_hash: u32) {
+        // TODO: Use a more clever algorithm: Add those images with the highest similarity first and use max diff as a cutoff point
         for index in 0..self.items.len() {
             for other_index in index + 1..self.items.len() {
                 if other_index != index
