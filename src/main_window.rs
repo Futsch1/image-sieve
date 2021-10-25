@@ -398,7 +398,10 @@ fn synchronize_images_model(
     add_item(&selected_item_index);
 
     for image_index in similars {
-        add_item(image_index);
+        // TODO: This should be done in a different thread instead of limiting this here
+        if similar_items_model.row_count() < 6 {
+            add_item(image_index);
+        }
     }
 
     // Prefetch next two images
