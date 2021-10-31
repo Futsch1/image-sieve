@@ -23,7 +23,7 @@ use std::sync::Mutex;
 
 struct PathAndSettings {
     pub path: Option<String>,
-    pub settings: Settings,
+    pub settings: Option<Settings>,
 }
 
 pub struct Synchronizer {
@@ -49,7 +49,23 @@ impl Synchronizer {
     pub fn synchronize(&self, path: &str, settings: Settings) {
         let path = String::from(path);
         let path = if !path.is_empty() { Some(path) } else { None };
-        self.channel.send(PathAndSettings { path, settings }).ok();
+        self.channel
+            .send(PathAndSettings {
+                path,
+                settings: Some(settings),
+            })
+            .ok();
+    }
+}
+
+impl Drop for Synchronizer {
+    fn drop(&mut self) {
+        self.channel
+            .send(PathAndSettings {
+                path: None,
+                settings: None,
+            })
+            .ok();
     }
 }
 
@@ -60,8 +76,12 @@ fn synchronize_run(
     image_sieve: sixtyfps::Weak<ImageSieve>,
 ) {
     for path_and_settings in receiver {
+        if path_and_settings.path.is_none() && path_and_settings.settings.is_none() {
+            // End loop and thread
+            break;
+        }
         let path = path_and_settings.path;
-        let settings = path_and_settings.settings;
+        let settings = path_and_settings.settings.unwrap();
         if let Some(path) = path {
             {
                 let mut item_list_loc = item_list.lock().unwrap();
