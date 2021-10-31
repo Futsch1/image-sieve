@@ -2,7 +2,7 @@
 [![Crates.io](https://img.shields.io/crates/v/image_sieve.svg)](https://crates.io/crates/image_sieve)
 
 # ImageSieve
-GUI based tool to sort out and categorize images written in Rust.
+GUI based tool to sort out images based on similarity, categorize them according to their creation date and archive them in a target folder.
 
 ![Screenshot](doc/screenshot.png?raw=true "ImageSieve")
 
