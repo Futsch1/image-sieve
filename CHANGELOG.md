@@ -15,6 +15,21 @@ All notable changes to this project will be documented in this file.
 
  - 
 
+
+## [0.2.1] - 2021-10-31
+
+### Changed
+
+- Folder selection edit is now disabled, since entering something there had no effect
+
+### Added
+
+ -
+
+### Fixed
+
+ - While the image similarity calculation is running, no other folder can be selected
+
 ## [0.2.0] - 2021-10-25
 
 ### Changed

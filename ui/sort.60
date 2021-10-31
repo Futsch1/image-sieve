@@ -127,10 +127,12 @@ export SortView := HorizontalBox {
         spacing: 5px;
 
         source-directory-edit := LineEdit { 
+            enabled: false;
         }
         Button {
             text: "\u{1F4C2} Browse...";
             width: 200px;
+            enabled: !calculating-similarities;
             clicked => { 
                 browse-source();
             }
