@@ -19,7 +19,11 @@ use crate::synchronize::Synchronizer;
 
 const MAX_SIMILARS: usize = 5;
 
-sixtyfps::include_modules!();
+#[allow(clippy::all)]
+mod generated_code {
+    sixtyfps::include_modules!();
+}
+pub use generated_code::*;
 
 type ImagesModelMap = HashMap<usize, usize>;
 
