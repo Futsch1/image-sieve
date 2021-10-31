@@ -1,6 +1,6 @@
 [package]
 name = "image_sieve"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Florian Fetz <florian.fetz@googlemail.com>"]
 description = "GUI based tool to sort out and categorize images with the help of image similarity classification"
 repository = "https://github.com/Futsch1/image-sieve"
