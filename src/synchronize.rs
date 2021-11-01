@@ -83,6 +83,7 @@ fn synchronize_run(
         let path = path_and_settings.path;
         let settings = path_and_settings.settings.unwrap();
         if let Some(path) = path {
+            // If a new path was selected, completely reparse images list
             {
                 let mut item_list_loc = item_list.lock().unwrap();
 
@@ -115,6 +116,7 @@ fn synchronize_run(
                     let num_items = { item_list.items.len() as i32 };
 
                     if num_items > 0 {
+                        h.set_current_list_item(0);
                         h.invoke_item_selected(0);
                     } else {
                         let empty_image = crate::main_window::SortImage {

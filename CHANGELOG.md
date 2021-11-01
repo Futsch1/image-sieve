@@ -13,8 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - 
-
+ - Selection in images list when selecting a new folder
 
 ## [0.2.1] - 2021-10-31
 
