@@ -7,7 +7,7 @@ repository = "https://github.com/Futsch1/image-sieve"
 license = "GPL-3.0"
 categories = ["multimedia::images"]
 build = "build.rs"
-edition = "2018"
+edition = "2021"
 readme = "README.md"
 
 [dependencies]
