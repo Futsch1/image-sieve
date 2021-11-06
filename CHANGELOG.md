@@ -13,7 +13,9 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - 
+ - File item date is now the minimum of created and modified date and not only created date
+ - Display file item date in local timezone
+ - No longer crash when an image with either width or height 0 is loaded
 
 
 ## [0.2.1] - 2021-10-31
