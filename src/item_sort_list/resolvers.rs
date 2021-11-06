@@ -37,13 +37,15 @@ impl FileResolver {
 impl PropertyResolver for FileResolver {
     fn get_timestamp(&self) -> i64 {
         match std::fs::metadata(&self.path) {
-            Ok(metadata) => match metadata.created() {
-                Ok(created) => created
+            Ok(metadata) => {
+                let created = metadata.created().unwrap_or(SystemTime::now());
+                let modified = metadata.modified().unwrap_or(SystemTime::now());
+                created
+                    .min(modified)
                     .duration_since(SystemTime::UNIX_EPOCH)
                     .unwrap()
-                    .as_secs() as i64,
-                Err(_) => 0,
-            },
+                    .as_secs() as i64
+            }
             Err(_) => 0,
         }
     }
