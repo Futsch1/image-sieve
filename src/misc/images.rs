@@ -30,12 +30,16 @@ pub fn get_empty_image() -> sixtyfps::Image {
 }
 
 pub fn get_sixtyfps_image(buffer: &ImageBuffer) -> sixtyfps::Image {
-    let buffer = sixtyfps::SharedPixelBuffer::<sixtyfps::Rgba8Pixel>::clone_from_slice(
-        buffer.as_raw(),
-        buffer.width() as _,
-        buffer.height() as _,
-    );
-    sixtyfps::Image::from_rgba8(buffer)
+    if buffer.width() > 0 && buffer.height() > 0 {
+        let buffer = sixtyfps::SharedPixelBuffer::<sixtyfps::Rgba8Pixel>::clone_from_slice(
+            buffer.as_raw(),
+            buffer.width() as _,
+            buffer.height() as _,
+        );
+        sixtyfps::Image::from_rgba8(buffer)
+    } else {
+        get_empty_image()
+    }
 }
 
 fn load_image_and_rotate(
