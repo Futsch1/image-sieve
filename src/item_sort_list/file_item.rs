@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::fmt::Debug;
 use std::path::Path;
 
+use chrono::TimeZone;
 use img_hash::ImageHash;
 
 use super::item_traits::Orientation;
@@ -69,7 +70,8 @@ impl FileItem {
     }
 
     fn get_date_str(&self) -> String {
-        chrono::NaiveDateTime::from_timestamp(self.timestamp, 0)
+        chrono::Local
+            .timestamp(self.timestamp, 0)
             .format("%Y-%m-%d %H:%M:%S")
             .to_string()
     }
