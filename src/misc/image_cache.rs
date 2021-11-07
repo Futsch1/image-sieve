@@ -95,6 +95,7 @@ fn prefetch_thread(
         // First try to get from cache
         let image = {
             let mut map = mutex.lock().unwrap();
+            // TODO: Improve by only cloning when required in callback
             map.get(key).cloned()
         };
         // Then actually load it

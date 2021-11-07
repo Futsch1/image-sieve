@@ -426,6 +426,7 @@ fn synchronize_images_model(
         model_index += 1;
     };
 
+    // TODO: Also first item should be loaded in background, but in a prioritized queue
     add_item(&selected_item_index, false, window.clone());
 
     for image_index in similars {
