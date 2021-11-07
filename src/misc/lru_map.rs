@@ -26,6 +26,10 @@ where
         None
     }
 
+    pub fn contains(&self, key: K) -> bool {
+        self.map.contains_key(&key)
+    }
+
     pub fn put(&mut self, key: K, t: T) {
         if self.map.len() == S {
             let lru_key = self.get_lru_key();

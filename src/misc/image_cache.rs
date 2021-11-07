@@ -91,25 +91,25 @@ fn prefetch_thread(
 ) {
     for (prefetch_item, max_width, max_height, callback) in receiver {
         let item_path = prefetch_item.get_path().to_str().unwrap();
-        let key = String::from(item_path);
         // First try to get from cache
-        let image = {
-            let mut map = mutex.lock().unwrap();
-            // TODO: Improve by only cloning when required in callback
-            map.get(key).cloned()
+        let contains_key = {
+            let map = mutex.lock().unwrap();
+            map.contains(String::from(item_path))
         };
-        // Then actually load it
-        let image = if let Some(image) = image {
-            image
-        } else {
+        if !contains_key {
             let image_buffer =
                 crate::misc::images::get_image_buffer(&prefetch_item, max_width, max_height);
             let mut map = mutex.lock().unwrap();
             map.put(String::from(item_path), image_buffer.clone());
-            image_buffer
-        };
-        println!("Prefetched {}", item_path);
+            println!("Prefetched {}", item_path);
+        }
+
         if let Some(callback) = callback {
+            let image = {
+                let mut map = mutex.lock().unwrap();
+                map.get(String::from(item_path)).cloned()
+            }
+            .unwrap();
             callback(image);
         }
     }
