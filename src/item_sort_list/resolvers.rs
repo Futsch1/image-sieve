@@ -44,7 +44,7 @@ impl PropertyResolver for FileResolver {
                     .min(modified)
                     .duration_since(SystemTime::UNIX_EPOCH)
                     .unwrap()
-                    .as_secs() as i64
+                    .as_secs() as i64 + chrono::Local::now().offset().local_minus_utc() as i64
             }
             Err(_) => 0,
         }
