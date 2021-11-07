@@ -6,14 +6,16 @@ use std::{
 
 use super::lru_map::LruMap;
 use crate::item_sort_list::FileItem;
+use crate::misc::images::ImageBuffer;
 use sixtyfps::{Image, Rgb8Pixel, SharedPixelBuffer};
 
-type ImagesMutex = Mutex<LruMap<crate::misc::images::ImageBuffer, String, 64>>;
+type ImagesMutex = Mutex<LruMap<ImageBuffer, String, 64>>;
+type PrefetchCallback = Box<dyn Fn(ImageBuffer) + Send + 'static>;
 
 pub struct ImageCache {
     images: Arc<ImagesMutex>,
     unknown_image: Image,
-    sender: mpsc::Sender<(FileItem, u32, u32)>,
+    sender: mpsc::Sender<(FileItem, u32, u32, Option<PrefetchCallback>)>,
     max_width: u32,
     max_height: u32,
 }
@@ -67,21 +69,32 @@ impl ImageCache {
         }
     }
 
-    pub fn prefetch(&self, item: &FileItem) {
+    pub fn prefetch(&self, item: &FileItem, done_callback: Option<PrefetchCallback>) {
         self.sender
-            .send((item.clone(), self.max_width, self.max_height))
+            .send((item.clone(), self.max_width, self.max_height, done_callback))
             .ok();
     }
 }
 
-fn prefetch_thread(mutex: Arc<ImagesMutex>, receiver: mpsc::Receiver<(FileItem, u32, u32)>) {
-    for (prefetch_item, max_width, max_height) in receiver {
+fn prefetch_thread(
+    mutex: Arc<ImagesMutex>,
+    receiver: mpsc::Receiver<(FileItem, u32, u32, Option<PrefetchCallback>)>,
+) {
+    for (prefetch_item, max_width, max_height, callback) in receiver {
         let item_path = prefetch_item.get_path().to_str().unwrap();
         let mut map = mutex.lock().unwrap();
-        if map.get(String::from(item_path)).is_none() {
+        let key = String::from(item_path);
+        let image = map.get(key);
+        let image = if let Some(image) = image {
+            image.clone()
+        } else {
             let image =
                 crate::misc::images::get_image_buffer(&prefetch_item, max_width, max_height);
-            map.put(String::from(item_path), image);
+            map.put(String::from(item_path), image.clone());
+            image
+        };
+        if let Some(callback) = callback {
+            callback(image);
         }
     }
 }

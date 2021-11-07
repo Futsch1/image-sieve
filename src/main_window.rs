@@ -406,6 +406,7 @@ fn synchronize_images_model(
 
     add_item(&selected_item_index);
 
+    // TODO: What we should do here is to add the SortImage items already but with the empty image. Updating the image will be scheduled in a worker thread
     for image_index in similars {
         // TODO: This should be done in a different thread instead of limiting this here
         if similar_items_model.row_count() <= MAX_SIMILARS {
@@ -420,7 +421,7 @@ fn synchronize_images_model(
         if !similars.contains(&prefetch_index) {
             if let Some(file_item) = item_list.items.get(prefetch_index) {
                 if file_item.is_image() {
-                    image_cache.prefetch(file_item);
+                    image_cache.prefetch(file_item, None);
                     prefetches -= 1;
                 }
             }
