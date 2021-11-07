@@ -15,6 +15,7 @@ pub type PrefetchCallback = Box<dyn Fn(ImageBuffer) + Send + 'static>;
 pub struct ImageCache {
     images: Arc<ImagesMutex>,
     unknown_image: Image,
+    waiting_image: Image,
     sender: mpsc::Sender<(FileItem, u32, u32, Option<PrefetchCallback>)>,
     max_width: u32,
     max_height: u32,
@@ -33,10 +34,18 @@ impl ImageCache {
         Self {
             images: mutex,
             unknown_image: Image::from_rgb8(pixel_buffer),
+            waiting_image: ImageCache::get_hourglass(),
             sender: tx,
             max_width: 0,
             max_height: 0,
         }
+    }
+
+    fn get_hourglass() -> Image {
+        let bytes = include_bytes!("hourglass.png");
+        crate::misc::images::get_sixtyfps_image(
+            &crate::misc::images::image_from_buffer(bytes).unwrap(),
+        )
     }
 
     pub fn restrict_size(&mut self, max_width: u32, max_height: u32) {
@@ -58,24 +67,12 @@ impl ImageCache {
         }
     }
 
-    pub fn load(&self, item: &FileItem) -> Image {
-        let image = self.get(item);
-        if let Some(image) = image {
-            image
-        } else {
-            let item_path = item.get_path().to_str().unwrap();
-            let image =
-                crate::misc::images::get_image_buffer(item, self.max_width, self.max_height);
-            let sixtyfps_image = crate::misc::images::get_sixtyfps_image(&image);
-            let mut map = self.images.lock().unwrap();
-            map.put(String::from(item_path), image);
-            println!("Loaded {}", item_path);
-            sixtyfps_image
-        }
-    }
-
     pub fn get_unknown(&self) -> Image {
         self.unknown_image.clone()
+    }
+
+    pub fn get_waiting(&self) -> Image {
+        self.waiting_image.clone()
     }
 
     pub fn prefetch(&self, item: &FileItem, done_callback: Option<PrefetchCallback>) {

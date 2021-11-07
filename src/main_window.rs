@@ -388,11 +388,9 @@ fn synchronize_images_model(
 
     let mut model_index: usize = 0;
 
-    let mut add_item = |item_index: &usize,
-                        lazy_image_load: bool,
-                        window_weak: sixtyfps::Weak<ImageSieve>| {
+    let mut add_item = |item_index: &usize, window_weak: sixtyfps::Weak<ImageSieve>| {
         let item = &item_list.items[*item_index];
-        let image = if lazy_image_load {
+        let image = {
             let image = image_cache.get(item);
             if let Some(image) = image {
                 image
@@ -401,19 +399,23 @@ fn synchronize_images_model(
                     window_weak.clone().upgrade_in_event_loop(move |handle| {
                         if handle.get_current_list_item() == selected_item_index as i32 {
                             let mut row_data = handle.get_images_model().row_data(model_index);
+                            let is_current_image = handle.get_current_image().text == row_data.text;
                             row_data.image = crate::misc::images::get_sixtyfps_image(&image_buffer);
                             handle
                                 .get_images_model()
-                                .set_row_data(model_index, row_data)
+                                .set_row_data(model_index, row_data);
+                            if is_current_image {
+                                let mut current_image = handle.get_current_image();
+                                current_image.image =
+                                    crate::misc::images::get_sixtyfps_image(&image_buffer);
+                                handle.set_current_image(current_image);
+                            }
                         }
                     })
                 });
                 image_cache.prefetch(item, Some(f));
-                // TODO: Better have an hourglass picture
-                image_cache.get_unknown()
+                image_cache.get_waiting()
             }
-        } else {
-            image_cache.load(item)
         };
 
         let sort_image_struct = SortImage {
@@ -427,10 +429,10 @@ fn synchronize_images_model(
     };
 
     // TODO: Also first item should be loaded in background, but in a prioritized queue
-    add_item(&selected_item_index, false, window.clone());
+    add_item(&selected_item_index, window.clone());
 
     for image_index in similars {
-        add_item(image_index, true, window.clone());
+        add_item(image_index, window.clone());
     }
 
     // Prefetch next two images

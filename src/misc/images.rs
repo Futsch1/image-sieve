@@ -3,7 +3,7 @@ extern crate sixtyfps;
 
 use std::cmp::min;
 
-use image::{imageops, GenericImageView};
+use image::{imageops, DynamicImage, GenericImageView};
 
 use crate::item_sort_list::FileItem;
 
@@ -49,6 +49,22 @@ fn load_image_and_rotate(
     max_height: u32,
 ) -> Result<ImageBuffer, image::ImageError> {
     let cat_image = image::open(path)?;
+    Ok(process_dynamic_image(
+        cat_image, rotate, max_width, max_height,
+    ))
+}
+
+pub fn image_from_buffer(bytes: &[u8]) -> Result<ImageBuffer, image::ImageError> {
+    let cat_image = image::load_from_memory(bytes)?;
+    Ok(cat_image.into_rgba8())
+}
+
+fn process_dynamic_image(
+    cat_image: DynamicImage,
+    rotate: i32,
+    max_width: u32,
+    max_height: u32,
+) -> ImageBuffer {
     let width = cat_image.width();
     let height = cat_image.height();
     let ratio = width as f32 / height as f32;
@@ -67,12 +83,12 @@ fn load_image_and_rotate(
     let cat_image = cat_image.resize(new_width, new_height, imageops::FilterType::Nearest);
 
     let cat_image = cat_image.into_rgba8();
-    Ok(match rotate {
+    match rotate {
         90 => image::imageops::rotate90(&cat_image),
         180 => image::imageops::rotate180(&cat_image),
         270 => image::imageops::rotate270(&cat_image),
         _ => cat_image,
-    })
+    }
 }
 
 /// Draw a greyish image from a pixel buffer
