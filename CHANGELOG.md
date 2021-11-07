@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - 
+ - Similiar pictures are now loaded in a background thread increasing GUI responsiveness
 
 ### Added
 

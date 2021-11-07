@@ -69,6 +69,7 @@ impl ImageCache {
             let sixtyfps_image = crate::misc::images::get_sixtyfps_image(&image);
             let mut map = self.images.lock().unwrap();
             map.put(String::from(item_path), image);
+            println!("Loaded {}", item_path);
             sixtyfps_image
         }
     }
@@ -90,17 +91,23 @@ fn prefetch_thread(
 ) {
     for (prefetch_item, max_width, max_height, callback) in receiver {
         let item_path = prefetch_item.get_path().to_str().unwrap();
-        let mut map = mutex.lock().unwrap();
         let key = String::from(item_path);
-        let image = map.get(key);
-        let image = if let Some(image) = image {
-            image.clone()
-        } else {
-            let image =
-                crate::misc::images::get_image_buffer(&prefetch_item, max_width, max_height);
-            map.put(String::from(item_path), image.clone());
-            image
+        // First try to get from cache
+        let image = {
+            let mut map = mutex.lock().unwrap();
+            map.get(key).cloned()
         };
+        // Then actually load it
+        let image = if let Some(image) = image {
+            image
+        } else {
+            let image_buffer =
+                crate::misc::images::get_image_buffer(&prefetch_item, max_width, max_height);
+            let mut map = mutex.lock().unwrap();
+            map.put(String::from(item_path), image_buffer.clone());
+            image_buffer
+        };
+        println!("Prefetched {}", item_path);
         if let Some(callback) = callback {
             callback(image);
         }

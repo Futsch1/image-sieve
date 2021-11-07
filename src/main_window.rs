@@ -388,39 +388,43 @@ fn synchronize_images_model(
 
     let mut model_index: usize = 0;
 
-    let mut add_item =
-        |item_index: &usize, lazy_image_load: bool, window_weak: sixtyfps::Weak<ImageSieve>| {
-            let item = &item_list.items[*item_index];
-            let image = if lazy_image_load {
-                let image = image_cache.get(item);
-                if let Some(image) = image {
-                    image
-                } else {
-                    let f: image_cache::PrefetchCallback = Box::new(move |image_buffer| {
-                        window_weak.clone().upgrade_in_event_loop(move |handle| {
+    let mut add_item = |item_index: &usize,
+                        lazy_image_load: bool,
+                        window_weak: sixtyfps::Weak<ImageSieve>| {
+        let item = &item_list.items[*item_index];
+        let image = if lazy_image_load {
+            let image = image_cache.get(item);
+            if let Some(image) = image {
+                image
+            } else {
+                let f: image_cache::PrefetchCallback = Box::new(move |image_buffer| {
+                    window_weak.clone().upgrade_in_event_loop(move |handle| {
+                        if handle.get_current_list_item() == selected_item_index as i32 {
                             let mut row_data = handle.get_images_model().row_data(model_index);
                             row_data.image = crate::misc::images::get_sixtyfps_image(&image_buffer);
                             handle
                                 .get_images_model()
                                 .set_row_data(model_index, row_data)
-                        })
-                    });
-                    image_cache.prefetch(item, Some(f));
-                    image_cache.get_unknown()
-                }
-            } else {
-                image_cache.load(item)
-            };
-
-            let sort_image_struct = SortImage {
-                image,
-                take_over: item.get_take_over(),
-                text: get_item_text(*item_index, item_list),
-            };
-            similar_items_model.push(sort_image_struct);
-            item_model_map.insert(model_index, *item_index);
-            model_index += 1;
+                        }
+                    })
+                });
+                image_cache.prefetch(item, Some(f));
+                // TODO: Better have an hourglass picture
+                image_cache.get_unknown()
+            }
+        } else {
+            image_cache.load(item)
         };
+
+        let sort_image_struct = SortImage {
+            image,
+            take_over: item.get_take_over(),
+            text: get_item_text(*item_index, item_list),
+        };
+        similar_items_model.push(sort_image_struct);
+        item_model_map.insert(model_index, *item_index);
+        model_index += 1;
+    };
 
     add_item(&selected_item_index, false, window.clone());
 
