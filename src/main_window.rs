@@ -11,13 +11,11 @@ use std::thread;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::item_sort_list::{CommitMethod, ItemList};
-use crate::misc::image_cache::ImageCache;
+use crate::misc::image_cache::{self, ImageCache};
 use crate::persistence::json::JsonPersistence;
 use crate::persistence::json::{get_project_filename, get_settings_filename};
 use crate::persistence::settings::Settings;
 use crate::synchronize::Synchronizer;
-
-const MAX_SIMILARS: usize = 5;
 
 #[allow(clippy::all)]
 mod generated_code {
@@ -140,7 +138,7 @@ impl MainWindow {
                     &item_list.lock().unwrap(),
                     similar_items_model.clone(),
                     &mut items_model_map.borrow_mut(),
-                    &window_weak,
+                    window_weak.clone(),
                     &image_cache,
                 );
             }
@@ -377,7 +375,7 @@ fn synchronize_images_model(
     item_list: &ItemList,
     similar_items_model: Rc<sixtyfps::VecModel<SortImage>>,
     item_model_map: &mut ImagesModelMap,
-    window: &sixtyfps::Weak<ImageSieve>,
+    window: sixtyfps::Weak<ImageSieve>,
     image_cache: &ImageCache,
 ) {
     let similars = item_list.items[selected_item_index].get_similars();
@@ -390,28 +388,44 @@ fn synchronize_images_model(
 
     let mut model_index: usize = 0;
 
-    let mut add_item = |item_index: &usize| {
-        let item = &item_list.items[*item_index];
-        let image = image_cache.load(item);
+    let mut add_item =
+        |item_index: &usize, lazy_image_load: bool, window_weak: sixtyfps::Weak<ImageSieve>| {
+            let item = &item_list.items[*item_index];
+            let image = if lazy_image_load {
+                let image = image_cache.get(item);
+                if let Some(image) = image {
+                    image
+                } else {
+                    let f: image_cache::PrefetchCallback = Box::new(move |image_buffer| {
+                        window_weak.clone().upgrade_in_event_loop(move |handle| {
+                            let mut row_data = handle.get_images_model().row_data(model_index);
+                            row_data.image = crate::misc::images::get_sixtyfps_image(&image_buffer);
+                            handle
+                                .get_images_model()
+                                .set_row_data(model_index, row_data)
+                        })
+                    });
+                    image_cache.prefetch(item, Some(f));
+                    image_cache.get_unknown()
+                }
+            } else {
+                image_cache.load(item)
+            };
 
-        let sort_image_struct = SortImage {
-            image,
-            take_over: item.get_take_over(),
-            text: get_item_text(*item_index, item_list),
+            let sort_image_struct = SortImage {
+                image,
+                take_over: item.get_take_over(),
+                text: get_item_text(*item_index, item_list),
+            };
+            similar_items_model.push(sort_image_struct);
+            item_model_map.insert(model_index, *item_index);
+            model_index += 1;
         };
-        similar_items_model.push(sort_image_struct);
-        item_model_map.insert(model_index, *item_index);
-        model_index += 1;
-    };
 
-    add_item(&selected_item_index);
+    add_item(&selected_item_index, false, window.clone());
 
-    // TODO: What we should do here is to add the SortImage items already but with the empty image. Updating the image will be scheduled in a worker thread
     for image_index in similars {
-        // TODO: This should be done in a different thread instead of limiting this here
-        if similar_items_model.row_count() <= MAX_SIMILARS {
-            add_item(image_index);
-        }
+        add_item(image_index, true, window.clone());
     }
 
     // Prefetch next two images

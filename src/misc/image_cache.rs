@@ -10,7 +10,7 @@ use crate::misc::images::ImageBuffer;
 use sixtyfps::{Image, Rgb8Pixel, SharedPixelBuffer};
 
 type ImagesMutex = Mutex<LruMap<ImageBuffer, String, 64>>;
-type PrefetchCallback = Box<dyn Fn(ImageBuffer) + Send + 'static>;
+pub type PrefetchCallback = Box<dyn Fn(ImageBuffer) + Send + 'static>;
 
 pub struct ImageCache {
     images: Arc<ImagesMutex>,
@@ -47,26 +47,34 @@ impl ImageCache {
         }
     }
 
-    pub fn load(&self, item: &FileItem) -> Image {
+    pub fn get(&self, item: &FileItem) -> Option<Image> {
         if item.is_image() {
             let item_path = item.get_path().to_str().unwrap();
             let mut map = self.images.lock().unwrap();
-            match map.get(String::from(item_path)) {
-                Some(image) => crate::misc::images::get_sixtyfps_image(image),
-                None => {
-                    let image = crate::misc::images::get_image_buffer(
-                        item,
-                        self.max_width,
-                        self.max_height,
-                    );
-                    let sixtyfps_image = crate::misc::images::get_sixtyfps_image(&image);
-                    map.put(String::from(item_path), image);
-                    sixtyfps_image
-                }
-            }
+            map.get(String::from(item_path))
+                .map(|image| crate::misc::images::get_sixtyfps_image(image))
         } else {
-            self.unknown_image.clone()
+            Some(self.get_unknown())
         }
+    }
+
+    pub fn load(&self, item: &FileItem) -> Image {
+        let image = self.get(item);
+        if let Some(image) = image {
+            image
+        } else {
+            let item_path = item.get_path().to_str().unwrap();
+            let image =
+                crate::misc::images::get_image_buffer(item, self.max_width, self.max_height);
+            let sixtyfps_image = crate::misc::images::get_sixtyfps_image(&image);
+            let mut map = self.images.lock().unwrap();
+            map.put(String::from(item_path), image);
+            sixtyfps_image
+        }
+    }
+
+    pub fn get_unknown(&self) -> Image {
+        self.unknown_image.clone()
     }
 
     pub fn prefetch(&self, item: &FileItem, done_callback: Option<PrefetchCallback>) {
