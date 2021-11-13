@@ -1,24 +1,31 @@
-use std::{
-    sync::Arc,
-    sync::{mpsc, Mutex},
-    thread,
-};
+use std::{collections::VecDeque, sync::Arc, sync::{mpsc, Mutex}, thread};
 
-use super::lru_map::LruMap;
+use super::{lru_map::LruMap};
 use crate::item_sort_list::FileItem;
 use crate::misc::images::ImageBuffer;
 use sixtyfps::{Image, Rgb8Pixel, SharedPixelBuffer};
 
 type ImagesMutex = Mutex<LruMap<ImageBuffer, String, 64>>;
+type LoadQueue = Mutex<VecDeque<LoadImageCommand>>;
 pub type PrefetchCallback = Box<dyn Fn(ImageBuffer) + Send + 'static>;
+pub type LoadImageCommand = (FileItem, u32, u32, Option<PrefetchCallback>);
+
+pub enum Purpose {
+    SelectedImage,
+    SimilarImage,
+    Prefetch
+}
 
 pub struct ImageCache {
     images: Arc<ImagesMutex>,
     unknown_image: Image,
     waiting_image: Image,
-    sender: mpsc::Sender<(FileItem, u32, u32, Option<PrefetchCallback>)>,
     max_width: u32,
     max_height: u32,
+    primary_queue: Arc<LoadQueue>,
+    primary_sender: mpsc::Sender<()>,
+    secondary_queue: Arc<LoadQueue>,
+    secondary_sender: mpsc::Sender<()>
 }
 
 impl ImageCache {
@@ -27,17 +34,29 @@ impl ImageCache {
         let mutex = Arc::new(Mutex::new(images));
         let mut pixel_buffer = SharedPixelBuffer::<Rgb8Pixel>::new(320, 200);
         crate::misc::images::draw_image(pixel_buffer.width(), pixel_buffer.make_mut_slice());
+
         let mutex_t = mutex.clone();
-        let (tx, rx) = mpsc::channel();
-        thread::spawn(move || prefetch_thread(mutex_t, rx));
+        let (primary_sender, rx) = mpsc::channel();
+        let primary_queue = Arc::new(LoadQueue::new(VecDeque::new()));
+        let queue_t = primary_queue.clone();
+        thread::spawn(move || prefetch_thread(mutex_t, queue_t, rx));
+
+        let mutex_t = mutex.clone();
+        let (secondary_sender, rx) = mpsc::channel();
+        let secondary_queue = Arc::new(LoadQueue::new(VecDeque::new()));
+        let queue_t = secondary_queue.clone();
+        thread::spawn(move || prefetch_thread(mutex_t, queue_t, rx));
 
         Self {
             images: mutex,
             unknown_image: Image::from_rgb8(pixel_buffer),
             waiting_image: ImageCache::get_hourglass(),
-            sender: tx,
             max_width: 0,
             max_height: 0,
+            primary_queue,
+            primary_sender,
+            secondary_queue,
+            secondary_sender
         }
     }
 
@@ -75,35 +94,58 @@ impl ImageCache {
         self.waiting_image.clone()
     }
 
-    pub fn prefetch(&self, item: &FileItem, done_callback: Option<PrefetchCallback>) {
-        self.sender
-            .send((item.clone(), self.max_width, self.max_height, done_callback))
-            .ok();
+    pub fn load(&self, item: &FileItem, purpose: Purpose, done_callback: Option<PrefetchCallback>) {
+        let command = (item.clone(), self.max_width, self.max_width, done_callback);
+        match purpose
+        {
+            Purpose::SelectedImage => {
+                let mut queue = self.primary_queue.lock().unwrap();
+                queue.clear();
+                queue.push_front(command);
+                self.primary_sender.send(()).ok();
+            },
+            Purpose::SimilarImage => {
+                let mut queue = self.secondary_queue.lock().unwrap();
+                queue.push_front(command);
+                self.secondary_sender.send(()).ok();
+            },
+            Purpose::Prefetch => {
+                let mut queue = self.secondary_queue.lock().unwrap();
+                queue.push_back(command);
+                self.secondary_sender.send(()).ok();
+            }
+        }
     }
 }
 
 fn prefetch_thread(
-    mutex: Arc<ImagesMutex>,
-    receiver: mpsc::Receiver<(FileItem, u32, u32, Option<PrefetchCallback>)>,
+    cache: Arc<ImagesMutex>,
+    load_queue: Arc<LoadQueue>,
+    receiver: mpsc::Receiver<()>,
 ) {
-    for (prefetch_item, max_width, max_height, callback) in receiver {
+    for () in receiver {
+        let next_item = load_queue.lock().unwrap().pop_front();
+        if next_item.is_none() {
+            continue;
+        }
+        let (prefetch_item, max_width, max_height, callback) = next_item.unwrap();
         let item_path = prefetch_item.get_path().to_str().unwrap();
         // First try to get from cache
         let contains_key = {
-            let map = mutex.lock().unwrap();
+            let map = cache.lock().unwrap();
             map.contains(String::from(item_path))
         };
         if !contains_key {
             let image_buffer =
                 crate::misc::images::get_image_buffer(&prefetch_item, max_width, max_height);
-            let mut map = mutex.lock().unwrap();
+            let mut map = cache.lock().unwrap();
             map.put(String::from(item_path), image_buffer.clone());
             println!("Prefetched {}", item_path);
         }
 
         if let Some(callback) = callback {
             let image = {
-                let mut map = mutex.lock().unwrap();
+                let mut map = cache.lock().unwrap();
                 map.get(String::from(item_path)).cloned()
             }
             .unwrap();

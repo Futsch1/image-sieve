@@ -11,7 +11,7 @@ use std::thread;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::item_sort_list::{CommitMethod, ItemList};
-use crate::misc::image_cache::{self, ImageCache};
+use crate::misc::image_cache::{self, ImageCache, Purpose};
 use crate::persistence::json::JsonPersistence;
 use crate::persistence::json::{get_project_filename, get_settings_filename};
 use crate::persistence::settings::Settings;
@@ -388,7 +388,7 @@ fn synchronize_images_model(
 
     let mut model_index: usize = 0;
 
-    let mut add_item = |item_index: &usize, window_weak: sixtyfps::Weak<ImageSieve>| {
+    let mut add_item = |item_index: &usize, selected_image: bool, window_weak: sixtyfps::Weak<ImageSieve>| {
         let item = &item_list.items[*item_index];
         let image = {
             let image = image_cache.get(item);
@@ -413,7 +413,7 @@ fn synchronize_images_model(
                         }
                     })
                 });
-                image_cache.prefetch(item, Some(f));
+                image_cache.load(item, if selected_image {Purpose::SelectedImage} else {Purpose::SimilarImage}, Some(f));
                 image_cache.get_waiting()
             }
         };
@@ -429,10 +429,10 @@ fn synchronize_images_model(
     };
 
     // TODO: Also first item should be loaded in background, but in a prioritized queue
-    add_item(&selected_item_index, window.clone());
+    add_item(&selected_item_index, true, window.clone());
 
     for image_index in similars {
-        add_item(image_index, window.clone());
+        add_item(image_index, false, window.clone());
     }
 
     // Prefetch next two images
@@ -442,7 +442,7 @@ fn synchronize_images_model(
         if !similars.contains(&prefetch_index) {
             if let Some(file_item) = item_list.items.get(prefetch_index) {
                 if file_item.is_image() {
-                    image_cache.prefetch(file_item, None);
+                    image_cache.load(file_item, Purpose::Prefetch,None);
                     prefetches -= 1;
                 }
             }
