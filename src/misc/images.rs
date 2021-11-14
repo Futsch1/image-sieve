@@ -3,7 +3,7 @@ extern crate sixtyfps;
 
 use std::cmp::min;
 
-use image::{imageops, GenericImageView};
+use image::{imageops, DynamicImage, GenericImageView};
 
 use crate::item_sort_list::FileItem;
 
@@ -30,12 +30,16 @@ pub fn get_empty_image() -> sixtyfps::Image {
 }
 
 pub fn get_sixtyfps_image(buffer: &ImageBuffer) -> sixtyfps::Image {
-    let buffer = sixtyfps::SharedPixelBuffer::<sixtyfps::Rgba8Pixel>::clone_from_slice(
-        buffer.as_raw(),
-        buffer.width() as _,
-        buffer.height() as _,
-    );
-    sixtyfps::Image::from_rgba8(buffer)
+    if buffer.width() > 0 && buffer.height() > 0 {
+        let buffer = sixtyfps::SharedPixelBuffer::<sixtyfps::Rgba8Pixel>::clone_from_slice(
+            buffer.as_raw(),
+            buffer.width() as _,
+            buffer.height() as _,
+        );
+        sixtyfps::Image::from_rgba8(buffer)
+    } else {
+        get_empty_image()
+    }
 }
 
 fn load_image_and_rotate(
@@ -45,6 +49,22 @@ fn load_image_and_rotate(
     max_height: u32,
 ) -> Result<ImageBuffer, image::ImageError> {
     let cat_image = image::open(path)?;
+    Ok(process_dynamic_image(
+        cat_image, rotate, max_width, max_height,
+    ))
+}
+
+pub fn image_from_buffer(bytes: &[u8]) -> Result<ImageBuffer, image::ImageError> {
+    let cat_image = image::load_from_memory(bytes)?;
+    Ok(cat_image.into_rgba8())
+}
+
+fn process_dynamic_image(
+    cat_image: DynamicImage,
+    rotate: i32,
+    max_width: u32,
+    max_height: u32,
+) -> ImageBuffer {
     let width = cat_image.width();
     let height = cat_image.height();
     let ratio = width as f32 / height as f32;
@@ -63,25 +83,10 @@ fn load_image_and_rotate(
     let cat_image = cat_image.resize(new_width, new_height, imageops::FilterType::Nearest);
 
     let cat_image = cat_image.into_rgba8();
-    Ok(match rotate {
+    match rotate {
         90 => image::imageops::rotate90(&cat_image),
         180 => image::imageops::rotate180(&cat_image),
         270 => image::imageops::rotate270(&cat_image),
         _ => cat_image,
-    })
-}
-
-/// Draw a greyish image from a pixel buffer
-pub fn draw_image(width: usize, buffer: &mut [sixtyfps::Rgb8Pixel]) {
-    let mut t: bool = false;
-    for (i, p) in buffer.iter_mut().enumerate() {
-        if i % width == 0 {
-            t = (i / width) % 2 == 0;
-        }
-        let val: u8 = if t { 0x66 } else { 0xFF };
-        p.r = val;
-        p.g = val;
-        p.b = val;
-        t = !t;
     }
 }

@@ -11,13 +11,11 @@ use std::thread;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::item_sort_list::{CommitMethod, ItemList};
-use crate::misc::image_cache::ImageCache;
+use crate::misc::image_cache::{self, ImageCache, Purpose};
 use crate::persistence::json::JsonPersistence;
 use crate::persistence::json::{get_project_filename, get_settings_filename};
 use crate::persistence::settings::Settings;
 use crate::synchronize::Synchronizer;
-
-const MAX_SIMILARS: usize = 5;
 
 #[allow(clippy::all)]
 mod generated_code {
@@ -140,7 +138,7 @@ impl MainWindow {
                     &item_list.lock().unwrap(),
                     similar_items_model.clone(),
                     &mut items_model_map.borrow_mut(),
-                    &window_weak,
+                    window_weak.clone(),
                     &image_cache,
                 );
             }
@@ -377,7 +375,7 @@ fn synchronize_images_model(
     item_list: &ItemList,
     similar_items_model: Rc<sixtyfps::VecModel<SortImage>>,
     item_model_map: &mut ImagesModelMap,
-    window: &sixtyfps::Weak<ImageSieve>,
+    window: sixtyfps::Weak<ImageSieve>,
     image_cache: &ImageCache,
 ) {
     let similars = item_list.items[selected_item_index].get_similars();
@@ -390,9 +388,35 @@ fn synchronize_images_model(
 
     let mut model_index: usize = 0;
 
-    let mut add_item = |item_index: &usize| {
+    let mut add_item = |item_index: &usize, selected_image: bool, window_weak: sixtyfps::Weak<ImageSieve>| {
         let item = &item_list.items[*item_index];
-        let image = image_cache.load(item);
+        let image = {
+            let image = image_cache.get(item);
+            if let Some(image) = image {
+                image
+            } else {
+                let f: image_cache::PrefetchCallback = Box::new(move |image_buffer| {
+                    window_weak.clone().upgrade_in_event_loop(move |handle| {
+                        if handle.get_current_list_item() == selected_item_index as i32 {
+                            let mut row_data = handle.get_images_model().row_data(model_index);
+                            let is_current_image = handle.get_current_image().text == row_data.text;
+                            row_data.image = crate::misc::images::get_sixtyfps_image(&image_buffer);
+                            handle
+                                .get_images_model()
+                                .set_row_data(model_index, row_data);
+                            if is_current_image {
+                                let mut current_image = handle.get_current_image();
+                                current_image.image =
+                                    crate::misc::images::get_sixtyfps_image(&image_buffer);
+                                handle.set_current_image(current_image);
+                            }
+                        }
+                    })
+                });
+                image_cache.load(item, if selected_image {Purpose::SelectedImage} else {Purpose::SimilarImage}, Some(f));
+                image_cache.get_waiting()
+            }
+        };
 
         let sort_image_struct = SortImage {
             image,
@@ -404,13 +428,11 @@ fn synchronize_images_model(
         model_index += 1;
     };
 
-    add_item(&selected_item_index);
+    // TODO: Also first item should be loaded in background, but in a prioritized queue
+    add_item(&selected_item_index, true, window.clone());
 
     for image_index in similars {
-        // TODO: This should be done in a different thread instead of limiting this here
-        if similar_items_model.row_count() <= MAX_SIMILARS {
-            add_item(image_index);
-        }
+        add_item(image_index, false, window.clone());
     }
 
     // Prefetch next two images
@@ -420,7 +442,7 @@ fn synchronize_images_model(
         if !similars.contains(&prefetch_index) {
             if let Some(file_item) = item_list.items.get(prefetch_index) {
                 if file_item.is_image() {
-                    image_cache.prefetch(file_item);
+                    image_cache.load(file_item, Purpose::Prefetch,None);
                     prefetches -= 1;
                 }
             }

@@ -17,7 +17,7 @@ ImageSieve aims to help in the process of sorting through images taken by severa
 - Sieve the images by either deleting discarded ones, copying or moving kept images to a target folder
 
 ## Installation
-Precompiled Windows binaries are available for every release for download. Linux and macOS users need to install [Rust](https://rustup.rs/), clone the repository and run
+Precompiled Windows binaries are available for every release for [download](https://github.com/Futsch1/image-sieve/releases). Linux and macOS users need to install [Rust](https://rustup.rs/), clone the repository and run
 
 ``` cargo install image_sieve ```
 
@@ -68,7 +68,7 @@ Depending on the mode, you need to indicate a target directory that is used for 
 
 ## Details
 This is the first software I've ever written in Rust, so there might be room for improvement. If you want to help, clone and pull-request.
-The tool uses the [sixtyfps](https://github.com/sixtyfpsui/sixtyfps) GUI framework.
+The tool uses the [sixtyfps](https://github.com/sixtyfpsui/sixtyfps) GUI framework and a few of the great [bootstrap icons](https://icons.getbootstrap.com/).
 
 ## Disclaimer
 This tool is free software. The author does not take any responsibility or liability for data lost due to bugs or faulty use of the software. Note that the software is in constant development and may contain bugs. Use at your own risk!

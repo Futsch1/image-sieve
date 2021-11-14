@@ -63,6 +63,9 @@ impl ItemList {
     /// Go through all images and find similar ones by comparing the timestamp
     pub fn find_similar(&mut self, max_diff_seconds: i64) {
         // Find similars based on the taken time
+        if self.items.is_empty() {
+            return;
+        }
         let mut timestamp: i64 = 0;
         let mut start_similar_index: usize = 0;
         for index in 0..self.items.len() + 1 {

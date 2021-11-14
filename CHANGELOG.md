@@ -13,7 +13,27 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - Selection in images list when selecting a new folder
+ -
+
+## [0.2.2] - 2021-11-14
+
+### Changed
+
+ - All images are now loaded in a background threads increasing GUI responsiveness
+ - Improved similarity detection by using longer hashes and taking image orientation into account
+
+### Added
+
+ - Application icon
+
+### Fixed
+
+ - File item date is now the minimum of created and modified date and not only created date
+ - Display file item date in local timezone
+ - No longer crash when an image with either width or height 0 is loaded
+ - Images were cropped in the similar images list
+ - Similarities where not calculated when an image was not decodeable
+
 
 ## [0.2.1] - 2021-10-31
 

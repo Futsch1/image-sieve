@@ -1,5 +1,6 @@
 use crate::item_sort_list::ItemList;
 use crate::persistence::settings::Settings;
+use image::GenericImageView;
 use img_hash::HashAlg;
 use img_hash::Hasher;
 use img_hash::HasherConfig;
@@ -178,11 +179,18 @@ fn synchronize_run(
 
             let mut hashes: HashMap<String, ImageHash<Vec<u8>>> = HashMap::new();
             for image_path in image_paths {
-                let image = image::open(&image_path).unwrap();
-                let hasher: Hasher<Vec<u8>> = HasherConfig::with_bytes_type()
-                    .hash_alg(HashAlg::DoubleGradient)
-                    .to_hasher();
-                hashes.insert(image_path, hasher.hash_image(&image));
+                if let Ok(image) = image::open(&image_path) {
+                    let (hash_width, hash_height) = if image.width() > image.height() {
+                        (16, 8)
+                    } else {
+                        (8, 16)
+                    };
+                    let hasher: Hasher<Vec<u8>> = HasherConfig::with_bytes_type()
+                        .hash_size(hash_width, hash_height)
+                        .hash_alg(HashAlg::DoubleGradient)
+                        .to_hasher();
+                    hashes.insert(image_path, hasher.hash_image(&image));
+                }
             }
 
             {
