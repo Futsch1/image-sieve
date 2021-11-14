@@ -76,22 +76,22 @@ fn convert_timestamp_difference(timestamp_difference: &str) -> Option<i64> {
 
 fn convert_sensitivity_to_u32(sensitivity: &str) -> u32 {
     match sensitivity {
-        "Very low" => 10,
-        "Low" => 8,
-        "Medium" => 7,
-        "High" => 6,
-        "Very high" => 5,
-        _ => 10,
+        "Very low" => 20,
+        "Low" => 16,
+        "Medium" => 14,
+        "High" => 12,
+        "Very high" => 10,
+        _ => 14,
     }
 }
 
 fn convert_u32_to_sensitivity(sensitivity: u32) -> &'static str {
     match sensitivity {
-        10 => "Very low",
-        8 => "Low",
-        7 => "Medium",
-        6 => "High",
-        5 => "Very high",
+        20 => "Very low",
+        16 => "Low",
+        14 => "Medium",
+        12 => "High",
+        10 => "Very high",
         _ => "Medium",
     }
 }
