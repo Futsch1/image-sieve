@@ -68,8 +68,9 @@ export SortView := HorizontalBox {
             }
         }
         ScrollView {
-            viewport-height: 100px;
-            height: 120px;
+            padding: 0px;
+            viewport-height: 125px;
+            height: 125px;
 
             HorizontalBox { 
                 alignment: start;
@@ -78,7 +79,7 @@ export SortView := HorizontalBox {
                     source: item.image;
                     opacity: item.take-over ? 1.0 : 0.2;
                     image-fit: contain;
-                    width: 200px;
+                    width: 180px;
                     height: 100px;
                     TouchArea { 
                         clicked => {

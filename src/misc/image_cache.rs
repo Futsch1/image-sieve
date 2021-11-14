@@ -140,7 +140,7 @@ fn prefetch_thread(
                 crate::misc::images::get_image_buffer(&prefetch_item, max_width, max_height);
             let mut map = cache.lock().unwrap();
             map.put(String::from(item_path), image_buffer.clone());
-            println!("Prefetched {}", item_path);
+            // println!("Loaded {}", item_path);
         }
 
         if let Some(callback) = callback {

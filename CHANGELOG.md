@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - Similiar pictures are now loaded in a background thread increasing GUI responsiveness
+ - All images are now loaded in a background threads increasing GUI responsiveness
 
 ### Added
 
@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
  - File item date is now the minimum of created and modified date and not only created date
  - Display file item date in local timezone
  - No longer crash when an image with either width or height 0 is loaded
+ - Images were cropped in the similar images list
 
 
 ## [0.2.1] - 2021-10-31
