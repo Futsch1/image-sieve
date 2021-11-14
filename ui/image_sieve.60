@@ -12,6 +12,7 @@ ImageSieve := Window {
     min-width: 1600px;
     min-height: 800px;
     title: "ImageSieve";
+    icon: @image-url("ImageSieve.png");
 
     property <string> window-title <=> root.title;
     property <bool> loading: true;
