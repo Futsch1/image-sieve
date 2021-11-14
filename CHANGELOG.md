@@ -5,7 +5,22 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+ - 
+
+### Added
+
+ - 
+
+### Fixed
+
+ -
+
+## [0.2.2] - 2021-11-14
+
+### Changed
+
  - All images are now loaded in a background threads increasing GUI responsiveness
+ - Improved similarity detection by using longer hashes and taking image orientation into account
 
 ### Added
 
