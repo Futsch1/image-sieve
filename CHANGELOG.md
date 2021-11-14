@@ -32,6 +32,7 @@ All notable changes to this project will be documented in this file.
  - Display file item date in local timezone
  - No longer crash when an image with either width or height 0 is loaded
  - Images were cropped in the similar images list
+ - Similarities where not calculated when an image was not decodeable
 
 
 ## [0.2.1] - 2021-10-31
