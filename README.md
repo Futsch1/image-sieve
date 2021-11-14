@@ -17,7 +17,7 @@ ImageSieve aims to help in the process of sorting through images taken by severa
 - Sieve the images by either deleting discarded ones, copying or moving kept images to a target folder
 
 ## Installation
-Precompiled Windows binaries are available for every release for download. Linux and macOS users need to install [Rust](https://rustup.rs/), clone the repository and run
+Precompiled Windows binaries are available for every release for [download](https://github.com/Futsch1/image-sieve/releases). Linux and macOS users need to install [Rust](https://rustup.rs/), clone the repository and run
 
 ``` cargo install image_sieve ```
 
