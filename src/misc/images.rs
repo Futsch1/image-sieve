@@ -90,18 +90,3 @@ fn process_dynamic_image(
         _ => cat_image,
     }
 }
-
-/// Draw a greyish image from a pixel buffer
-pub fn draw_image(width: usize, buffer: &mut [sixtyfps::Rgb8Pixel]) {
-    let mut t: bool = false;
-    for (i, p) in buffer.iter_mut().enumerate() {
-        if i % width == 0 {
-            t = (i / width) % 2 == 0;
-        }
-        let val: u8 = if t { 0x66 } else { 0xFF };
-        p.r = val;
-        p.g = val;
-        p.b = val;
-        t = !t;
-    }
-}

@@ -68,7 +68,7 @@ Depending on the mode, you need to indicate a target directory that is used for 
 
 ## Details
 This is the first software I've ever written in Rust, so there might be room for improvement. If you want to help, clone and pull-request.
-The tool uses the [sixtyfps](https://github.com/sixtyfpsui/sixtyfps) GUI framework.
+The tool uses the [sixtyfps](https://github.com/sixtyfpsui/sixtyfps) GUI framework and a few of the great [bootstrap icons](https://icons.getbootstrap.com/).
 
 ## Disclaimer
 This tool is free software. The author does not take any responsibility or liability for data lost due to bugs or faulty use of the software. Note that the software is in constant development and may contain bugs. Use at your own risk!

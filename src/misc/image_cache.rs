@@ -1,9 +1,14 @@
-use std::{collections::VecDeque, sync::Arc, sync::{mpsc, Mutex}, thread};
+use std::{
+    collections::VecDeque,
+    sync::Arc,
+    sync::{mpsc, Mutex},
+    thread,
+};
 
-use super::{lru_map::LruMap};
+use super::lru_map::LruMap;
 use crate::item_sort_list::FileItem;
 use crate::misc::images::ImageBuffer;
-use sixtyfps::{Image, Rgb8Pixel, SharedPixelBuffer};
+use sixtyfps::Image;
 
 type ImagesMutex = Mutex<LruMap<ImageBuffer, String, 64>>;
 type LoadQueue = Mutex<VecDeque<LoadImageCommand>>;
@@ -13,27 +18,25 @@ pub type LoadImageCommand = (FileItem, u32, u32, Option<PrefetchCallback>);
 pub enum Purpose {
     SelectedImage,
     SimilarImage,
-    Prefetch
+    Prefetch,
 }
 
 pub struct ImageCache {
     images: Arc<ImagesMutex>,
-    unknown_image: Image,
+    video_image: Image,
     waiting_image: Image,
     max_width: u32,
     max_height: u32,
     primary_queue: Arc<LoadQueue>,
     primary_sender: mpsc::Sender<()>,
     secondary_queue: Arc<LoadQueue>,
-    secondary_sender: mpsc::Sender<()>
+    secondary_sender: mpsc::Sender<()>,
 }
 
 impl ImageCache {
     pub fn new() -> Self {
         let images = LruMap::new();
         let mutex = Arc::new(Mutex::new(images));
-        let mut pixel_buffer = SharedPixelBuffer::<Rgb8Pixel>::new(320, 200);
-        crate::misc::images::draw_image(pixel_buffer.width(), pixel_buffer.make_mut_slice());
 
         let mutex_t = mutex.clone();
         let (primary_sender, rx) = mpsc::channel();
@@ -49,19 +52,26 @@ impl ImageCache {
 
         Self {
             images: mutex,
-            unknown_image: Image::from_rgb8(pixel_buffer),
+            video_image: ImageCache::get_video(),
             waiting_image: ImageCache::get_hourglass(),
             max_width: 0,
             max_height: 0,
             primary_queue,
             primary_sender,
             secondary_queue,
-            secondary_sender
+            secondary_sender,
         }
     }
 
     fn get_hourglass() -> Image {
         let bytes = include_bytes!("hourglass.png");
+        crate::misc::images::get_sixtyfps_image(
+            &crate::misc::images::image_from_buffer(bytes).unwrap(),
+        )
+    }
+
+    fn get_video() -> Image {
+        let bytes = include_bytes!("video.png");
         crate::misc::images::get_sixtyfps_image(
             &crate::misc::images::image_from_buffer(bytes).unwrap(),
         )
@@ -82,12 +92,8 @@ impl ImageCache {
             map.get(String::from(item_path))
                 .map(|image| crate::misc::images::get_sixtyfps_image(image))
         } else {
-            Some(self.get_unknown())
+            Some(self.video_image.clone())
         }
-    }
-
-    pub fn get_unknown(&self) -> Image {
-        self.unknown_image.clone()
     }
 
     pub fn get_waiting(&self) -> Image {
@@ -96,19 +102,18 @@ impl ImageCache {
 
     pub fn load(&self, item: &FileItem, purpose: Purpose, done_callback: Option<PrefetchCallback>) {
         let command = (item.clone(), self.max_width, self.max_width, done_callback);
-        match purpose
-        {
+        match purpose {
             Purpose::SelectedImage => {
                 let mut queue = self.primary_queue.lock().unwrap();
                 queue.clear();
                 queue.push_front(command);
                 self.primary_sender.send(()).ok();
-            },
+            }
             Purpose::SimilarImage => {
                 let mut queue = self.secondary_queue.lock().unwrap();
                 queue.push_front(command);
                 self.secondary_sender.send(()).ok();
-            },
+            }
             Purpose::Prefetch => {
                 let mut queue = self.secondary_queue.lock().unwrap();
                 queue.push_back(command);
