@@ -46,21 +46,23 @@ impl CommitIO for FileCommitIO {
 
 /// Commits an item list taking the take_over flag into account to a new directory.
 /// The progress is reported by calling a callback function with the file that is currently processed.
-pub fn commit(
+pub fn commit<T>(
     item_list: &ItemList,
     path: &str,
     commit_method: CommitMethod,
-    commit_io: Box<dyn CommitIO>,
+    commit_io: &T,
     progress_callback: impl Fn(String),
-) {
+) where
+    T: CommitIO,
+{
     if commit_method != CommitMethod::Delete {
         let path = Path::new(path);
-        prepare_path(path, &commit_io);
+        prepare_path(path, commit_io);
 
         for item in &item_list.items {
             if item.get_take_over() {
                 let full_path = path.join(get_sub_path(item_list, item));
-                prepare_path(&full_path, &commit_io);
+                prepare_path(&full_path, commit_io);
                 let source = item.get_path();
                 let target = full_path.join(source.file_name().unwrap());
                 let mut operation = String::from(source.to_str().unwrap());
@@ -130,9 +132,11 @@ fn get_sub_path(item_list: &ItemList, item: &file_item::FileItem) -> String {
         .to_string()
 }
 
-#[allow(clippy::borrowed_box)]
 /// Prepares the path by creating it if it does not exist
-fn prepare_path(path: &Path, commit_io: &Box<dyn CommitIO>) {
+fn prepare_path<T>(path: &Path, commit_io: &T)
+where
+    T: CommitIO,
+{
     if !path.exists() {
         match commit_io.create_dir_all(path) {
             Ok(_) => (),
@@ -143,10 +147,65 @@ fn prepare_path(path: &Path, commit_io: &Box<dyn CommitIO>) {
 
 #[cfg(test)]
 mod test {
+    use super::*;
+    use crate::item_sort_list::commit::CommitIO;
     use crate::item_sort_list::{commit::get_sub_path, Event, FileItem, ItemList};
+    use std::cell::RefCell;
+    use std::path::PathBuf;
+
+    struct TestCommitIO {
+        pub copies: RefCell<Vec<(PathBuf, PathBuf)>>,
+        pub renames: RefCell<Vec<(PathBuf, PathBuf)>>,
+        pub removes: RefCell<Vec<PathBuf>>,
+        pub creates: RefCell<Vec<PathBuf>>,
+    }
+
+    impl TestCommitIO {
+        pub fn new() -> Self {
+            TestCommitIO {
+                copies: RefCell::new(vec![]),
+                renames: RefCell::new(vec![]),
+                removes: RefCell::new(vec![]),
+                creates: RefCell::new(vec![]),
+            }
+        }
+
+        pub fn reset(&mut self) {
+            self.copies.get_mut().clear();
+            self.renames.get_mut().clear();
+            self.removes.get_mut().clear();
+            self.creates.get_mut().clear();
+        }
+    }
+
+    impl CommitIO for TestCommitIO {
+        fn copy(&self, src: &Path, dest: &Path) -> Result<(), Error> {
+            self.copies
+                .borrow_mut()
+                .push((src.to_path_buf(), dest.to_path_buf()));
+            Ok(())
+        }
+
+        fn remove_file(&self, path: &Path) -> Result<(), Error> {
+            self.removes.borrow_mut().push(path.to_path_buf());
+            Ok(())
+        }
+
+        fn rename(&self, src: &Path, dest: &Path) -> Result<(), Error> {
+            self.renames
+                .borrow_mut()
+                .push((src.to_path_buf(), dest.to_path_buf()));
+            Ok(())
+        }
+
+        fn create_dir_all(&self, path: &Path) -> Result<(), Error> {
+            self.creates.borrow_mut().push(path.to_path_buf());
+            Ok(())
+        }
+    }
 
     #[test]
-    fn test_commit() {
+    fn test_get_sub_path() {
         use chrono::NaiveDate;
         use chrono::NaiveDateTime;
 
@@ -185,13 +244,123 @@ mod test {
                 get_sub_path(
                     &item_list,
                     &FileItem::dummy(
+                        "",
                         NaiveDateTime::parse_from_str(input, "%Y-%m-%d %H:%M")
                             .unwrap()
-                            .timestamp()
+                            .timestamp(),
+                        false
                     )
                 ),
                 result
             );
         }
+    }
+
+    #[test]
+    fn test_commit_methods() {
+        let item_list = ItemList {
+            items: vec![
+                FileItem::dummy("test/test1", 0, true),
+                FileItem::dummy("test/test2", 0, false),
+            ],
+            events: vec![],
+            path: String::from(""),
+        };
+        let mut commit_io = TestCommitIO::new();
+
+        commit(
+            &item_list,
+            "target",
+            CommitMethod::Delete,
+            &commit_io,
+            |_: String| {},
+        );
+        assert_eq!(commit_io.copies.borrow().len(), 0);
+        assert_eq!(commit_io.creates.borrow().len(), 0);
+        assert_eq!(commit_io.renames.borrow().len(), 0);
+        assert_eq!(commit_io.removes.borrow().len(), 1);
+        assert_eq!(
+            commit_io.removes.borrow()[0].to_str().unwrap(),
+            "test/test2"
+        );
+
+        commit_io.reset();
+        commit(
+            &item_list,
+            "target",
+            CommitMethod::Copy,
+            &commit_io,
+            |_: String| {},
+        );
+        assert_eq!(commit_io.copies.borrow().len(), 1);
+        assert_eq!(
+            commit_io.copies.borrow()[0].0.to_str().unwrap(),
+            "test/test1"
+        );
+        assert_eq!(
+            commit_io.copies.borrow()[0].1.to_str().unwrap(),
+            "target/1970-01/test1"
+        );
+        assert_eq!(commit_io.creates.borrow().len(), 1);
+        assert_eq!(
+            commit_io.creates.borrow()[0].to_str().unwrap(),
+            "target/1970-01"
+        );
+        assert_eq!(commit_io.renames.borrow().len(), 0);
+        assert_eq!(commit_io.removes.borrow().len(), 0);
+
+        commit_io.reset();
+        commit(
+            &item_list,
+            "target",
+            CommitMethod::Move,
+            &commit_io,
+            |_: String| {},
+        );
+        assert_eq!(commit_io.copies.borrow().len(), 0);
+        assert_eq!(commit_io.creates.borrow().len(), 1);
+        assert_eq!(
+            commit_io.creates.borrow()[0].to_str().unwrap(),
+            "target/1970-01"
+        );
+        assert_eq!(commit_io.renames.borrow().len(), 1);
+        assert_eq!(
+            commit_io.renames.borrow()[0].0.to_str().unwrap(),
+            "test/test1"
+        );
+        assert_eq!(
+            commit_io.renames.borrow()[0].1.to_str().unwrap(),
+            "target/1970-01/test1"
+        );
+        assert_eq!(commit_io.removes.borrow().len(), 0);
+
+        commit_io.reset();
+        commit(
+            &item_list,
+            "target",
+            CommitMethod::MoveAndDelete,
+            &commit_io,
+            |_: String| {},
+        );
+        assert_eq!(commit_io.copies.borrow().len(), 0);
+        assert_eq!(commit_io.creates.borrow().len(), 1);
+        assert_eq!(
+            commit_io.creates.borrow()[0].to_str().unwrap(),
+            "target/1970-01"
+        );
+        assert_eq!(commit_io.renames.borrow().len(), 1);
+        assert_eq!(
+            commit_io.renames.borrow()[0].0.to_str().unwrap(),
+            "test/test1"
+        );
+        assert_eq!(
+            commit_io.renames.borrow()[0].1.to_str().unwrap(),
+            "target/1970-01/test1"
+        );
+        assert_eq!(commit_io.removes.borrow().len(), 1);
+        assert_eq!(
+            commit_io.removes.borrow()[0].to_str().unwrap(),
+            "test/test2"
+        );
     }
 }

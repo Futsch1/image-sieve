@@ -132,8 +132,8 @@ impl ItemList {
         commit_method: CommitMethod,
         progress_callback: impl Fn(String),
     ) {
-        let commit_io = Box::new(commit::FileCommitIO {});
-        commit::commit(self, path, commit_method, commit_io, progress_callback);
+        let commit_io = commit::FileCommitIO {};
+        commit::commit(self, path, commit_method, &commit_io, progress_callback);
     }
 
     pub fn get_event(&self, item: &file_item::FileItem) -> Option<&event::Event> {

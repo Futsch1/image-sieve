@@ -56,12 +56,12 @@ impl FileItem {
 
     /// Construct a dummy/empty file item
     #[cfg(test)]
-    pub fn dummy(timestamp: i64) -> Self {
+    pub fn dummy(path: &str, timestamp: i64, take_over: bool) -> Self {
         Self {
-            path: String::from(""),
+            path: String::from(path),
             timestamp,
             orientation: None,
-            take_over: false,
+            take_over,
             similar: vec![],
             extension: String::from(""),
             hash: None,
