@@ -33,6 +33,7 @@ impl Settings {
     }
 
     pub fn from_window(window: &ImageSieve) -> Self {
+        //TODO: Also save last selected image and restart there
         Settings {
             source_directory: window.get_source_directory().to_string(),
             target_directory: window.get_target_directory().to_string(),
