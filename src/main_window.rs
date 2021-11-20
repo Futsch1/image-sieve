@@ -388,14 +388,16 @@ fn synchronize_images_model(
 
     let mut model_index: usize = 0;
 
-    let mut add_item = |item_index: &usize, selected_image: bool, window_weak: sixtyfps::Weak<ImageSieve>| {
+    let mut add_item = |item_index: &usize,
+                        selected_image: bool,
+                        window_weak: sixtyfps::Weak<ImageSieve>| {
         let item = &item_list.items[*item_index];
         let image = {
             let image = image_cache.get(item);
             if let Some(image) = image {
                 image
             } else {
-                let f: image_cache::PrefetchCallback = Box::new(move |image_buffer| {
+                let f: image_cache::DoneCallback = Box::new(move |image_buffer| {
                     window_weak.clone().upgrade_in_event_loop(move |handle| {
                         if handle.get_current_list_item() == selected_item_index as i32 {
                             let mut row_data = handle.get_images_model().row_data(model_index);
@@ -413,7 +415,15 @@ fn synchronize_images_model(
                         }
                     })
                 });
-                image_cache.load(item, if selected_image {Purpose::SelectedImage} else {Purpose::SimilarImage}, Some(f));
+                image_cache.load(
+                    item,
+                    if selected_image {
+                        Purpose::SelectedImage
+                    } else {
+                        Purpose::SimilarImage
+                    },
+                    Some(f),
+                );
                 image_cache.get_waiting()
             }
         };
@@ -442,7 +452,7 @@ fn synchronize_images_model(
         if !similars.contains(&prefetch_index) {
             if let Some(file_item) = item_list.items.get(prefetch_index) {
                 if file_item.is_image() {
-                    image_cache.load(file_item, Purpose::Prefetch,None);
+                    image_cache.load(file_item, Purpose::Prefetch, None);
                     prefetches -= 1;
                 }
             }
@@ -465,7 +475,7 @@ pub fn get_item_text(index: usize, item_list: &ItemList) -> SharedString {
     } else {
         ""
     };
-    SharedString::from(item.get_text(event_str))
+    SharedString::from(item.to_string() + event_str)
 }
 
 pub fn commit(item_list: &ItemList, window_weak: sixtyfps::Weak<ImageSieve>) {

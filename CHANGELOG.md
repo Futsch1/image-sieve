@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- -
+ - Moving files from one mount point to the other was always failing
 
 ## [0.2.2] - 2021-11-14
 

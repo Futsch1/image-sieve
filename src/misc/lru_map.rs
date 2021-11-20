@@ -1,7 +1,14 @@
 use std::collections::HashMap;
 
+/// Hash map that implements a least recently used cache.
+/// Each item in the hash map is a tuple of the key and a counter which indicates when it was last used.
+/// Every time a key is accessed, the counter is set to the current global counter value, thus indicating
+/// when this key was accessed for the last time. If a new item is inserted into the mapand the map has reached
+/// a given size, the map is checked for the item with the lowest counter value and this item is discarded.
 pub struct LruMap<T, K, const S: usize> {
+    /// Actual inner map from key to value and counter tuple.
     map: HashMap<K, (T, u32)>,
+    /// Current access counter value
     counter: u32,
 }
 
@@ -9,6 +16,7 @@ impl<T, K, const S: usize> LruMap<T, K, S>
 where
     K: std::cmp::Eq + std::hash::Hash + Clone,
 {
+    /// Create a new LruMap
     pub fn new() -> Self {
         Self {
             map: HashMap::new(),
@@ -16,6 +24,8 @@ where
         }
     }
 
+    /// Gets a value from the map. If the key is not present, None is returned.
+    /// Note that self has to be mutable to increase the counter of the key.
     pub fn get(&mut self, key: K) -> Option<&T> {
         let val = self.map.get_mut(&key);
         if let Some((t, counter)) = val {
@@ -26,10 +36,12 @@ where
         None
     }
 
+    /// Check if the map contains a given key.
     pub fn contains(&self, key: K) -> bool {
         self.map.contains_key(&key)
     }
 
+    /// Insert a new value into the map. If the map is full, the least recently used item is discarded.
     pub fn put(&mut self, key: K, t: T) {
         if self.map.len() == S {
             let lru_key = self.get_lru_key();
@@ -41,11 +53,13 @@ where
         self.map.insert(key, (t, self.counter));
     }
 
+    /// Clear the map.
     pub fn clear(&mut self) {
         self.map.clear();
         self.counter = 0;
     }
 
+    /// Get the key of the least recently used item.
     fn get_lru_key(&self) -> Option<K> {
         let mut lru_key: Option<K> = None;
         let mut lru_counter = u32::MAX;

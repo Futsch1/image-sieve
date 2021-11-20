@@ -4,8 +4,8 @@ extern crate glob;
 use self::chrono::NaiveDateTime;
 use num_derive::{FromPrimitive, ToPrimitive};
 use std::collections::HashMap;
-use std::path::Path;
 
+use super::commit;
 use super::event;
 use super::file_item;
 use super::resolvers;
@@ -132,81 +132,8 @@ impl ItemList {
         commit_method: CommitMethod,
         progress_callback: impl Fn(String),
     ) {
-        // TODO: Refactor maybe
-        use std::fs::{copy, remove_file, rename};
-
-        if commit_method != CommitMethod::Delete {
-            let path = Path::new(path);
-            prepare_path(path);
-
-            for item in &self.items {
-                if item.get_take_over() {
-                    let full_path = path.join(self.get_sub_path(item));
-                    prepare_path(&full_path);
-                    let source = item.get_path();
-                    let target = full_path.join(source.file_name().unwrap());
-                    let mut operation = String::from(source.to_str().unwrap());
-                    operation += " -> ";
-                    operation += target.to_str().unwrap();
-                    progress_callback(operation);
-
-                    if commit_method == CommitMethod::Copy {
-                        match copy(source, target) {
-                            Ok(_) => (),
-                            Err(e) => println!("Error copying {:?}: {}", item, e),
-                        }
-                    } else {
-                        match rename(source, target) {
-                            Ok(_) => (),
-                            Err(e) => println!("Error renaming {:?}: {}", item, e),
-                        }
-                    };
-                } else if commit_method == CommitMethod::MoveAndDelete {
-                    let source = item.get_path();
-                    let mut operation = String::from("Delete ");
-                    operation += source.to_str().unwrap();
-                    progress_callback(operation);
-                    match remove_file(source) {
-                        Ok(_) => (),
-                        Err(e) => println!("Error deleting {:?}: {}", item, e),
-                    }
-                }
-            }
-        } else {
-            for item in &self.items {
-                if !item.get_take_over() {
-                    let source = item.get_path();
-                    let mut operation = String::from("Delete ");
-                    operation += source.to_str().unwrap();
-                    progress_callback(operation);
-                    match remove_file(source) {
-                        Ok(_) => (),
-                        Err(e) => println!("Error deleting {:?}: {}", item, e),
-                    }
-                }
-            }
-        }
-
-        progress_callback(String::from("Done"));
-    }
-
-    pub fn get_sub_path(&self, item: &file_item::FileItem) -> String {
-        let event = self.get_event(item);
-        if let Some(event) = event {
-            if event.start_date != event.end_date {
-                return format!(
-                    "{} - {} {}",
-                    event.start_date.format("%Y-%m-%d"),
-                    event.end_date.format("%Y-%m-%d"),
-                    event.name
-                );
-            } else {
-                return format!("{} {}", event.start_date.format("%Y-%m-%d"), event.name);
-            }
-        }
-        NaiveDateTime::from_timestamp(item.get_timestamp(), 0)
-            .format("%Y-%m")
-            .to_string()
+        let commit_io = Box::new(commit::FileCommitIO {});
+        commit::commit(self, path, commit_method, commit_io, progress_callback);
     }
 
     pub fn get_event(&self, item: &file_item::FileItem) -> Option<&event::Event> {
@@ -217,17 +144,6 @@ impl ItemList {
             }
         }
         None
-    }
-}
-
-fn prepare_path(path: &Path) {
-    use std::fs::create_dir_all;
-
-    if !path.exists() {
-        match create_dir_all(path) {
-            Ok(_) => (),
-            Err(e) => println!("Error creating path {}: {}", e, path.display()),
-        }
     }
 }
 
@@ -298,52 +214,5 @@ mod tests {
         assert_eq!(0, item_list.items[3].get_similars().len());
         assert_eq!(1, item_list.items[4].get_similars().len());
         assert_eq!(1, item_list.items[5].get_similars().len());
-    }
-
-    #[test]
-    fn get_sub_path() {
-        use self::chrono::NaiveDate;
-        use self::chrono::NaiveDateTime;
-
-        let item_list = ItemList {
-            items: vec![],
-            events: vec![
-                event::Event {
-                    name: String::from("Test1"),
-                    start_date: NaiveDate::from_ymd(2021, 9, 14),
-                    end_date: NaiveDate::from_ymd(2021, 9, 14),
-                },
-                event::Event {
-                    name: String::from("Test2"),
-                    start_date: NaiveDate::from_ymd(2021, 9, 20),
-                    end_date: NaiveDate::from_ymd(2021, 9, 21),
-                },
-                event::Event {
-                    name: String::from("Test3"),
-                    start_date: NaiveDate::from_ymd(2021, 9, 24),
-                    end_date: NaiveDate::from_ymd(2021, 9, 27),
-                },
-            ],
-            path: String::from(""),
-        };
-        let test_cases = [
-            ("2021-09-14 00:00", "2021-09-14 Test1"),
-            ("2021-09-13 23:59", "2021-09"),
-            ("2021-09-15 00:00", "2021-09"),
-            ("2021-09-20 00:00", "2021-09-20 - 2021-09-21 Test2"),
-            ("2021-09-21 16:00", "2021-09-20 - 2021-09-21 Test2"),
-            ("2021-09-25 16:00", "2021-09-24 - 2021-09-27 Test3"),
-        ];
-
-        for (input, result) in test_cases {
-            assert_eq!(
-                item_list.get_sub_path(&file_item::FileItem::dummy(
-                    NaiveDateTime::parse_from_str(input, "%Y-%m-%d %H:%M")
-                        .unwrap()
-                        .timestamp()
-                )),
-                result
-            );
-        }
     }
 }

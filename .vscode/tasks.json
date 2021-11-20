@@ -3,12 +3,34 @@
 	"tasks": [
 		{
 			"type": "cargo",
+			"command": "clippy",
+			"args": [
+				"--no-deps"
+			],
+			"problemMatcher": [
+				"$rustc"
+			],
+			"label": "rust: cargo clippy"
+		},
+		{
+			"type": "cargo",
+			"command": "test",
+			"args": [
+				"-j1"
+			],
+			"problemMatcher": [
+				"$rustc"
+			],
+			"label": "rust: cargo clippy"
+		},
+		{
+			"type": "cargo",
 			"command": "run",
 			"args": [],
 			"problemMatcher": [
 				"$rustc"
 			],
-			"label": "rust: cargo run "
+			"label": "rust: cargo run"
 		},
 		{
 			"type": "cargo",

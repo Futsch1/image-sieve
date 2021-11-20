@@ -1,3 +1,4 @@
+mod commit;
 mod event;
 mod file_item;
 mod item_list;

@@ -7,8 +7,11 @@ use image::{imageops, DynamicImage, GenericImageView};
 
 use crate::item_sort_list::FileItem;
 
+/// Image buffer from the image crate
 pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
+/// Get an image buffer from a FileItem with a width and height constraint. If the image contains
+/// an orientation indication, it is rotated accordingly.
 pub fn get_image_buffer(item: &FileItem, max_width: u32, max_height: u32) -> ImageBuffer {
     let path = item.get_path();
     let rotation = match item.get_orientation() {
@@ -24,11 +27,13 @@ pub fn get_image_buffer(item: &FileItem, max_width: u32, max_height: u32) -> Ima
         .unwrap_or_else(|_| ImageBuffer::new(1, 1))
 }
 
+/// Get an empty image of the size 1x1
 pub fn get_empty_image() -> sixtyfps::Image {
     let buffer = sixtyfps::SharedPixelBuffer::new(1, 1);
     sixtyfps::Image::from_rgba8(buffer)
 }
 
+/// Convert an image buffer to an image suitable for the sixtyfps library
 pub fn get_sixtyfps_image(buffer: &ImageBuffer) -> sixtyfps::Image {
     if buffer.width() > 0 && buffer.height() > 0 {
         let buffer = sixtyfps::SharedPixelBuffer::<sixtyfps::Rgba8Pixel>::clone_from_slice(
@@ -42,6 +47,7 @@ pub fn get_sixtyfps_image(buffer: &ImageBuffer) -> sixtyfps::Image {
     }
 }
 
+/// Loads an image from a path and rotates it by a given angle in degrees
 fn load_image_and_rotate(
     path: &std::path::Path,
     rotate: i32,
@@ -54,11 +60,13 @@ fn load_image_and_rotate(
     ))
 }
 
+/// Converts a byte buffer to an image buffer
 pub fn image_from_buffer(bytes: &[u8]) -> Result<ImageBuffer, image::ImageError> {
     let cat_image = image::load_from_memory(bytes)?;
     Ok(cat_image.into_rgba8())
 }
 
+/// Processes a dynamic image by rotating it and resizing it to the given width and height
 fn process_dynamic_image(
     cat_image: DynamicImage,
     rotate: i32,

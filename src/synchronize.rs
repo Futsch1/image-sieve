@@ -249,7 +249,7 @@ fn calculate_similar_hashes(item_list: Arc<Mutex<ItemList>>, settings: &Settings
         let mut item_list_loc = item_list.lock().unwrap();
         for item in &mut item_list_loc.items {
             let hash = hashes.remove(item.get_path_as_str());
-            if hash.is_some() {
+            if let Some(hash) = hash {
                 item.set_hash(hash);
             }
         }
