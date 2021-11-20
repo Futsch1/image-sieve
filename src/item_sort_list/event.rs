@@ -5,7 +5,7 @@ use self::chrono::NaiveDate;
 pub const EVENT_DATE_FORMAT: &str = "%Y-%m-%d";
 
 /// An event representing a name and a start and end date
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Event {
     /// Event name
     pub name: String,
@@ -32,7 +32,7 @@ impl Event {
     pub fn update(&mut self, name: String, start_date: &str, end_date: &str) -> bool {
         let start_date = Event::parse_date(start_date);
         let end_date = Event::parse_date(end_date);
-        if matches!(end_date, Result::Ok(_)) && matches!(start_date, Result::Ok(_)) {
+        if matches!(end_date, Ok(_)) && matches!(start_date, Ok(_)) {
             self.start_date = start_date.unwrap();
             self.end_date = end_date.unwrap();
             self.name = name;

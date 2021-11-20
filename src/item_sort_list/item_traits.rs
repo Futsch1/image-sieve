@@ -1,3 +1,4 @@
+/// Image orientation
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Orientation {
     Landscape,
@@ -6,6 +7,7 @@ pub enum Orientation {
     Portrait270,
 }
 
+/// Trait to get a timestamp and an optional orientation from a file
 pub trait PropertyResolver {
     fn get_timestamp(&self) -> i64;
     fn get_orientation(&self) -> Option<Orientation>;

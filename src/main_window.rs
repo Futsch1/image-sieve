@@ -1,3 +1,5 @@
+//! Module containing the main window of image_sieve
+
 extern crate rfd;
 extern crate sixtyfps;
 
@@ -5,6 +7,7 @@ use num_traits::FromPrimitive;
 use rfd::FileDialog;
 use sixtyfps::{Model, SharedString};
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::rc::Rc;
 use std::sync::Mutex;
 use std::thread;
@@ -17,7 +20,14 @@ use crate::persistence::json::{get_project_filename, get_settings_filename};
 use crate::persistence::settings::Settings;
 use crate::synchronize::Synchronizer;
 
-#[allow(clippy::all)]
+#[allow(
+    clippy::all,
+    unused_qualifications,
+    trivial_casts,
+    trivial_numeric_casts,
+    missing_docs,
+    missing_debug_implementations
+)]
 mod generated_code {
     sixtyfps::include_modules!();
 }
@@ -39,6 +49,15 @@ pub struct MainWindow {
 impl Default for MainWindow {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Debug for MainWindow {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let item_list = self.item_list.lock().unwrap();
+        write!(f, "MainWindow").ok();
+        write!(f, " item_list: {:?}", item_list).ok();
+        Ok(())
     }
 }
 
@@ -263,10 +282,9 @@ impl MainWindow {
             }
         });
 
-        self.window
-            .on_date_valid(|date: sixtyfps::SharedString| -> bool {
-                crate::item_sort_list::Event::is_date_valid(date.to_string().as_str())
-            });
+        self.window.on_date_valid(|date: SharedString| -> bool {
+            crate::item_sort_list::Event::is_date_valid(date.to_string().as_str())
+        });
 
         self.window.on_update_event({
             let item_list_model = self.item_list_model.clone();
@@ -349,6 +367,7 @@ pub fn synchronize_item_list_model(
     }
 }
 
+/// Synchronize the event list with the GUI model
 pub fn synchronize_event_list_model(
     item_list: &ItemList,
     event_list_model: &sixtyfps::VecModel<Event>,
@@ -467,6 +486,7 @@ fn synchronize_images_model(
     window.unwrap().set_current_image_index(0);
 }
 
+/// Gets the text of a an item at a given index as a SharedString
 pub fn get_item_text(index: usize, item_list: &ItemList) -> SharedString {
     let item = &item_list.items[index];
     let event = item_list.get_event(item);
@@ -478,6 +498,7 @@ pub fn get_item_text(index: usize, item_list: &ItemList) -> SharedString {
     SharedString::from(item.to_string() + event_str)
 }
 
+/// Commits the item list in a background thread
 pub fn commit(item_list: &ItemList, window_weak: sixtyfps::Weak<ImageSieve>) {
     let item_list_copy = item_list.to_owned();
     let target_path = window_weak.unwrap().get_target_directory().to_string();

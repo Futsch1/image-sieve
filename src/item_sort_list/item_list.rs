@@ -10,18 +10,27 @@ use super::event;
 use super::file_item;
 use super::resolvers;
 
-#[derive(PartialEq, Eq, FromPrimitive, ToPrimitive, Clone)]
+/// Method how to perform commit of sieved images
+#[derive(PartialEq, Eq, FromPrimitive, ToPrimitive, Clone, Debug)]
 pub enum CommitMethod {
+    /// Copy the images to be taken over to the target directory
     Copy = 0,
+    /// Move the images to be taken over to the target directory
     Move,
+    /// Move the images to be taken over to the target directory and delete the discarded files
     MoveAndDelete,
+    /// Delete the discarded files
     Delete,
 }
 
-#[derive(Clone)]
+/// Item list containing all file items and all events
+#[derive(Clone, Debug)]
 pub struct ItemList {
+    /// List of file items
     pub items: Vec<file_item::FileItem>,
+    /// List of events
     pub events: Vec<event::Event>,
+    /// Base path that was used to create the item list
     pub path: String,
 }
 
@@ -93,6 +102,7 @@ impl ItemList {
         }
     }
 
+    /// Go through all images and find similar ones by comparing the hash
     pub fn find_similar_hashes(&mut self, max_diff_hash: u32) {
         let mut similar_lists: HashMap<usize, Vec<(u32, usize)>> = HashMap::new();
         for index in 0..self.items.len() {
@@ -136,6 +146,7 @@ impl ItemList {
         commit::commit(self, path, commit_method, &commit_io, progress_callback);
     }
 
+    /// Gets the event which a file item belongs to
     pub fn get_event(&self, item: &file_item::FileItem) -> Option<&event::Event> {
         let naive_date = NaiveDateTime::from_timestamp(item.get_timestamp(), 0).date();
         for event in &self.events {
@@ -147,6 +158,7 @@ impl ItemList {
     }
 }
 
+/// Find allfiles in a directory with the extensions supported by FileItem
 fn find_items(path: &str) -> Vec<String> {
     let match_options = glob::MatchOptions {
         case_sensitive: false,
@@ -159,8 +171,8 @@ fn find_items(path: &str) -> Vec<String> {
         let glob_pattern = format!("{}/**/*.{}", path, extension);
         let entries = glob::glob_with(&glob_pattern, match_options).unwrap();
         for entry in entries {
-            let jpg: std::path::PathBuf = entry.expect("IO error");
-            files.push(jpg.to_str().unwrap().to_string());
+            let file = entry.expect("IO error");
+            files.push(file.to_str().unwrap().to_string());
         }
     }
     files
@@ -178,6 +190,7 @@ mod tests {
     impl PropertyResolver for MockResolver {
         fn get_timestamp(&self) -> i64 {
             let return_values: [i64; 6] = [1, 4, 8, 14, 64, 65];
+            #[allow(unsafe_code)]
             unsafe {
                 CALL_COUNT += 1;
                 return_values[CALL_COUNT - 1]

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::hash::Hash;
 
 /// Hash map that implements a least recently used cache.
 /// Each item in the hash map is a tuple of the key and a counter which indicates when it was last used.
@@ -14,7 +15,7 @@ pub struct LruMap<T, K, const S: usize> {
 
 impl<T, K, const S: usize> LruMap<T, K, S>
 where
-    K: std::cmp::Eq + std::hash::Hash + Clone,
+    K: Eq + Hash + Clone,
 {
     /// Create a new LruMap
     pub fn new() -> Self {
