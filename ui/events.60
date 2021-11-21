@@ -19,7 +19,6 @@ EventsView := ScrollView {
 
         for item[i] in events-model: GroupBox {             
             title: item.name + ", " + item.start-date + " - " + item.end-date;
-            spacing: 5px;
             padding: 5px;
             GridLayout {
                 spacing: 5px;

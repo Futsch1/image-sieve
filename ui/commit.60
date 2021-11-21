@@ -15,6 +15,7 @@ export CommitView := VerticalBox {
     // Commit
     property <string> commit-message;
     property <bool> commit-running: false;
+    property <bool> commit-done: false;
 
     // Warning
     property <bool> show-warning: false;
@@ -59,11 +60,6 @@ export CommitView := VerticalBox {
         }
     }
 
-    Text {
-        text: "Progress: " + commit-message;
-        visible: commit-running;
-    }
-
     Button {
         text: "\u{2705} Start";
         width: 300px;
@@ -75,25 +71,42 @@ export CommitView := VerticalBox {
                 commit-message = "Warning";
             } else {
                 commit-message = "Starting";
+                commit-done = true;
                 commit();                    
             }
         }
+    }
+
+    Text {
+        text: "\u{231B} Progress: " + commit-message;
+        visible: commit-running || commit-done;
     }
 
     GroupBox {
         title: "Warning! The desired sieve method will delete files that cannot be recovered. Are you sure you want to proceed?";
         visible: show-warning;
-        Button {
-            text: "\u{2705} Yes";
-            width: 300px;
-            visible: show-warning;
-            clicked => {            
-                show-warning = false;
-                commit-message = "Starting";
-                commit();                    
+        HorizontalBox { 
+            spacing: 5px;
+            Button {
+                text: "\u{2705} Yes";
+                width: 300px;
+                visible: show-warning;
+                clicked => {            
+                    show-warning = false;
+                    commit-message = "Starting";
+                    commit-done = true;
+                    commit();                    
+                }
+            }
+            Button {
+                text: "\u{274C} No";
+                width: 300px;
+                visible: show-warning;
+                clicked => {            
+                    show-warning = false;
+                    commit-running = false;
+                }
             }
         }
-    }
-
-    
+    }   
 }
