@@ -13,7 +13,18 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+ - 
+
+## [0.2.3] - 2021-11-21
+
+### Added
+
+ - Showing result of commit operation now
+
+### Fixed
+
  - Moving files from one mount point to the other was always failing
+
 
 ## [0.2.2] - 2021-11-14
 
@@ -41,13 +52,10 @@ All notable changes to this project will be documented in this file.
 
 - Folder selection edit is now disabled, since entering something there had no effect
 
-### Added
-
- -
-
 ### Fixed
 
  - While the image similarity calculation is running, no other folder can be selected
+
 
 ## [0.2.0] - 2021-10-25
 
@@ -66,6 +74,7 @@ All notable changes to this project will be documented in this file.
  - Fixed showing the correct text when one of the similar images was selected
  - Fixed event scrollview
 
+
 ## [0.1.3] - 2021-10-21
 
 ### Added
@@ -75,6 +84,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
  - Fixed crashes that could occur when an item was deleted or renamed while ImageSieve is open 
+
 
 ## [0.1.2] - 2021-10-10
 
@@ -87,6 +97,7 @@ All notable changes to this project will be documented in this file.
 
  - Improved overall code style
  - Combined code into single crate
+
 
 ## [0.1.1] - 2021-10-10
 
