@@ -17,7 +17,7 @@ jobs:
     steps:    
     - uses: actions/checkout@v2
     - name: Install deps
-      run: sudo apt-get install libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libpango1.0-dev
+      run: sudo apt-get install libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libpango1.0-dev libatk1.0-dev
     - name: Build
       run: cargo build
     - name: Run tests
