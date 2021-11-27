@@ -158,7 +158,7 @@ impl ItemList {
     }
 }
 
-/// Find allfiles in a directory with the extensions supported by FileItem
+/// Find all files in a directory with the extensions supported by FileItem
 fn find_items(path: &str) -> Vec<String> {
     let match_options = glob::MatchOptions {
         case_sensitive: false,
