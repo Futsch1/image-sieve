@@ -56,20 +56,21 @@ ImageSieve := Window {
     forward-focus: key-handler;
     key-handler:= FocusScope {  
         key-pressed(event) => {
-            if (event.text == "\u{000E}")
-            {
+            if (event.text == "\u{000E}"){
                 if (current-list-item > 0) {
                     sort-view.prev-clicked();
                 }
             }
-            if (event.text == "\u{000F}")
-            {
+            if (event.text == "\u{000F}") {
                 if (images-list-model.length > 0 && current-list-item < images-list-model.length - 1) {
                     sort-view.next-clicked();
                 }
             }
-            if (event.text == " ")
-            {
+            // TODO: On up and down key, change current-image-insex
+            // First waiting for https://github.com/sixtyfpsui/sixtyfps/issues/170 because we currently cannot get the up or down key...
+            // Then waiting for https://github.com/sixtyfpsui/sixtyfps/issues/98 to be implemented, otherwise it will get too complicated
+            // On key up, the next image-index shall be selected, on key down the previous one
+            if (event.text == " ") {
                 sort-view.selected-clicked()
             }
             accept
