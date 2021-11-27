@@ -82,13 +82,13 @@ EventsView := ScrollView {
             VerticalBox { 
                 alignment: start;
                 new-name := LineEdit { 
-                    text: "Name";
+                    placeholder-text: "Event name";
                 }
                 new-start-date := LineEdit { 
-                    text: "Start date";
+                    placeholder-text: "Start date (YYYY-MM-DD or DD-MM-YYYY)";
                 }
                 new-end-date := LineEdit { 
-                    text: "End date";
+                    placeholder-text: "End date (YYYY-MM-DD or DD-MM-YYYY)";
                 }
                 Button {
                     text: "\u{2795} Add";
@@ -99,9 +99,9 @@ EventsView := ScrollView {
                             error-message.text = check-event(new-start-date.text, new-end-date.text, true);
                             if (error-message.text == "") {                            
                                 add-event(new-name.text, new-start-date.text, new-end-date.text);
-                                new-name.text = "Name";
-                                new-start-date.text = "Start date";
-                                new-end-date.text = "End date";
+                                new-name.text = "";
+                                new-start-date.text = "";
+                                new-end-date.text = "";
                             }
                             else {
                                 error-message.text = "Event overlaps with " + error-message.text;
