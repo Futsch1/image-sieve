@@ -67,7 +67,7 @@ impl MainWindow {
     pub fn new() -> Self {
         // Load settings and item list
         let settings: Settings =
-            JsonPersistence::load(get_settings_filename()).unwrap_or_else(Settings::new);
+            JsonPersistence::load(&get_settings_filename()).unwrap_or_else(Settings::new);
 
         let item_list = ItemList {
             items: vec![],
@@ -132,7 +132,7 @@ impl MainWindow {
 
         // Save settings when program exits
         let settings = Settings::from_window(&self.window);
-        JsonPersistence::save(get_settings_filename(), &settings);
+        JsonPersistence::save(&get_settings_filename(), &settings);
 
         // and save item list
         let item_list = self.item_list.lock().unwrap();

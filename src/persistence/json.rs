@@ -2,15 +2,28 @@ use std::{fs, path::Path};
 
 use super::settings::Settings;
 use crate::item_sort_list::ItemList;
+use home;
 
 /// Name of the global settings file
-const SETTINGS_FILE: &str = "settings.json"; // TODO: Must be set according to OS home directory
+const SETTINGS_FILE: &str = "image_sieve_settings.json";
 
 /// Name of the project settings file
 const ITEM_LIST_FILE: &str = "image_sieve.json";
 
-pub fn get_settings_filename() -> &'static str {
-    SETTINGS_FILE
+pub fn get_settings_filename() -> String {
+    let home = home::home_dir();
+    if let Some(home) = home {
+        if !Path::new(&home.join(".image_sieve")).exists() {
+            fs::create_dir_all(&home.join(".image_sieve")).unwrap();
+        }
+        home.join(".image_sieve")
+            .join(SETTINGS_FILE)
+            .to_str()
+            .unwrap()
+            .to_string()
+    } else {
+        String::from(SETTINGS_FILE)
+    }
 }
 
 pub fn get_project_filename(path: &str) -> String {
