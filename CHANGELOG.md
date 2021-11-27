@@ -9,6 +9,21 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+ - 
+
+### Fixed
+
+ - 
+
+
+## [0.2.4] - 2021-11-27
+
+### Changed
+
+ - 
+
+### Added
+
  - Events are now checked for overlapping dates
 
 ### Fixed
