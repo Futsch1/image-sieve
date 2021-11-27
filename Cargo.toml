@@ -11,7 +11,7 @@ edition = "2021"
 readme = "README.md"
 
 [dependencies]
-sixtyfps = "0.1.4"
+sixtyfps = "0.1.5"
 rfd = "0.4.0"
 json = "0.12"
 image = "0.23"
@@ -24,7 +24,7 @@ opener = "0.5.0"
 img_hash = "3.2.0"
 
 [build-dependencies]
-sixtyfps-build = "0.1.4"
+sixtyfps-build = "0.1.5"
 embed-resource = "1.6"
 
 [[bin]]
