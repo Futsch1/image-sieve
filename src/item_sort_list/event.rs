@@ -1,16 +1,22 @@
 extern crate chrono;
 
+use serde::{Deserialize, Serialize};
+use serde_with::{serde_as, DisplayFromStr};
+
 use self::chrono::NaiveDate;
 
 pub const EVENT_DATE_FORMAT: &str = "%Y-%m-%d";
 
 /// An event representing a name and a start and end date
-#[derive(Clone, Debug)]
+#[serde_as]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Event {
     /// Event name
     pub name: String,
+    #[serde_as(as = "DisplayFromStr")]
     /// Event start date
     pub start_date: NaiveDate,
+    #[serde_as(as = "DisplayFromStr")]
     /// Event end date
     pub end_date: NaiveDate,
 }

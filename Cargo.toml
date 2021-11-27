@@ -12,20 +12,22 @@ readme = "README.md"
 
 [dependencies]
 sixtyfps = "0.1.5"
-rfd = "0.4.0"
-json = "0.12"
-image = "0.23"
-glob = "0.3.0"
-kamadak-exif = "0.5.4"
-chrono = "0.4"
-num-traits = "0.2"
-num-derive = "0.3"  
-opener = "0.5.0"
-img_hash = "3.2.0"
+rfd = "^0.4"
+image = "^0.23"
+glob = "^0.3"
+kamadak-exif = "^0.5.4"
+chrono = "^0.4"
+num-traits = "^0.2"
+num-derive = "^0.3"  
+opener = "^0.5"
+img_hash = "^3.2"
+serde = "^1.0"
+serde_json = "^1.0"
+serde_with = "^1.0"
 
 [build-dependencies]
 sixtyfps-build = "0.1.5"
-embed-resource = "1.6"
+embed-resource = "^1.6"
 
 [[bin]]
 name = "image_sieve"

@@ -5,6 +5,9 @@ use std::fmt::Formatter;
 use std::path::Path;
 
 use img_hash::ImageHash;
+use serde::Deserialize;
+use serde::Serialize;
+use serde::Serializer;
 
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
@@ -12,7 +15,7 @@ use super::item_traits::PropertyResolver;
 pub type HashType = ImageHash<Vec<u8>>;
 
 /// A single file item with all properties required by image_sieve
-#[derive(Eq, PartialEq, Debug, Clone)]
+#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct FileItem {
     /// Actual file path
     path: String,
@@ -27,7 +30,31 @@ pub struct FileItem {
     /// Orientation of the image
     orientation: Option<Orientation>,
     /// Hash of the image
+    #[serde(serialize_with = "serialize_hash")]
+    #[serde(deserialize_with = "deserialize_hash")]
     hash: Option<HashType>,
+}
+
+pub fn serialize_hash<S>(hash: &Option<HashType>, s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    match hash {
+        Some(hash) => hash.to_base64().serialize(s),
+        None => "".serialize(s),
+    }
+}
+
+pub fn deserialize_hash<'de, D>(deserializer: D) -> Result<Option<HashType>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let hash_str = String::deserialize(deserializer)?;
+    if hash_str.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(HashType::from_base64(&hash_str).unwrap()))
+    }
 }
 
 impl FileItem {

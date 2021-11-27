@@ -1,10 +1,11 @@
 use crate::item_sort_list::CommitMethod;
 use crate::main_window::{CommitMethodValues, ImageSieve};
 use num_traits::{FromPrimitive, ToPrimitive};
+use serde::{Deserialize, Serialize};
 use sixtyfps::{ComponentHandle, Model, ModelHandle, SharedString};
 use std::env;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Settings {
     pub source_directory: String,
     pub target_directory: String,

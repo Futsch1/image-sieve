@@ -1,5 +1,7 @@
+use serde::{Deserialize, Serialize};
+
 /// Image orientation
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum Orientation {
     Landscape,
     Portrait90,

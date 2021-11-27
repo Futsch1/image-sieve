@@ -3,6 +3,7 @@ extern crate glob;
 
 use self::chrono::NaiveDateTime;
 use num_derive::{FromPrimitive, ToPrimitive};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::commit;
@@ -11,7 +12,8 @@ use super::file_item;
 use super::resolvers;
 
 /// Method how to perform commit of sieved images
-#[derive(PartialEq, Eq, FromPrimitive, ToPrimitive, Clone, Debug)]
+#[derive(PartialEq, Eq, FromPrimitive, ToPrimitive, Clone, Debug, Serialize, Deserialize)]
+#[repr(i32)]
 pub enum CommitMethod {
     /// Copy the images to be taken over to the target directory
     Copy = 0,
@@ -24,7 +26,7 @@ pub enum CommitMethod {
 }
 
 /// Item list containing all file items and all events
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ItemList {
     /// List of file items
     pub items: Vec<file_item::FileItem>,
