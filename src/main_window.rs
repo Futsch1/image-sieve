@@ -13,6 +13,7 @@ use std::sync::Mutex;
 use std::thread;
 use std::{cell::RefCell, sync::Arc};
 
+use crate::item_sort_list::parse_date;
 use crate::item_sort_list::{CommitMethod, ItemList};
 use crate::misc::image_cache::{self, ImageCache, Purpose};
 use crate::persistence::json::JsonPersistence;
@@ -252,33 +253,54 @@ impl MainWindow {
             }
         });
 
+        self.window.on_check_event({
+            // Check event for overlapping dates
+            let item_list = self.item_list.clone();
+
+            move |start_date: SharedString,
+                  end_date: SharedString,
+                  new_event: bool|
+                  -> SharedString {
+                let start_date = parse_date(&start_date).unwrap();
+                let end_date = parse_date(&end_date).unwrap();
+                let item_list = item_list.lock().unwrap();
+                let allowed_overlaps = if new_event { 0 } else { 1 };
+                let mut overlaps = 0;
+                for event in item_list.events.iter() {
+                    if event.contains(&start_date) || event.contains(&end_date) {
+                        overlaps += 1;
+                        if overlaps > allowed_overlaps {
+                            return SharedString::from(event.name.clone());
+                        }
+                    }
+                }
+                SharedString::from("")
+            }
+        });
+
         self.window.on_add_event({
             // New event was added, return true if the dates are ok
             let item_list_model = self.item_list_model.clone();
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
 
-            move |name, start_date: SharedString, end_date: SharedString| -> bool {
+            move |name, start_date: SharedString, end_date: SharedString| {
                 let name_s = name.to_string();
                 let event = crate::item_sort_list::Event::new(
                     name_s,
                     start_date.as_str(),
                     end_date.as_str(),
-                );
-                if let Ok(event) = event {
-                    events_model.push(Event {
-                        name,
-                        start_date,
-                        end_date,
-                    });
-                    let mut item_list = item_list.lock().unwrap();
-                    item_list.events.push(event);
-                    // Synchronize the item list to update the icons of the entries
-                    synchronize_item_list_model(&item_list, &item_list_model.clone());
-                    true
-                } else {
-                    false
-                }
+                )
+                .unwrap();
+                events_model.push(Event {
+                    name,
+                    start_date,
+                    end_date,
+                });
+                let mut item_list = item_list.lock().unwrap();
+                item_list.events.push(event);
+                // Synchronize the item list to update the icons of the entries
+                synchronize_item_list_model(&item_list, &item_list_model.clone());
             }
         });
 

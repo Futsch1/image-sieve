@@ -9,7 +9,8 @@ struct Event := {
 
 EventsView := ScrollView { 
     property <[Event]> events-model;
-    callback add-event(string, string, string) -> bool;
+    callback add-event(string, string, string);
+    callback check-event(string, string, bool) -> string;
     callback date-valid(string) -> bool;
     callback remove-event(int);
     callback update-event(int);
@@ -42,7 +43,7 @@ EventsView := ScrollView {
                 start-date := LineEdit { 
                     text: item.start-date;
                     accepted => {
-                        if (date-valid(start-date.text)) {
+                        if (date-valid(start-date.text) && "" == check-event(start-date.text, item.end-date, false)) {
                             item.start-date = start-date.text;
                             update-event(i);
                         }
@@ -59,7 +60,7 @@ EventsView := ScrollView {
                 end-date := LineEdit { 
                     text: item.end-date;
                     accepted => {
-                        if (date-valid(end-date.text)) {
+                        if (date-valid(end-date.text) && "" == check-event(start-date.text, item.end-date, false)) {
                             item.end-date = end-date.text;
                             update-event(i);
                         }
@@ -93,18 +94,27 @@ EventsView := ScrollView {
                     text: "\u{2795} Add";
                     width: 300px;
                     clicked => { 
-                        if (add-event(new-name.text, new-start-date.text, new-end-date.text)) {
-                            new-name.text = "Name";
-                            new-start-date.text = "Start date";
-                            new-end-date.text = "End date";
-                            invalid-date.visible = false;
+                        error-message.visible = false;
+                        if (date-valid(new-start-date.text) && date-valid(new-end-date.text)) {
+                            error-message.text = check-event(new-start-date.text, new-end-date.text, true);
+                            if (error-message.text == "") {                            
+                                add-event(new-name.text, new-start-date.text, new-end-date.text);
+                                new-name.text = "Name";
+                                new-start-date.text = "Start date";
+                                new-end-date.text = "End date";
+                            }
+                            else {
+                                error-message.text = "Event overlaps with " + error-message.text;
+                                error-message.visible = true;
+                            }
                         } else {
-                            invalid-date.visible = true;
+                            error-message.text = "Invalid date";
+                            error-message.visible = true;
                         }
                     }
                 }
-                invalid-date := Text {
-                    text: "Invalid date";
+                error-message := Text {
+                    text: "";
                     color: red;
                     visible: false;
                 }

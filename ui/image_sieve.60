@@ -33,6 +33,7 @@ ImageSieve := Window {
     // Map properties of EventsView
     property events-model <=> events-view.events-model;
     callback add-event <=> events-view.add-event;
+    callback check-event <=> events-view.check-event;   
     callback date-valid <=> events-view.date-valid;
     callback update-event <=> events-view.update-event;
     callback remove-event <=> events-view.remove-event;

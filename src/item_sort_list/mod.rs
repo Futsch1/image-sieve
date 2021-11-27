@@ -5,6 +5,7 @@ mod item_list;
 mod item_traits;
 mod resolvers;
 
+pub use event::parse_date;
 pub use event::Event;
 pub use event::EVENT_DATE_FORMAT;
 pub use file_item::FileItem;

@@ -150,7 +150,7 @@ impl ItemList {
     pub fn get_event(&self, item: &file_item::FileItem) -> Option<&event::Event> {
         let naive_date = NaiveDateTime::from_timestamp(item.get_timestamp(), 0).date();
         for event in &self.events {
-            if event.start_date <= naive_date && naive_date <= event.end_date {
+            if event.contains(&naive_date) {
                 return Some(event);
             }
         }

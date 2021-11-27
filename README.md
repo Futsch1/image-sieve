@@ -45,7 +45,8 @@ Note that video files are also displayed in the list of images, but cannot be pr
 ### Events
 Per default, the images will be sorted in folders corresponding to the months they were taken, like "09-2021", "10-2021" etc. To be able to find images more quickly in an archive, ImageSieve supports grouping pictures with the help of events in the "Events" tab. Events are named date spans that will provide a target folder name during the sieve process, like "2021-10-07 - 2021-10-10 Cool trip". All images taken in the given period of time will be put into that folder. You can specify an arbitrary number of events, but be aware that in case of overlapping dates, an image is put into the folder of the first matching event.
 To add an event, fill the start date, end date and name text box and click the "Add" button. Valid date formats are YYYY-MM-DD or DD.MM.YYYY. You can edit existing events by modifying their fields and pressing enter - the updated values will be visible in the event's caption. To remove an event, click the "Remove" button.
-Be aware that the events are saved in the currently selected folder and belong to the currently displayed images.
+The time spans of events must not overlap.
+Be aware that the events are saved in the currently selected folder along with the selection of images.
 
 ### Settings
 In the settings tab, you can specify the behavior of the similarity detection process. You can turn on and off both the use of the file/capture
@@ -62,7 +63,6 @@ When you are done sorting the images, the sieving process can be started. Go to 
 Depending on the mode, you need to indicate a target directory that is used for the result of the sieving process. Once you are done, click the start button and the sieve process will start.
 
 ## Known issues and TODOs
-- Overlapping events are not reported
 - The indication of problems during sieving is not implemented
 - Navigation with previous/next through similar items can be improved
 
