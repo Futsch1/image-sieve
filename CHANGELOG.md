@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - 
+ - Start date of an event must now be before or equal to the end date
 
 ## [0.2.3] - 2021-11-21
 

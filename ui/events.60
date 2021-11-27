@@ -60,7 +60,7 @@ EventsView := ScrollView {
                 end-date := LineEdit { 
                     text: item.end-date;
                     accepted => {
-                        if (date-valid(end-date.text) && "" == check-event(start-date.text, item.end-date, false)) {
+                        if (date-valid(end-date.text) && "" == check-event(item.start-date, end-date.text, false)) {
                             item.end-date = end-date.text;
                             update-event(i);
                         }
@@ -104,7 +104,6 @@ EventsView := ScrollView {
                                 new-end-date.text = "";
                             }
                             else {
-                                error-message.text = "Event overlaps with " + error-message.text;
                                 error-message.visible = true;
                             }
                         } else {

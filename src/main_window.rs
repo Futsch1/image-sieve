@@ -263,6 +263,9 @@ impl MainWindow {
                   -> SharedString {
                 let start_date = parse_date(&start_date).unwrap();
                 let end_date = parse_date(&end_date).unwrap();
+                if start_date > end_date {
+                    return SharedString::from("Start date must be before end date");
+                }
                 let item_list = item_list.lock().unwrap();
                 let allowed_overlaps = if new_event { 0 } else { 1 };
                 let mut overlaps = 0;
@@ -270,7 +273,9 @@ impl MainWindow {
                     if event.contains(&start_date) || event.contains(&end_date) {
                         overlaps += 1;
                         if overlaps > allowed_overlaps {
-                            return SharedString::from(event.name.clone());
+                            return SharedString::from(
+                                String::from("Event overlaps with ") + &event.name,
+                            );
                         }
                     }
                 }
