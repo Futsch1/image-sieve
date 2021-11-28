@@ -10,6 +10,7 @@ const SETTINGS_FILE: &str = "image_sieve_settings.json";
 /// Name of the project settings file
 const ITEM_LIST_FILE: &str = "image_sieve.json";
 
+/// Get the directory and filename where the settings are stored
 pub fn get_settings_filename() -> String {
     let home = home::home_dir();
     if let Some(home) = home {
@@ -26,11 +27,13 @@ pub fn get_settings_filename() -> String {
     }
 }
 
+/// Get the directory and filename where the item list is stored
 pub fn get_project_filename(path: &str) -> String {
     let path = Path::new(path).to_path_buf().join(ITEM_LIST_FILE);
     String::from(path.to_str().unwrap())
 }
 
+/// Trait to load and save data from/to a file
 pub trait JsonPersistence
 where
     Self: Sized,

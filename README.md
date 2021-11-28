@@ -63,8 +63,8 @@ When you are done sorting the images, the sieving process can be started. Go to 
 Depending on the mode, you need to indicate a target directory that is used for the result of the sieving process. Once you are done, click the start button and the sieve process will start.
 
 ## Known issues and TODOs
-- The indication of problems during sieving is not implemented
 - Navigation with previous/next through similar items can be improved
+- Folder structure of destination should be customizable (by month, by day, by year)
 
 ## Details
 This is the first software I've ever written in Rust, so there might be room for improvement. If you want to help, clone and pull-request.

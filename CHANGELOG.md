@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - 
+ - Settings are now stored in the home directory. As a consequence, settings from previous versions are lost
 
 ### Added
 
- - 
+ - Sieving operations are now displayed in detail
 
 ### Fixed
 

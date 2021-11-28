@@ -1,4 +1,4 @@
-import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox } from "sixtyfps_widgets.60";
+import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox, ScrollView } from "sixtyfps_widgets.60";
 
 export global CommitMethodValues := {
     property <[string]> values: ["Copy to target directory", 
@@ -7,13 +7,18 @@ export global CommitMethodValues := {
                                 "Delete in source directory"];
 }
 
-export CommitView := VerticalBox { 
+struct CommitResult := {
+    result: string,
+    color: string,
+}
+
+export CommitView := HorizontalBox { 
+    property <[CommitResult]> commit-result-model;
     property target-directory <=> target-directory-edit.text;
     property commit-method <=> commit-method-combo-box.current-index;
     property commit-method-value <=> commit-method-combo-box.current-value;    
 
     // Commit
-    property <string> commit-message;
     property <bool> commit-running: false;
     property <bool> commit-done: false;
 
@@ -26,87 +31,93 @@ export CommitView := VerticalBox {
     // Called when source or target was browsed
     callback browse-target;
 
-    alignment: start;
+    VerticalBox { 
+        alignment: start;
 
-    GroupBox { 
-        title: "Target directory";
-        enabled: commit-method-combo-box.current-index != 3;
-        
-        HorizontalBox { 
-            spacing: 5px;
-            target-directory-edit := LineEdit { 
-                width: 400px;
-                enabled: !commit-running && commit-method-combo-box.current-index != 3;
-            }
-            Button {
-                text: "\u{1F4C2} Browse...";
-                width: 200px;
-                enabled: !commit-running && commit-method-combo-box.current-index != 3;
-                clicked => { 
-                    browse-target();
+            GroupBox { 
+            title: "Target directory";
+            enabled: commit-method-combo-box.current-index != 3;
+            
+            HorizontalBox { 
+                spacing: 5px;
+                target-directory-edit := LineEdit { 
+                    width: 400px;
+                    enabled: !commit-running && commit-method-combo-box.current-index != 3;
+                }
+                Button {
+                    text: "\u{1F4C2} Browse...";
+                    width: 200px;
+                    enabled: !commit-running && commit-method-combo-box.current-index != 3;
+                    clicked => { 
+                        browse-target();
+                    }
                 }
             }
         }
-    }
-    GroupBox { 
-        title: "Sieve method";
-        HorizontalBox { 
-            spacing: 5px;
-            commit-method-combo-box := ComboBox {
-                enabled: !commit-running;
-                width: 400px;
-                model: CommitMethodValues.values;
+        GroupBox { 
+            title: "Sieve method";
+            HorizontalBox { 
+                spacing: 5px;
+                commit-method-combo-box := ComboBox {
+                    enabled: !commit-running;
+                    width: 400px;
+                    model: CommitMethodValues.values;
+                }
             }
         }
-    }
 
-    Button {
-        text: "\u{2705} Start";
-        width: 300px;
-        enabled: !commit-running;
-        clicked => {
-            if (commit-method-combo-box.current-index == 2 || commit-method-combo-box.current-index == 3) {
-                show-warning = true;
-                commit-running = true;
-                commit-message = "Warning";
-            } else {
-                commit-message = "Starting";
-                commit-done = true;
-                commit();                    
-            }
-        }
-    }
-
-    Text {
-        text: "\u{231B} Progress: " + commit-message;
-        visible: commit-running || commit-done;
-    }
-
-    GroupBox {
-        title: "Warning! The desired sieve method will delete files that cannot be recovered. Are you sure you want to proceed?";
-        visible: show-warning;
-        HorizontalBox { 
-            spacing: 5px;
-            Button {
-                text: "\u{2705} Yes";
-                width: 300px;
-                visible: show-warning;
-                clicked => {            
-                    show-warning = false;
-                    commit-message = "Starting";
+        Button {
+            text: "\u{2705} Start";
+            width: 300px;
+            enabled: !commit-running;
+            clicked => {
+                if (commit-method-combo-box.current-index == 2 || commit-method-combo-box.current-index == 3) {
+                    show-warning = true;
+                    commit-running = true;
+                } else {
                     commit-done = true;
                     commit();                    
                 }
             }
-            Button {
-                text: "\u{274C} No";
-                width: 300px;
-                visible: show-warning;
-                clicked => {            
-                    show-warning = false;
-                    commit-running = false;
+        }
+
+        GroupBox {
+            title: "Warning! The desired sieve method will delete files that cannot be recovered.\n\nAre you sure you want to proceed?";
+            visible: show-warning;
+            HorizontalBox { 
+                spacing: 5px;
+                Button {
+                    text: "\u{2705} Yes";
+                    width: 300px;
+                    visible: show-warning;
+                    clicked => {            
+                        show-warning = false;
+                        commit-done = true;
+                        commit();                    
+                    }
+                }
+                Button {
+                    text: "\u{274C} No";
+                    width: 300px;
+                    visible: show-warning;
+                    clicked => {            
+                        show-warning = false;
+                        commit-running = false;
+                    }
                 }
             }
         }
-    }   
+    }  
+
+    ScrollView {
+        visible: commit-done;
+
+        VerticalBox { 
+        for item[i] in commit-result-model:
+            Text {
+                text: item.result;               
+                color: item.color == "red" ? red : (item.color == "green" ? green : black);
+            }
+        }
+    }
 }

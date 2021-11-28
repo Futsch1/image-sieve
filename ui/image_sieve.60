@@ -39,10 +39,10 @@ ImageSieve := Window {
     callback remove-event <=> events-view.remove-event;
 
     // Map properties of CommitView
+    property commit-result-model <=> commit-view.commit-result-model;
     property target-directory <=> commit-view.target-directory;
     property commit-method <=> commit-view.commit-method;
     property commit-method-value <=> commit-view.commit-method-value;
-    property commit-message <=> commit-view.commit-message;
     property commit-running <=> commit-view.commit-running;
     callback commit <=> commit-view.commit;
     callback browse-target <=> commit-view.browse-target;

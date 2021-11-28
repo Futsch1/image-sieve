@@ -1,6 +1,6 @@
 use std::{
     fs::{copy, create_dir_all, remove_file, rename},
-    io::Error,
+    io::{Error, ErrorKind},
     path::Path,
 };
 
@@ -12,15 +12,30 @@ use super::{file_item, CommitMethod, ItemList};
 pub trait CommitIO {
     fn copy(&self, src: &Path, dest: &Path) -> Result<(), Error>;
     fn remove_file(&self, path: &Path) -> Result<(), Error>;
-    fn rename(&self, src: &Path, dest: &Path) -> Result<(), Error>;
+    fn r#move(&self, src: &Path, dest: &Path) -> Result<(), Error>;
     fn create_dir_all(&self, path: &Path) -> Result<(), Error>;
 }
 
 /// Struct with implementation for std::fs implementation of CommitIO
 pub struct FileCommitIO;
 
+impl FileCommitIO {
+    fn assert_not_exists(&self, path: &Path) -> Result<(), Error> {
+        if path.exists() {
+            let e = Error::new(
+                ErrorKind::AlreadyExists,
+                format!("Destination file already exists: {}", path.display()),
+            );
+            Err(e)
+        } else {
+            Ok(())
+        }
+    }
+}
+
 impl CommitIO for FileCommitIO {
     fn copy(&self, src: &Path, dest: &Path) -> Result<(), Error> {
+        self.assert_not_exists(dest)?;
         copy(src, dest)?;
         Ok(())
     }
@@ -29,7 +44,8 @@ impl CommitIO for FileCommitIO {
         remove_file(path)
     }
 
-    fn rename(&self, src: &Path, dest: &Path) -> Result<(), Error> {
+    fn r#move(&self, src: &Path, dest: &Path) -> Result<(), Error> {
+        self.assert_not_exists(dest)?;
         match rename(src, dest) {
             Ok(_) => Ok(()),
             Err(_) => {
@@ -65,30 +81,25 @@ pub fn commit<T>(
                 prepare_path(&full_path, commit_io);
                 let source = item.get_path();
                 let target = full_path.join(source.file_name().unwrap());
-                let mut operation = String::from(source.to_str().unwrap());
-                operation += " -> ";
-                operation += target.to_str().unwrap();
-                progress_callback(operation);
+                progress_callback(format!("{:?} -> {:?}", source, target));
 
                 if commit_method == CommitMethod::Copy {
                     match commit_io.copy(source, &target) {
                         Ok(_) => (),
-                        Err(e) => println!("Error copying {:?}: {}", item, e),
+                        Err(e) => progress_callback(format!("Error copying {}: {}", item, e)),
                     }
                 } else {
-                    match commit_io.rename(source, &target) {
+                    match commit_io.r#move(source, &target) {
                         Ok(_) => (),
-                        Err(e) => println!("Error renaming {:?}: {}", item, e),
+                        Err(e) => progress_callback(format!("Error moving {}: {}", item, e)),
                     }
                 };
             } else if commit_method == CommitMethod::MoveAndDelete {
                 let source = item.get_path();
-                let mut operation = String::from("Delete ");
-                operation += source.to_str().unwrap();
-                progress_callback(operation);
+                progress_callback(format!("Delete {:?}", source));
                 match commit_io.remove_file(source) {
                     Ok(_) => (),
-                    Err(e) => println!("Error deleting {:?}: {}", item, e),
+                    Err(e) => progress_callback(format!("Error deleting {}: {}", item, e)),
                 }
             }
         }
@@ -96,12 +107,10 @@ pub fn commit<T>(
         for item in &item_list.items {
             if !item.get_take_over() {
                 let source = item.get_path();
-                let mut operation = String::from("Delete ");
-                operation += source.to_str().unwrap();
-                progress_callback(operation);
+                progress_callback(format!("Delete {:?}", source));
                 match commit_io.remove_file(source) {
                     Ok(_) => (),
-                    Err(e) => println!("Error deleting {:?}: {}", item, e),
+                    Err(e) => progress_callback(format!("Error deleting {:?}: {}", item, e)),
                 }
             }
         }
@@ -191,7 +200,7 @@ mod test {
             Ok(())
         }
 
-        fn rename(&self, src: &Path, dest: &Path) -> Result<(), Error> {
+        fn r#move(&self, src: &Path, dest: &Path) -> Result<(), Error> {
             self.renames
                 .borrow_mut()
                 .push((src.to_path_buf(), dest.to_path_buf()));

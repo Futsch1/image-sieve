@@ -44,6 +44,7 @@ pub struct MainWindow {
     similar_items_model: Rc<sixtyfps::VecModel<SortImage>>,
     items_model_map: Rc<RefCell<ImagesModelMap>>,
     events_model: Rc<sixtyfps::VecModel<Event>>,
+    commit_result_model: Rc<sixtyfps::VecModel<CommitResult>>,
     image_cache: Rc<ImageCache>,
 }
 
@@ -79,6 +80,7 @@ impl MainWindow {
 
         let event_list_model = Rc::new(sixtyfps::VecModel::<Event>::default());
         let item_list_model = Rc::new(sixtyfps::VecModel::<SharedString>::default());
+        let commit_result_model = Rc::new(sixtyfps::VecModel::<CommitResult>::default());
 
         // Construct main window
         let image_sieve = ImageSieve::new();
@@ -96,6 +98,7 @@ impl MainWindow {
             similar_items_model: Rc::new(sixtyfps::VecModel::<SortImage>::default()),
             items_model_map: Rc::new(RefCell::new(HashMap::new())),
             events_model: event_list_model,
+            commit_result_model,
             image_cache: Rc::new(cache),
         };
 
@@ -120,6 +123,11 @@ impl MainWindow {
         main_window
             .window
             .set_events_model(sixtyfps::ModelHandle::new(main_window.events_model.clone()));
+        main_window
+            .window
+            .set_commit_result_model(sixtyfps::ModelHandle::new(
+                main_window.commit_result_model.clone(),
+            ));
 
         main_window.setup_callbacks();
 
@@ -168,9 +176,14 @@ impl MainWindow {
             // Commit pressed - perform selected action
             let window_weak = self.window.as_weak();
             let item_list = self.item_list.clone();
+            let commit_result_model = self.commit_result_model.clone();
 
             move || {
-                commit(&item_list.lock().unwrap(), window_weak.clone());
+                commit(
+                    &item_list.lock().unwrap(),
+                    window_weak.clone(),
+                    commit_result_model.clone(),
+                );
             }
         });
 
@@ -526,11 +539,25 @@ pub fn get_item_text(index: usize, item_list: &ItemList) -> SharedString {
 }
 
 /// Commits the item list in a background thread
-pub fn commit(item_list: &ItemList, window_weak: sixtyfps::Weak<ImageSieve>) {
+pub fn commit(
+    item_list: &ItemList,
+    window_weak: sixtyfps::Weak<ImageSieve>,
+    commit_result_model: Rc<sixtyfps::VecModel<CommitResult>>,
+) {
     let item_list_copy = item_list.to_owned();
     let target_path = window_weak.unwrap().get_target_directory().to_string();
     let commit_method = FromPrimitive::from_i32(window_weak.unwrap().get_commit_method())
         .unwrap_or(CommitMethod::Copy);
+    for _ in 0..commit_result_model.row_count() {
+        commit_result_model.remove(0);
+    }
+    commit_result_model.push(CommitResult {
+        result: SharedString::from(format!(
+            "Committing using {:?} method to {}",
+            commit_method, target_path
+        )),
+        color: SharedString::from("black"),
+    });
 
     thread::spawn(move || {
         let progress_callback = |progress: String| {
@@ -539,7 +566,23 @@ pub fn commit(item_list: &ItemList, window_weak: sixtyfps::Weak<ImageSieve>) {
                 if progress == "Done" {
                     handle.set_commit_running(false);
                 }
-                handle.set_commit_message(SharedString::from(progress));
+                let commit_result_model = handle.get_commit_result_model();
+                let commit_result_model = commit_result_model
+                    .as_any()
+                    .downcast_ref::<sixtyfps::VecModel<CommitResult>>()
+                    .unwrap();
+                let color = if progress == "Done" {
+                    SharedString::from("green")
+                } else if progress.starts_with("Error") {
+                    SharedString::from("red")
+                } else {
+                    SharedString::from("black")
+                };
+                let commit_result = CommitResult {
+                    result: SharedString::from(progress),
+                    color,
+                };
+                commit_result_model.push(commit_result);
             });
         };
         item_list_copy.commit(&target_path, commit_method, progress_callback);
