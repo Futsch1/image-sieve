@@ -19,24 +19,35 @@
       <Directory Id="ProgramFilesFolder">
         <Directory Id="APPLICATIONROOTDIRECTORY" Name="ImageSieve" />
       </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="ImageSieve"/>
+      </Directory>
     </Directory>
 
     <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
-        <Component Id="image_sieve.exe" Guid="9b5ac7c6-0fcb-47fc-b18d-731687abf106">
-            <File Id="image_sieve.exe" Source="target\release\image_sieve.exe" KeyPath="yes" Checksum="yes"/>
-        </Component>
+      <Component Id="image_sieve.exe" Guid="9b5ac7c6-0fcb-47fc-b18d-731687abf106">
+        <File Id="image_sieve.exe" Source="target\release\image_sieve.exe" KeyPath="yes" Checksum="yes"/>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="PUT-GUID-HERE">
+        <Shortcut Id="ApplicationStartMenuShortcut" 
+                  Name="ImageSieve" 
+                  Description="GUI based tool to sort out images based on similarity, categorize them according to their creation date and archive them in a target folder."
+                  Target="[#mage_sieve.exe]"
+                  WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\ImageSieve" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
     </DirectoryRef>
 
     <Feature Id="MainApplication" Title="Main Application" Level="1">
-        <ComponentRef Id="image_sieve.exe" />
+      <ComponentRef Id="image_sieve.exe" />
+      <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 
-    <UI Id="MyWixUI_InstallDir">
-      <UIRef Id="WixUI_InstallDir" />
-
-      <Publish Dialog="InstallDirDlg" Control="Next" Event="NewDialog" Value="MyCustomPropertiesDlg" Order="4">WIXUI_DONTVALIDATEPATH OR WIXUI_INSTALLDIR_VALID="1"</Publish>
-      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="MyCustomPropertiesDlg" Order="1">1</Publish>
-    </UI>
-
+    <UIRef Id="WixUI_InstallDir" />
+    
   </Product>
 </Wix>
