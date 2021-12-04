@@ -43,7 +43,7 @@
     </DirectoryRef>
 
     <Feature Id="MainApplication" Title="Main Application" Level="1">
-      <ComponentRef Id="image_sieve_app" />
+      <ComponentRef Id="image_sieve_exe" />
       <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 
