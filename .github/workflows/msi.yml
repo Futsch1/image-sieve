@@ -1,7 +1,7 @@
-name: Build
+name: MSI
 
 on: 
-  workflow-dispatch:
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
