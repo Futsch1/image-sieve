@@ -5,7 +5,7 @@
            Manufacturer="Florian Fetz"
            Name="ImageSieve"
            UpgradeCode="{21797e66-3281-4b4d-8e59-63f98eb6a4c2}"
-           Version="0.2.5.0">
+           Version="!(bind.FileVersion.image_sieve_exe)">
 
     <Package InstallScope="perMachine" InstallerVersion="200" Compressed="yes" />
 
@@ -25,7 +25,7 @@
     </Directory>
 
     <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
-      <Component Id="image_sieve_app" Guid="9b5ac7c6-0fcb-47fc-b18d-731687abf106">
+      <Component Id="image_sieve_exe" Guid="9b5ac7c6-0fcb-47fc-b18d-731687abf106">
         <File Id="image_sieve_exe" Source="test\image_sieve.exe" KeyPath="yes" Checksum="yes"/>
       </Component>
     </DirectoryRef>
