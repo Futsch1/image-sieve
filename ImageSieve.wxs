@@ -25,7 +25,7 @@
     </Directory>
 
     <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
-      <Component Id="image_sieve.exe" Guid="9b5ac7c6-0fcb-47fc-b18d-731687abf106">
+      <Component Id="image_sieve_app" Guid="9b5ac7c6-0fcb-47fc-b18d-731687abf106">
         <File Id="image_sieve_exe" Source="target\release\image_sieve.exe" KeyPath="yes" Checksum="yes"/>
       </Component>
     </DirectoryRef>
@@ -43,7 +43,7 @@
     </DirectoryRef>
 
     <Feature Id="MainApplication" Title="Main Application" Level="1">
-      <ComponentRef Id="image_sieve_exe" />
+      <ComponentRef Id="image_sieve_app" />
       <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 
