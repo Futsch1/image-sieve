@@ -1,1 +1,5 @@
 ImageSieve ICON "ImageSieve.ico"
+VALUE "FileVersion", "0.2.5.0"
+VALUE "CompanyName", "Florian Fetz"
+VALUE "FileDescription", "GUI based tool to sort out images"
+VALUE "ProductName", "ImageSieve"

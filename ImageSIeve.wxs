@@ -5,7 +5,7 @@
            Manufacturer="Florian Fetz"
            Name="ImageSieve"
            UpgradeCode="{21797e66-3281-4b4d-8e59-63f98eb6a4c2}"
-           Version="0.2.5">
+           Version="!(bind.FileVersion.image_sieve_exe)">
 
     <Package InstallScope="perMachine" InstallerVersion="200" Compressed="yes" />
 
@@ -26,16 +26,16 @@
 
     <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
       <Component Id="image_sieve.exe" Guid="9b5ac7c6-0fcb-47fc-b18d-731687abf106">
-        <File Id="image_sieve.exe" Source="target\release\image_sieve.exe" KeyPath="yes" Checksum="yes"/>
+        <File Id="image_sieve_exe" Source="target\release\image_sieve.exe" KeyPath="yes" Checksum="yes"/>
       </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="ApplicationProgramsFolder">
-      <Component Id="ApplicationShortcut" Guid="PUT-GUID-HERE">
+      <Component Id="ApplicationShortcut" Guid="f61ee686-e9f5-4847-8460-04b4028aeafb">
         <Shortcut Id="ApplicationStartMenuShortcut" 
                   Name="ImageSieve" 
                   Description="GUI based tool to sort out images based on similarity, categorize them according to their creation date and archive them in a target folder."
-                  Target="[#mage_sieve.exe]"
+                  Target="[#image_sieve_exe]"
                   WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
         <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
@@ -43,7 +43,7 @@
     </DirectoryRef>
 
     <Feature Id="MainApplication" Title="Main Application" Level="1">
-      <ComponentRef Id="image_sieve.exe" />
+      <ComponentRef Id="image_sieve_exe" />
       <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 
