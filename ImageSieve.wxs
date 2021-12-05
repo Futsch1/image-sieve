@@ -26,7 +26,8 @@
 
     <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
       <Component Id="image_sieve.exe" Guid="9b5ac7c6-0fcb-47fc-b18d-731687abf106">
-        <File Id="image_sieve.exe" Source="target\release\image_sieve.exe" KeyPath="yes" Checksum="yes"/>
+        <File Id="image_sieve.exe" Source="target\release\image_sieve.exe" Checksum="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\ImageSieve" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
 
