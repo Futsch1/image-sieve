@@ -35,32 +35,30 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
+    - name: Build release
+      run: cargo build --release
+    - name: Create install package
+      run: |
+        $env:PATH += ";$env:WIX\bin"
+        candle.exe installer\ImageSieve.wxs
+        light.exe ImageSieve.wixobj -ext WixUIExtension -cultures:en-us
     - name: Load PFX File from GitHub Secrets
       id: savepfx
       shell: pwsh
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}")
         $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath "MyCertificate.pfx"
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+        [IO.File]::WriteAllBytes("MyCertificate.pfx", $pfx_cert_byte)
         # output the file path as a variable
         echo "::set-output name=cert_path::$certificatePath"
-    - name: Build release
-      run: cargo build --release
-    - name: Create MSI
-      run: |
-        $env:PATH += ";$env:WIX\bin"
-        candle.exe installer\ImageSieve.wxs
-        light.exe ImageSieve.wixobj -ext WixUIExtension -cultures:en-us
-    - name: Signing MSI
+    - name: Signing install package
       shell: pwsh
       run: |
         $sdkToolsPath = Join-Path -Path 'C:\Program Files (x86)\Windows Kits\10\bin' -ChildPath 10.0.19041.0 -AdditionalChildPath x86
         $env:Path += ";$sdkToolsPath"
         $currentDirectory = Get-Location
-        $PfxFilePath = Join-Path -Path $currentDirectory -ChildPath "MyCertificate.pfx"
-        SignTool.exe sign /fd SHA256 /a /f $PfxFilePath /p ${{ secrets.PFX_PRIVATE_KEY }} ImageSieve.msi
-    - name: Archive production artifacts
+        SignTool.exe sign /fd SHA256 /a /f MyCertificate.pfx /p ${{ secrets.PFX_PRIVATE_KEY }} ImageSieve.msi
+    - name: Archive install package
       uses: actions/upload-artifact@v2
       with:
         name: windows-installer
