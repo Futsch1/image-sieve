@@ -28,7 +28,7 @@ home = "^0.5"
 
 [build-dependencies]
 sixtyfps-build = "0.1.5"
-embed-resource = "^1.6"
+winres = "^0.1"
 
 [[bin]]
 name = "image_sieve"

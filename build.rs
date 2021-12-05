@@ -1,8 +1,11 @@
-extern crate embed_resource;
+extern crate winres;
 
 fn main() {
     println!("sixtyfps build");
     sixtyfps_build::compile("ui/image_sieve.60").unwrap();
-    println!("embed resource");
-    embed_resource::compile("ImageSieve.rc");
+    if cfg!(target_os = "windows") {
+        let mut res = winres::WindowsResource::new();
+        res.set_icon("ImageSieve.ico");
+        res.compile().unwrap();
+    }
 }
