@@ -16,7 +16,7 @@
     <Property Id="WIXUI_INSTALLDIR" Value="APPLICATIONROOTDIRECTORY" />
 
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFilesFolder">
+      <Directory Id="LocalAppDataFolder">
         <Directory Id="APPLICATIONROOTDIRECTORY" Name="ImageSieve" />
       </Directory>
       <Directory Id="ProgramMenuFolder">
@@ -47,7 +47,23 @@
       <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 
-    <UIRef Id="WixUI_InstallDir" />
+    <WixVariable Id="WixUIBannerBmp" Value="InstallerBanner.bmp" />
+    <WixVariable Id="WixUIBannerText" Value="ImageSieve" />
+
+    <UI>
+      <UIRef Id="WixUI_InstallDir" />
+
+      <Publish Dialog="WelcomeDlg"
+                Control="Next"
+                Event="NewDialog"
+                Value="InstallDirDlg"
+                Order="2">1</Publish>
+      <Publish Dialog="InstallDirDlg"
+                Control="Back"
+                Event="NewDialog"
+                Value="WelcomeDlg"
+                Order="2">1</Publish>
+    </UI>
     
   </Product>
 </Wix>
