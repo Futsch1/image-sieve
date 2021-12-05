@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
  - Sieving operations are now displayed in detail
+ - Generate a MSI installer package for Windows
 
 ### Fixed
 
