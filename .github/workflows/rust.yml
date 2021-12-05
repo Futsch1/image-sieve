@@ -49,12 +49,13 @@ jobs:
       run: cargo build --release
     - name: Create MSI
       run: |
-           $env:PATH += ";$env:WIX\bin"
-           candle.exe installer\ImageSieve.wxs
-           light.exe ImageSieve.wixobj -ext WixUIExtension -cultures:en-us
+        $env:PATH += ";$env:WIX\bin"
+        candle.exe installer\ImageSieve.wxs
+        light.exe ImageSieve.wixobj -ext WixUIExtension -cultures:en-us
     - name: Signing MSI
       shell: pwsh
       run: |
+        $currentDirectory = Get-Location
         $PfxFilePath = Join-Path -Path $currentDirectory -ChildPath "MyCertificate.pfx"
         SignTool.exe sign /fd SHA256 /a /f $PfxFilePath /p ${{ secrets.PFX_PRIVATE_KEY }} ImageSieve.msi
     - name: Archive production artifacts
