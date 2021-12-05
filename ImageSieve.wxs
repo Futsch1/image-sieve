@@ -40,7 +40,7 @@
                   Target="[#image_sieve.exe]"
                   WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
         <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
-        <RegistryValue Root="HKCU" Key="Software\ImageSieve" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\ImageSieveMenu" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
 
@@ -50,6 +50,7 @@
     </Feature>
 
     <WixVariable Id="WixUIBannerBmp" Value="InstallerBanner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="InstallerDialog.bmp" />    
     <WixVariable Id="WixUIBannerText" Value="ImageSieve" />
 
     <UI>
