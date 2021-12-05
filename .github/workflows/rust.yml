@@ -35,13 +35,6 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-    - name: Build release
-      run: cargo build --release
-    - name: Create MSI
-      run: |
-           $env:PATH += ";$env:WIX\bin"
-           candle.exe installer\ImageSieve.wxs
-           light.exe ImageSieve.wixobj -ext WixUIExtension -cultures:en-us
     - name: Load PFX File from GitHub Secrets
       id: savepfx
       shell: pwsh
@@ -52,6 +45,13 @@ jobs:
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
         # output the file path as a variable
         echo "::set-output name=cert_path::$certificatePath"
+    - name: Build release
+      run: cargo build --release
+    - name: Create MSI
+      run: |
+           $env:PATH += ";$env:WIX\bin"
+           candle.exe installer\ImageSieve.wxs
+           light.exe ImageSieve.wixobj -ext WixUIExtension -cultures:en-us
     - name: Signing MSI
       shell: pwsh
       run: |
