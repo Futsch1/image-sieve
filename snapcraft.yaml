@@ -23,28 +23,11 @@ build-packages:
 apps:
   image-sieve:
     command: bin/image_sieve
-    environment: 
-      LANG: en_US.UTF-8
-      LC_NAME: en_US.UTF-8
-      WINIT_UNIX_BACKEND: x11
     extensions: [gnome-3-38]
     plugs:
       - home
       - desktop
-      - desktop-legacy
-      - x11
-      - wayland
-      - unity7
-      - image-sieve-system-files
-    slots:
-      - dbus-daemon
-    common-id: com.github.futsch1.image-sieve
-
-slots:
-  dbus-daemon:
-    interface: dbus
-    bus: session
-    name: com.github.futsch1.image-sieve
+      - desktop-legacy 
 
 parts:
   image-sieve:
@@ -54,32 +37,4 @@ parts:
   deps:
     plugin: nil
     stage-packages:
-      - libxkbcommon0  # XKB_CONFIG_ROOT
-      - ttf-ubuntu-font-family
-      - dmz-cursor-theme
-      - light-themes
-      - adwaita-icon-theme
-      - gnome-themes-standard
-      - shared-mime-info
-      - libgtk-3-0
-      - libgdk-pixbuf2.0-0
-      - libglib2.0-bin
-      - libgtk-3-bin
-      - unity-gtk3-module
-      - libappindicator3-1
-      - locales-all
-      - xdg-user-dirs
-      - ibus-gtk3
-      - libibus-1.0-5
-      - libx11-xcb-dev
       - libxcb-shape0
-      - libxcb-xfixes0
-
-plugs:
-  image-sieve-system-files:
-    interface: system-files
-    read: 
-      - /usr/local
-      - /usr/share
-      - /var/cache
-      - /etc
