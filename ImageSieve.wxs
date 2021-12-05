@@ -7,7 +7,7 @@
            UpgradeCode="{21797e66-3281-4b4d-8e59-63f98eb6a4c2}"
            Version="!(bind.FileVersion.image_sieve.exe)">
 
-    <Package InstallScope="perMachine" InstallerVersion="200" Compressed="yes" />
+    <Package InstallScope="perUser" InstallPrivileges="limited" InstallerVersion="200" Compressed="yes" />
 
     <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit." />
 
@@ -26,7 +26,7 @@
 
     <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
       <Component Id="image_sieve.exe" Guid="9b5ac7c6-0fcb-47fc-b18d-731687abf106">
-        <File Id="image_sieve.exe" Source="test\image_sieve.exe" KeyPath="yes" Checksum="yes"/>
+        <File Id="image_sieve.exe" Source="target\release\image_sieve.exe" KeyPath="yes" Checksum="yes"/>
       </Component>
     </DirectoryRef>
 
