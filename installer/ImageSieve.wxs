@@ -49,8 +49,8 @@
       <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 
-    <WixVariable Id="WixUIBannerBmp" Value="InstallerBanner.bmp" />
-    <WixVariable Id="WixUIDialogBmp" Value="InstallerDialog.bmp" />    
+    <WixVariable Id="WixUIBannerBmp" Value="installer\InstallerBanner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="installer\InstallerDialog.bmp" />    
     <WixVariable Id="WixUIBannerText" Value="ImageSieve" />
 
     <UI>
