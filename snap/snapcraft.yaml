@@ -1,18 +1,20 @@
 name: image-sieve 
 base: core20 
-version: '0.2.5'
 summary: GUI based tool to sort out images and archive them in a target folder 
 description: |
   ImageSieve aims to help in the process of sorting through images taken by several 
   people with several devices and collect the images worth keeping in a folder structure 
   suitable for achiving or to eliminate potential duplicates or irrelevant images from a 
   folder structure. 
+adopt-info: image-sieve
 
 grade: devel # must be 'stable' to release into candidate/stable channels
-confinement: devmode 
+confinement: strict
+icon: snap/local/ImageSieve.png
 
 build-packages:
   - cmake
+  - git
   - libxcb-shape0-dev 
   - libxcb-xfixes0-dev 
   - libxkbcommon-dev 
@@ -26,13 +28,14 @@ apps:
     extensions: [gnome-3-38]
     plugs:
       - home
-      - desktop
-      - desktop-legacy 
 
 parts:
   image-sieve:
     plugin: rust
     source: .
+    override-pull: |
+      snapcraftctl pull
+      snapcraftctl set-version $(git describe --tags --abbrev=0)
 
   deps:
     plugin: nil
