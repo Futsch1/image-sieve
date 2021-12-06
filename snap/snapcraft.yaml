@@ -9,21 +9,11 @@ description: |
   folder structure. 
 adopt-info: image-sieve
 source-code: https://github.com/Futsch1/image-sieve.git
-license: GPL-3.0
+license: GPL-3.0+
 
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: strict
 icon: snap/local/ImageSieve.png
-
-build-packages:
-  - cmake
-  - git
-  - libxcb-shape0-dev 
-  - libxcb-xfixes0-dev 
-  - libxkbcommon-dev 
-  - libpango1.0-dev 
-  - libatk1.0-dev 
-  - libgtk-3-dev
 
 apps:
   image-sieve:
@@ -39,7 +29,17 @@ parts:
     override-pull: |
       snapcraftctl pull
       snapcraftctl set-version \
-      "$(git describe --long --tags --always --abbrev=0 | sed 's/v//')"
+      "$(git describe --tags --always --abbrev=0 | sed 's/v//')"
+    build-packages:
+      - cmake
+      - git
+      - libxcb-shape0-dev 
+      - libxcb-xfixes0-dev 
+      - libxkbcommon-dev 
+      - libpango1.0-dev 
+      - libatk1.0-dev 
+      - libgtk-3-dev
+
 
   deps:
     plugin: nil
