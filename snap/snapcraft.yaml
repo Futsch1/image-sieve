@@ -1,4 +1,5 @@
 name: image-sieve 
+title: ImageSieve
 base: core20 
 summary: GUI based tool to sort out images and archive them in a target folder 
 description: |
@@ -7,6 +8,8 @@ description: |
   suitable for achiving or to eliminate potential duplicates or irrelevant images from a 
   folder structure. 
 adopt-info: image-sieve
+source-code: https://github.com/Futsch1/image-sieve.git
+license: GPL-3.0
 
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: strict
@@ -35,7 +38,8 @@ parts:
     source: .
     override-pull: |
       snapcraftctl pull
-      snapcraftctl set-version $(git describe --tags --abbrev=10)
+      snapcraftctl set-version \
+      "$(git describe --long --tags --always --abbrev=0 | sed 's/v//')"
 
   deps:
     plugin: nil
