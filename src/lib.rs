@@ -9,7 +9,6 @@
     unused_import_braces,
     unused_qualifications
 )]
-#![windows_subsystem = "windows"]
 
 //! Image_sieve crate providing a GUI based tool to sort out images based on similarity, categorize them according
 //! to their creation date and archive them in a target folder.

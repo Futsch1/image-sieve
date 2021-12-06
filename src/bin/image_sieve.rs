@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 extern crate image_sieve;
 
 use image_sieve::main_window;
