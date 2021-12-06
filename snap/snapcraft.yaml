@@ -35,7 +35,7 @@ parts:
     source: .
     override-pull: |
       snapcraftctl pull
-      snapcraftctl set-version $(git describe --tags --abbrev=0)
+      snapcraftctl set-version $(git describe --tags --abbrev=10)
 
   deps:
     plugin: nil
