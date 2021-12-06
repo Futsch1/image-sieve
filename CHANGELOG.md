@@ -5,16 +5,31 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+ - 
+
+### Added
+
+ - 
+
+### Fixed
+
+ - 
+
+## [0.3.0] - 2021-12-06
+
+### Changed
+
  - Settings are now stored in the home directory. As a consequence, settings from previous versions are lost
 
 ### Added
 
  - Sieving operations are now displayed in detail
  - Generate a MSI installer package for Windows
+ - Generate a snap package for Linux
 
 ### Fixed
 
- - 
+ - Console window is hidden in Windows version
 
 
 ## [0.2.4] - 2021-11-27

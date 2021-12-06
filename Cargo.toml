@@ -1,10 +1,10 @@
 [package]
 name = "image_sieve"
-version = "0.2.5"
+version = "0.3.0"
 authors = ["Florian Fetz <florian.fetz@googlemail.com>"]
 description = "GUI based tool to sort out and categorize images with the help of image similarity classification"
 repository = "https://github.com/Futsch1/image-sieve"
-license = "GPL-3.0"
+license = "GPL-3.0+"
 categories = ["multimedia::images"]
 build = "build.rs"
 edition = "2021"
@@ -29,7 +29,3 @@ home = "^0.5"
 [build-dependencies]
 sixtyfps-build = "0.1.5"
 winres = "^0.1"
-
-[[bin]]
-name = "image_sieve"
-doc = false
