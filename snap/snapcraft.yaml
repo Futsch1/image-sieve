@@ -28,7 +28,8 @@ parts:
     source: .
     override-pull: |
       snapcraftctl pull
-      ver=$(git describe --tags --abbrev=0 | sed 's/v//')
+      ver=""
+      ver=$(git describe --tags --abbrev=0 | sed 's/v//') || true
       if [ -z $ver ]
       then ver="0.0.0" 
       fi
