@@ -209,20 +209,6 @@ impl FileItem {
         self.hash = Some(hash);
     }
 
-    /// Set the image hash from an encoded hash
-    pub fn set_encoded_hash(&mut self, encoded_hash: &str) {
-        self.hash = process_encoded_hash(encoded_hash);
-    }
-
-    /// Gets the image hash as an encoded hash
-    pub fn get_encoded_hash(&self) -> String {
-        if let Some(hash) = self.hash.clone() {
-            hash.to_base64()
-        } else {
-            String::new()
-        }
-    }
-
     /// Check if the file item has a hash
     pub fn has_hash(&self) -> bool {
         self.hash.is_some()

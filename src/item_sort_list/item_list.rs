@@ -59,12 +59,6 @@ impl ItemList {
         self.path = String::from(path);
     }
 
-    /// Adds an item to the list
-    pub fn add_item(&mut self, item_path: String, take_over: bool, encoded_hash: &str) {
-        self.items
-            .push(Self::create_item(item_path, take_over, encoded_hash));
-    }
-
     /// Internal function to create a new file item
     fn create_item(item_path: String, take_over: bool, encoded_hash: &str) -> file_item::FileItem {
         let resolver = resolvers::get_resolver(&item_path);
