@@ -40,7 +40,7 @@ jobs:
       with:
         store_login: ${{ secrets.UBUNTU_STORE_LOGIN }}
         snap: ${{ steps.snapcraft.outputs.snap }}
-        release: edge
+        release: stable
 
   build-windows:
     
