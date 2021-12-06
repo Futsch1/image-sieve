@@ -21,19 +21,15 @@ jobs:
       run: sudo apt-get update
     - name: Install deps
       run: sudo apt-get install libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libpango1.0-dev libatk1.0-dev libgtk-3-dev
-    - name: Build snap
-      uses: snapcore/action-build@v1
-      id: snapcraft
-    - name: Archive snap
-      uses: actions/upload-artifact@v2
-      with:
-        name: snap
-        path: ${{ steps.snapcraft.outputs.snap }}
     - name: Run tests
       run: cargo test
     - name: Cargo publish
       if: startsWith(github.ref, 'refs/tags/v')
       run: cargo publish --token ${{ secrets.CRATES_IO_API_TOKEN }}
+    - name: Build snap
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: snapcore/action-build@v1
+      id: snapcraft
     - name: Snap publish
       if: startsWith(github.ref, 'refs/tags/v')
       uses: snapcore/action-publish@v1
