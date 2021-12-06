@@ -1,0 +1,51 @@
+name: image-sieve 
+title: ImageSieve
+base: core20 
+summary: GUI based tool to sort out images and archive them in a target folder 
+description: |
+  ImageSieve aims to help in the process of sorting through images taken by several 
+  people with several devices and collect the images worth keeping in a folder structure 
+  suitable for achiving or to eliminate potential duplicates or irrelevant images from a 
+  folder structure. 
+adopt-info: image-sieve
+source-code: https://github.com/Futsch1/image-sieve.git
+license: GPL-3.0+
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: strict
+icon: snap/local/ImageSieve.png
+
+apps:
+  image-sieve:
+    command: bin/image_sieve
+    extensions: [gnome-3-38]
+    plugs:
+      - home
+
+parts:
+  image-sieve:
+    plugin: rust
+    source: .
+    override-pull: |
+      snapcraftctl pull
+      ver=""
+      ver=$(git describe --tags --abbrev=0 | sed 's/v//') || true
+      if [ -z $ver ]
+      then ver="0.0.0" 
+      fi
+      snapcraftctl set-version $ver
+    build-packages:
+      - cmake
+      - git
+      - libxcb-shape0-dev 
+      - libxcb-xfixes0-dev 
+      - libxkbcommon-dev 
+      - libpango1.0-dev 
+      - libatk1.0-dev 
+      - libgtk-3-dev
+
+
+  deps:
+    plugin: nil
+    stage-packages:
+      - libxcb-shape0
