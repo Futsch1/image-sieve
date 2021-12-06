@@ -16,7 +16,7 @@ rfd = "^0.6"
 image = "^0.23.14"
 glob = "^0.3"
 kamadak-exif = "^0.5"
-chrono = "^0.4"
+chrono = {version = "^0.4", features = ["serde"]}
 num-traits = "^0.2"
 num-derive = "^0.3"  
 opener = "^0.5"
