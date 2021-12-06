@@ -28,8 +28,11 @@ parts:
     source: .
     override-pull: |
       snapcraftctl pull
-      snapcraftctl set-version \
-      "$(git describe --tags --always --abbrev=0 | sed 's/v//')"
+      ver=$(git describe --tags --abbrev=0 | sed 's/v//')
+      if [ -z $ver ]
+      then ver="0.0.0" 
+      fi
+      snapcraftctl set-version $ver
     build-packages:
       - cmake
       - git
