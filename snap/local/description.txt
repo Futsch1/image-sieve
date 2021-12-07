@@ -1,0 +1,11 @@
+ImageSieve aims to help in the process of sorting through images taken by several people with several devices and collect the images worth keeping in a folder structure suitable for archiving or to eliminate potential duplicates or irrelevant images from a folder structure. 
+
+**Features**
+* Browse images in jpg, tiff or png format and videos in mp4, avi and mts format from a folder structure in the order of their creation
+* Select which images to keep and which to discard
+* Images which resemble each other and images being taken within a customizable number of seconds are considered similar and are highlighted to support sorting
+* Manage events with a name, a start and an end date for the images to sort to automatically assign the images to an event
+* Discarded images and events are saved so that the sorting process can resume later
+* Sieve the images by either deleting discarded ones, copying or moving kept images to a target folder
+
+For more details, see https://github.com/Futsch1/image-sieve

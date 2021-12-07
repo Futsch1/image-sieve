@@ -1,7 +1,7 @@
 name: image-sieve 
 title: ImageSieve
 base: core20 
-summary: GUI based tool to sort out images and archive them in a target folder 
+summary: Tool to sort out images and archive them in a target folder 
 description: |
   ImageSieve aims to help in the process of sorting through images taken by several 
   people with several devices and collect the images worth keeping in a folder structure 
@@ -11,9 +11,9 @@ adopt-info: image-sieve
 # source-code: https://github.com/Futsch1/image-sieve.git
 license: GPL-3.0+
 
-grade: devel # must be 'stable' to release into candidate/stable channels
+grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict
-icon: snap/local/ImageSieve.png
+icon: snap/gui/ImageSieve.png
 
 apps:
   image-sieve:

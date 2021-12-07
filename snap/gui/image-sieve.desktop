@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=ImageSieve
+GenericName=ImageSieve
+Comment=Sort out images and archive them in a target folder
+TryExec=image-sieve.image-sieve
+Exec=image-sieve
+Icon=${SNAP}/meta/gui/ImageSieve.png
+Categories=Graphics;Photography;
+Keywords=image;sort;sieve;similarity;
+StartupNotify=false
+Terminal=false
