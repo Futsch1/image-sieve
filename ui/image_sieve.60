@@ -6,6 +6,8 @@ import { EventsView } from "events.60";
 import { CommitView, CommitMethodValues } from "commit.60";
 import { SettingsView } from "settings.60";
 
+import "./fonts/UbuntuLight.ttf";
+
 export { CommitMethodValues }
 
 ImageSieve := Window {
@@ -13,6 +15,7 @@ ImageSieve := Window {
     min-height: 800px;
     title: "ImageSieve";
     icon: @image-url("ImageSieve.png");
+    default-font-family: "UbuntuLight";
 
     property <string> window-title <=> root.title;
     property <bool> loading: true;
