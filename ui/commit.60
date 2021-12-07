@@ -43,6 +43,7 @@ export CommitView := HorizontalBox {
                 target-directory-edit := LineEdit { 
                     width: 400px;
                     enabled: !commit-running && commit-method-combo-box.current-index != 3;
+                    placeholder-text: "Select target directory";
                 }
                 Button {
                     text: "\u{1F4C2} Browse...";

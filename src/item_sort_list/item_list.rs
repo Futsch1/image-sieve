@@ -172,9 +172,8 @@ fn find_items(path: &str) -> Vec<String> {
     for extension in file_item::FileItem::get_extensions() {
         let glob_pattern = format!("{}/**/*.{}", path, extension);
         let entries = glob::glob_with(&glob_pattern, match_options).unwrap();
-        for entry in entries {
-            let file = entry.expect("IO error");
-            files.push(file.to_str().unwrap().to_string());
+        for entry in entries.flatten() {
+            files.push(entry.to_str().unwrap().to_string());
         }
     }
     files

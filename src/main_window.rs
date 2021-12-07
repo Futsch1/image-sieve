@@ -86,10 +86,12 @@ impl MainWindow {
 
         // Construct main window
         let image_sieve = ImageSieve::new();
-        let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve);
 
-        // Start synchronization in a background thread
-        synchronizer.synchronize(&settings.source_directory, settings.clone());
+        if !settings.source_directory.is_empty() {
+            let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve);
+            // Start synchronization in a background thread
+            synchronizer.synchronize(&settings.source_directory, settings.clone());
+        }
         let mut cache = ImageCache::new();
         cache.restrict_size(1600, 1000);
 
@@ -110,6 +112,10 @@ impl MainWindow {
             .window
             .set_window_title(SharedString::from("ImageSieve v") + version);
         settings.to_window(&main_window.window);
+        if settings.source_directory.is_empty() {
+            main_window.window.set_loading(false);
+            main_window.window.set_calculating_similarities(false);
+        }
 
         // Set model references
         main_window

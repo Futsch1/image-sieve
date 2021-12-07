@@ -129,6 +129,7 @@ export SortView := HorizontalBox {
 
         source-directory-edit := LineEdit { 
             enabled: false;
+            placeholder-text: "Select a folder with images";
         }
         Button {
             text: "\u{1F4C2} Browse...";
