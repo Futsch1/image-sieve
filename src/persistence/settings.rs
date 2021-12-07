@@ -3,7 +3,6 @@ use crate::main_window::{CommitMethodValues, ImageSieve};
 use num_traits::{FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
 use sixtyfps::{ComponentHandle, Model, ModelHandle, SharedString};
-use std::env;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Settings {
@@ -19,12 +18,8 @@ pub struct Settings {
 impl Settings {
     pub fn new() -> Self {
         Self {
-            source_directory: String::from(
-                env::current_dir().unwrap_or_default().to_str().unwrap(),
-            ),
-            target_directory: String::from(
-                env::current_dir().unwrap_or_default().to_str().unwrap(),
-            ),
+            source_directory: String::new(),
+            target_directory: String::new(),
             commit_method: CommitMethod::Copy,
             use_timestamps: true,
             timestamp_max_diff: 5,
