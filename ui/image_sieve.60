@@ -6,8 +6,6 @@ import { EventsView } from "events.60";
 import { CommitView, CommitMethodValues } from "commit.60";
 import { SettingsView } from "settings.60";
 
-import "./fonts/UbuntuLight.ttf";
-
 export { CommitMethodValues }
 
 ImageSieve := Window {
@@ -15,10 +13,12 @@ ImageSieve := Window {
     min-height: 800px;
     title: "ImageSieve";
     icon: @image-url("ImageSieve.png");
-    default-font-family: "UbuntuLight";
+    default-font-family: "Noto Color Emoji";
 
     property <string> window-title <=> root.title;
-    property <bool> loading: true;
+    property <bool> loading: false;    
+    property <string> loading-progress <=> loading-progress.text;
+    callback cancel-loading;
 
     // Map properties of SortView
     property images-list-model <=> sort-view.images-list-model;
@@ -80,11 +80,30 @@ ImageSieve := Window {
             accept
         }
     }
-
-    Text {
-        text: "Please wait, loading...";
-        visible: loading;
+    HorizontalBox { 
+        alignment: center;
+        VerticalBox { 
+            alignment: center;
+            Text {
+                text: "Please wait, searching for images...";
+                visible: loading;
+                font-size: 20px;
+            }
+            loading-progress := Text {
+                visible: loading;
+            }
+            Button {
+                text: "\u{274C} Cancel";
+                visible: loading;
+                width: 200px;
+                clicked => {
+                    cancel-loading();
+                }
+            }
+        }
     }
+    
+    
 
     TabWidget { 
         visible: !loading;

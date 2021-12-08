@@ -144,6 +144,8 @@ impl MainWindow {
 
     /// Start the event loop
     pub fn run(&self) {
+        sixtyfps::register_font_from_path("ui/fonts/HelloAngelia.ttf").expect("Error loading font");
+
         self.window.run();
 
         // Save settings when program exits

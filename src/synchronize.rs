@@ -23,14 +23,15 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 /// Combined path and settings used to send changes to the synchronize thread.
-struct PathAndSettings {
-    pub path: Option<String>,
-    pub settings: Option<Settings>,
+enum Command {
+    Stop,
+    Scan(String, Settings),
+    Similarities(Settings),
 }
 
 /// Synchronize the item list with the state of the file system and calculate similarities in a background thread.
 pub struct Synchronizer {
-    channel: Sender<PathAndSettings>,
+    channel: Sender<Command>,
 }
 
 impl Synchronizer {
@@ -51,25 +52,18 @@ impl Synchronizer {
     /// a zero length string, only check for similarities
     pub fn synchronize(&self, path: &str, settings: Settings) {
         let path = String::from(path);
-        let path = if !path.is_empty() { Some(path) } else { None };
-        self.channel
-            .send(PathAndSettings {
-                path,
-                settings: Some(settings),
-            })
-            .ok();
+        if path.is_empty() {
+            self.channel.send(Command::Similarities(settings)).ok();
+        } else {
+            self.channel.send(Command::Scan(path, settings)).ok();
+        }
     }
 }
 
 /// Dropping the object will cause the thread to exit by sending an empty path/settings command.
 impl Drop for Synchronizer {
     fn drop(&mut self) {
-        self.channel
-            .send(PathAndSettings {
-                path: None,
-                settings: None,
-            })
-            .ok();
+        self.channel.send(Command::Stop).ok();
     }
 }
 
@@ -80,20 +74,10 @@ impl Drop for Synchronizer {
 /// similarity is calculated and afterwards the image similarity (depending on if it is enabled or not)
 fn synchronize_run(
     item_list: Arc<Mutex<ItemList>>,
-    receiver: Receiver<PathAndSettings>,
+    receiver: Receiver<Command>,
     image_sieve: sixtyfps::Weak<ImageSieve>,
 ) {
-    for path_and_settings in receiver {
-        if path_and_settings.path.is_none() && path_and_settings.settings.is_none() {
-            // End loop and thread
-            break;
-        }
-        let path = path_and_settings.path;
-        let settings = path_and_settings.settings.unwrap();
-        if let Some(path) = path {
-            scan_files(&path, item_list.clone(), &image_sieve);
-        }
-
+    for command in receiver {
         // In any case, reset similarities first
         {
             let mut item_list_loc = item_list.lock().unwrap();
@@ -101,6 +85,15 @@ fn synchronize_run(
                 item.reset_similars();
             }
         }
+
+        let settings = match command {
+            Command::Stop => break,
+            Command::Scan(path, settings) => {
+                scan_files(&path, item_list.clone(), &image_sieve);
+                settings
+            }
+            Command::Similarities(settings) => settings,
+        };
 
         // First, find similars based on times, this is usually quick
         if settings.use_timestamps {

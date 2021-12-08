@@ -64,6 +64,7 @@ export SortView := HorizontalBox {
             }
             Text {
                 text: "\u{231B} Please wait, calculating similarities...";
+                font-size: 20px;
                 visible: calculating-similarities;
             }
         }
@@ -97,7 +98,7 @@ export SortView := HorizontalBox {
         HorizontalLayout { 
             spacing: 5px;
 
-            previous-button := Button {
+            previous-button := Button {                
                 text: "\u{2B05} Previous";
                 enabled: current-list-item > 0;
                 clicked => { 
