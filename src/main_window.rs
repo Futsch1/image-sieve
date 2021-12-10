@@ -10,6 +10,7 @@ use rfd::FileDialog;
 use sixtyfps::{Model, SharedString};
 use std::collections::HashMap;
 use std::fmt::Debug;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::sync::Mutex;
 use std::thread;
@@ -75,7 +76,7 @@ impl MainWindow {
         let item_list = ItemList {
             items: vec![],
             events: vec![],
-            path: String::new(),
+            path: PathBuf::new(),
         };
 
         let item_list = Arc::new(Mutex::new(item_list));
@@ -90,7 +91,10 @@ impl MainWindow {
         if !settings.source_directory.is_empty() {
             let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve);
             // Start synchronization in a background thread
-            synchronizer.synchronize(&settings.source_directory, settings.clone());
+            synchronizer.synchronize(
+                Some(Path::new(&settings.source_directory)),
+                settings.clone(),
+            );
         }
         let mut cache = ImageCache::new();
         cache.restrict_size(1600, 1000);
@@ -144,8 +148,6 @@ impl MainWindow {
 
     /// Start the event loop
     pub fn run(&self) {
-        sixtyfps::register_font_from_path("ui/fonts/HelloAngelia.ttf").expect("Error loading font");
-
         self.window.run();
 
         // Save settings when program exits
@@ -154,10 +156,7 @@ impl MainWindow {
 
         // and save item list
         let item_list = self.item_list.lock().unwrap();
-        JsonPersistence::save(
-            &get_project_filename(item_list.path.as_str()),
-            &item_list.clone(),
-        );
+        JsonPersistence::save(&get_project_filename(&item_list.path), &item_list.clone());
     }
 
     /// Setup sixtyfps GUI callbacks
@@ -238,24 +237,23 @@ impl MainWindow {
                         let item_list = item_list.lock().unwrap();
                         if !item_list.items.is_empty() {
                             JsonPersistence::save(
-                                &get_project_filename(item_list.path.as_str()),
+                                &get_project_filename(&item_list.path),
                                 &item_list.clone(),
                             );
                         }
                     }
 
-                    let source_path = folder.to_str().unwrap();
                     empty_model(item_list_model.clone());
                     empty_model(events_model.clone());
 
                     // Synchronize in a background thread
                     window_weak.unwrap().set_loading(true);
                     synchronizer
-                        .synchronize(source_path, Settings::from_window(&window_weak.unwrap()));
+                        .synchronize(Some(&folder), Settings::from_window(&window_weak.unwrap()));
 
                     window_weak
                         .unwrap()
-                        .set_source_directory(SharedString::from(source_path));
+                        .set_source_directory(SharedString::from(folder.to_str().unwrap()));
                 }
             }
         });
@@ -374,7 +372,8 @@ impl MainWindow {
             let item_list = self.item_list.clone();
             move |i: i32| {
                 let item_list = item_list.lock().unwrap();
-                opener::open(item_list.items[i as usize].get_path()).ok();
+                let item = &item_list.items[i as usize];
+                opener::open(&item.path).ok();
             }
         });
 
@@ -386,7 +385,7 @@ impl MainWindow {
             move || {
                 // Synchronize in a background thread
                 window_weak.unwrap().set_calculating_similarities(true);
-                synchronizer.synchronize("", Settings::from_window(&window_weak.unwrap()));
+                synchronizer.synchronize(None, Settings::from_window(&window_weak.unwrap()));
             }
         });
     }
@@ -595,6 +594,6 @@ pub fn commit(
                 commit_result_model.push(commit_result);
             });
         };
-        item_list_copy.commit(&target_path, commit_method, progress_callback);
+        item_list_copy.commit(Path::new(&target_path), commit_method, progress_callback);
     });
 }

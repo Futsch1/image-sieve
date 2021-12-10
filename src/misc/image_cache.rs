@@ -117,7 +117,7 @@ impl ImageCache {
     /// Gets an image from the cache
     pub fn get(&self, item: &FileItem) -> Option<Image> {
         if item.is_image() {
-            let item_path = item.get_path().to_str().unwrap();
+            let item_path = item.path.to_str().unwrap();
             let mut map = self.images.lock().unwrap();
             map.get(String::from(item_path))
                 .map(|image| crate::misc::images::get_sixtyfps_image(image))
@@ -170,7 +170,7 @@ fn load_image_thread(
             continue;
         }
         let (prefetch_item, max_width, max_height, callback) = next_item.unwrap();
-        let item_path = prefetch_item.get_path().to_str().unwrap();
+        let item_path = prefetch_item.path.to_str().unwrap();
         // First try to get the image from the cache
         let contains_key = {
             let map = cache.lock().unwrap();

@@ -6,7 +6,7 @@ GUI based tool to sort out images based on similarity, categorize them according
 
 ![Screenshot](doc/screenshot.png?raw=true "ImageSieve")
 
-ImageSieve aims to help in the process of sorting through images taken by several people with several devices and collect the images worth keeping in a folder structure suitable for achiving or to eliminate potential duplicates or irrelevant images from a folder structure. The tool runs on Windows, Linux and macOS.
+ImageSieve aims to help in the process of sorting through images taken by several people with several devices and collect the images worth keeping in a folder structure suitable for archiving or to eliminate potential duplicates or irrelevant images from a folder structure. The tool runs on Windows, Linux and macOS.
 
 ## Features
 - Browse images in jpg, tiff or png format and videos in mp4, avi and mts format from a folder structure in the order of their creation
@@ -17,7 +17,10 @@ ImageSieve aims to help in the process of sorting through images taken by severa
 - Sieve the images by either deleting discarded ones, copying or moving kept images to a target folder
 
 ## Installation
-Precompiled Windows binaries are available for every release for [download](https://github.com/Futsch1/image-sieve/releases). Linux and macOS users need to install [Rust](https://rustup.rs/), clone the repository and run
+Precompiled Windows binaries are available for every release for [download](https://github.com/Futsch1/image-sieve/releases). For Linux, a release is
+available on the [Snap Store](https://snapcraft.io/image-sieve).
+
+Linux and macOS users can also install [Rust](https://rustup.rs/), clone the repository and run
 
 ``` cargo install image_sieve ```
 
@@ -57,7 +60,7 @@ Note that the similarity calculation takes some time and will not be available r
 When you are done sorting the images, the sieving process can be started. Go to the "Sieve" tab and select a sieving mode. The following modes are supported:
 - Copy to target directory: Copies only the kept items to the target directory creating folders for the items, the source directory will be left untouched.
 - Move to target directory: Moves the kept items to the target directory creating folders for the items, effectively removing them from the source directory. Discarded items will stay in the source directory.
-- Move to target directory and delete in source directory: Moves the kept items to the target directory creating folders for the items and deletes discarded items in the source directory. If the source directory contained only images and videos, it will be empty afterwards (except for subfolders).
+- Move to target directory and delete in source directory: Moves the kept items to the target directory creating folders for the items and deletes discarded items in the source directory. If the source directory contained only images and videos, it will be empty afterwards (except for sub folders).
 - Delete in source directory: Deletes all discarded items in the source directory.
 
 Depending on the mode, you need to indicate a target directory that is used for the result of the sieving process. Once you are done, click the start button and the sieve process will start.
@@ -65,10 +68,12 @@ Depending on the mode, you need to indicate a target directory that is used for 
 ## Known issues and TODOs
 - Navigation with previous/next through similar items can be improved
 - Folder structure of destination should be customizable (by month, by day, by year)
+- Help tab can be added
+- Image search synchronization thread is not ended when program is closed
+- Image synchronization thread should indicate progress and may be cancellable
 
-## Details
-This is the first software I've ever written in Rust, so there might be room for improvement. If you want to help, clone and pull-request.
-The tool uses the [sixtyfps](https://github.com/sixtyfpsui/sixtyfps) GUI framework and a few of the great [bootstrap icons](https://icons.getbootstrap.com/).
+## Misc
+If you want to help, clone and pull-request. The tool uses the [sixtyfps](https://github.com/sixtyfpsui/sixtyfps) GUI framework, a few of the great [bootstrap icons](https://icons.getbootstrap.com/) and the [Ubuntu font](https://design.ubuntu.com/font/).
 
 ## Disclaimer
 This tool is free software. The author does not take any responsibility or liability for data lost due to bugs or faulty use of the software. Note that the software is in constant development and may contain bugs. Use at your own risk!

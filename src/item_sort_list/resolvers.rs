@@ -5,11 +5,11 @@ use self::chrono::NaiveDateTime;
 use self::exif::{In, Tag};
 
 use super::item_traits::{Orientation, PropertyResolver};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-pub fn get_resolver(path: &str) -> Box<dyn PropertyResolver> {
-    match Path::new(path).extension() {
+pub fn get_resolver(path: &Path) -> Box<dyn PropertyResolver> {
+    match path.extension() {
         Some(extension) => {
             let extension = extension.to_ascii_lowercase();
             let extension_str = extension.to_str().unwrap();
@@ -23,13 +23,13 @@ pub fn get_resolver(path: &str) -> Box<dyn PropertyResolver> {
 }
 
 pub struct FileResolver {
-    path: String,
+    path: PathBuf,
 }
 
 impl FileResolver {
-    pub fn new(path: &str) -> Self {
+    pub fn new(path: &Path) -> Self {
         Self {
-            path: String::from(path),
+            path: PathBuf::from(path),
         }
     }
 }
@@ -44,7 +44,8 @@ impl PropertyResolver for FileResolver {
                     .min(modified)
                     .duration_since(SystemTime::UNIX_EPOCH)
                     .unwrap()
-                    .as_secs() as i64 + chrono::Local::now().offset().local_minus_utc() as i64
+                    .as_secs() as i64
+                    + chrono::Local::now().offset().local_minus_utc() as i64
             }
             Err(_) => 0,
         }
@@ -57,18 +58,18 @@ impl PropertyResolver for FileResolver {
 
 struct ExifResolver {
     exif: Option<exif::Exif>,
-    path: String,
+    path: PathBuf,
 }
 
 impl ExifResolver {
-    pub fn new(path: &str) -> Self {
+    pub fn new(path: &Path) -> Self {
         let file = std::fs::File::open(path).expect("Error reading file");
         let mut bufreader = std::io::BufReader::new(&file);
         let exif_reader = exif::Reader::new();
         let result = exif_reader.read_from_container(&mut bufreader).ok();
         Self {
             exif: result,
-            path: String::from(path),
+            path: PathBuf::from(path),
         }
     }
 }
@@ -124,11 +125,11 @@ mod tests {
     use super::*;
 
     fn get_timestamp_from(path: &str) -> i64 {
-        get_resolver(path).get_timestamp()
+        get_resolver(Path::new(path)).get_timestamp()
     }
 
     fn get_file_timestamp(path: &str) -> i64 {
-        FileResolver::new(path).get_timestamp()
+        FileResolver::new(Path::new(path)).get_timestamp()
     }
 
     #[test]

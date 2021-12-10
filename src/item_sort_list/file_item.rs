@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::path::Path;
+use std::path::PathBuf;
 
 use img_hash::ImageHash;
 use serde::Deserialize;
@@ -18,15 +19,13 @@ pub type HashType = ImageHash<Vec<u8>>;
 #[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct FileItem {
     /// Actual file path
-    path: String,
+    pub path: PathBuf,
     /// Time stamp of file creation (either from EXIF or from file system)
     timestamp: i64,
     /// Flag indicating if the file shall be taken over during sieving (true) or be discarded (false)
     take_over: bool,
     /// List of similar items as indices in the list of file items
     similar: Vec<usize>,
-    /// File extension indicating the file type
-    extension: String,
     /// Orientation of the image
     orientation: Option<Orientation>,
     /// Hash of the image
@@ -60,13 +59,12 @@ where
 impl FileItem {
     /// Create a new file item from a path and initialize properties from serialization
     pub fn new(
-        path: String,
+        path: PathBuf,
         property_resolver: Box<dyn PropertyResolver>,
         take_over: bool,
         encoded_hash: &str,
     ) -> Self {
         let timestamp = property_resolver.get_timestamp();
-        let extension = extension(&path);
         let orientation = property_resolver.get_orientation();
         let hash = process_encoded_hash(encoded_hash);
 
@@ -75,7 +73,6 @@ impl FileItem {
             timestamp,
             take_over,
             similar: vec![],
-            extension,
             orientation,
             hash,
         }
@@ -85,12 +82,11 @@ impl FileItem {
     #[cfg(test)]
     pub fn dummy(path: &str, timestamp: i64, take_over: bool) -> Self {
         Self {
-            path: String::from(path),
+            path: PathBuf::from(path),
             timestamp,
             orientation: None,
             take_over,
             similar: vec![],
-            extension: String::from(""),
             hash: None,
         }
     }
@@ -119,21 +115,11 @@ impl FileItem {
 
     /// Get the size of a file item in bytes
     pub fn get_size(&self) -> u64 {
-        let result = self.get_path().metadata();
+        let result = self.path.metadata();
         match result {
             Ok(metadata) => metadata.len(),
             Err(_) => 0,
         }
-    }
-
-    /// Get the path of the file item
-    pub fn get_path(&self) -> &Path {
-        Path::new(&self.path)
-    }
-
-    /// Get the path of the file item as a refernece to a string
-    pub fn get_path_as_str(&self) -> &String {
-        &self.path
     }
 
     /// Adds another item's index as a similar item
@@ -159,9 +145,8 @@ impl FileItem {
     }
 
     /// Gets a string representing the item type and if it has simlar items or not, if it will be discarded and the item path
-    pub fn get_item_string(&self, base_path: &str) -> String {
-        let path = Path::new(&self.path);
-        let path = path.strip_prefix(base_path).unwrap_or(path);
+    pub fn get_item_string(&self, base_path: &Path) -> String {
+        let path = self.path.strip_prefix(base_path).unwrap_or(&self.path);
         let similars_str = if !self.get_similars().is_empty() {
             "\u{1F500} "
         } else {
@@ -180,12 +165,18 @@ impl FileItem {
 
     /// Check if the item is an image
     pub fn is_image(&self) -> bool {
-        matches!(self.extension.as_str(), "jpg" | "png" | "tif")
+        matches!(
+            self.path.extension().unwrap().to_str().unwrap(),
+            "jpg" | "png" | "tif"
+        )
     }
 
     /// Check if the item is a video
     pub fn is_video(&self) -> bool {
-        matches!(self.extension.as_str(), "mp4" | "avi" | "mts")
+        matches!(
+            self.path.extension().unwrap().to_str().unwrap(),
+            "mp4" | "avi" | "mts"
+        )
     }
 
     /// Get a list of allowed extensions
@@ -244,7 +235,7 @@ impl FileItem {
 impl Display for FileItem {
     /// Gets the item text, composed of the item string, the item size in KB, the item date and an optional event
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let item_text = self.get_item_string("");
+        let item_text = self.get_item_string(Path::new(""));
         let item_size = self.get_size() / 1024;
         let item_date = self.get_date_str();
         write!(f, "{} - {}, {} KB", item_text, item_date, item_size)
@@ -261,13 +252,6 @@ impl Ord for FileItem {
     fn cmp(&self, other: &Self) -> Ordering {
         self.timestamp.cmp(&other.timestamp)
     }
-}
-
-/// Gets the extension from a path
-fn extension(path: &str) -> String {
-    let path = Path::new(path);
-    let extension = path.extension().unwrap_or_default().to_ascii_lowercase();
-    String::from(extension.to_str().unwrap())
 }
 
 /// Process an encoded hash and create an image hash from it

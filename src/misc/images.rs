@@ -13,7 +13,6 @@ pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 /// Get an image buffer from a FileItem with a width and height constraint. If the image contains
 /// an orientation indication, it is rotated accordingly.
 pub fn get_image_buffer(item: &FileItem, max_width: u32, max_height: u32) -> ImageBuffer {
-    let path = item.get_path();
     let rotation = match item.get_orientation() {
         Some(orientation) => match orientation {
             crate::item_sort_list::Orientation::Landscape => 0,
@@ -23,7 +22,7 @@ pub fn get_image_buffer(item: &FileItem, max_width: u32, max_height: u32) -> Ima
         },
         None => 0,
     };
-    load_image_and_rotate(path, rotation, max_width, max_height)
+    load_image_and_rotate(&item.path, rotation, max_width, max_height)
         .unwrap_or_else(|_| ImageBuffer::new(1, 1))
 }
 

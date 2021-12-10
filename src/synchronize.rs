@@ -9,6 +9,7 @@ use sixtyfps::ComponentHandle;
 use sixtyfps::Model;
 use sixtyfps::SharedString;
 use sixtyfps::VecModel;
+use walkdir::WalkDir;
 
 use crate::main_window::synchronize_event_list_model;
 use crate::main_window::synchronize_item_list_model;
@@ -18,6 +19,8 @@ use crate::misc::images::get_empty_image;
 use crate::persistence::json::get_project_filename;
 use crate::persistence::json::JsonPersistence;
 use std::collections::HashMap;
+use std::path::Path;
+use std::path::PathBuf;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -25,7 +28,7 @@ use std::sync::Mutex;
 /// Combined path and settings used to send changes to the synchronize thread.
 enum Command {
     Stop,
-    Scan(String, Settings),
+    Scan(PathBuf, Settings),
     Similarities(Settings),
 }
 
@@ -50,12 +53,12 @@ impl Synchronizer {
 
     /// Perform synchronization of the item list with a given path in a background thread. If the path is
     /// a zero length string, only check for similarities
-    pub fn synchronize(&self, path: &str, settings: Settings) {
-        let path = String::from(path);
-        if path.is_empty() {
-            self.channel.send(Command::Similarities(settings)).ok();
-        } else {
+    pub fn synchronize(&self, path: Option<&Path>, settings: Settings) {
+        if let Some(path) = path {
+            let path = path.to_path_buf();
             self.channel.send(Command::Scan(path, settings)).ok();
+        } else {
+            self.channel.send(Command::Similarities(settings)).ok();
         }
     }
 }
@@ -124,7 +127,7 @@ fn synchronize_run(
 
 /// Scan files in a path, update the item list with those found files and update the GUI models with the new data
 fn scan_files(
-    path: &str,
+    path: &Path,
     item_list: Arc<Mutex<ItemList>>,
     image_sieve: &sixtyfps::Weak<ImageSieve>,
 ) {
@@ -137,7 +140,15 @@ fn scan_files(
             item_list_loc.clone_from(&loaded_item_list);
         }
 
-        item_list_loc.synchronize(path);
+        // First, drain missing files
+        item_list_loc.drain_missing();
+
+        // Now, walk dirs and synchronize each
+        for entry in WalkDir::new(path).into_iter().flatten() {
+            item_list_loc.synchronize(entry.path());
+        }
+
+        item_list_loc.finish_synchronizing(path);
     }
     image_sieve.clone().upgrade_in_event_loop({
         let item_list = item_list.lock().unwrap().to_owned();
@@ -208,18 +219,18 @@ fn calculate_similar_timestamps(
 /// Calculate the similarity hashes of images in the item list and check for hashes with a given maximum distance. Does not update the GUI
 fn calculate_similar_hashes(item_list: Arc<Mutex<ItemList>>, settings: &Settings) {
     // Collect file names which need to be hashed (those that are images and have no stored hash yet)
-    let mut image_file_names: Vec<String> = Vec::new();
+    let mut image_file_names: Vec<PathBuf> = Vec::new();
     {
         let item_list_loc = item_list.lock().unwrap();
         for item in &item_list_loc.items {
             if item.is_image() && !item.has_hash() {
-                image_file_names.push(item.get_path_as_str().clone());
+                image_file_names.push(item.path.clone());
             }
         }
     }
 
     // Now calculate the hashes
-    let mut hashes: HashMap<String, ImageHash<Vec<u8>>> = HashMap::new();
+    let mut hashes: HashMap<PathBuf, ImageHash<Vec<u8>>> = HashMap::new();
     for image_file_name in image_file_names {
         if let Ok(image) = image::open(&image_file_name) {
             // The hash size is dependent on the image orientation to increase the result quality
@@ -241,7 +252,7 @@ fn calculate_similar_hashes(item_list: Arc<Mutex<ItemList>>, settings: &Settings
     {
         let mut item_list_loc = item_list.lock().unwrap();
         for item in &mut item_list_loc.items {
-            let hash = hashes.remove(item.get_path_as_str());
+            let hash = hashes.remove(&item.path);
             if let Some(hash) = hash {
                 item.set_hash(hash);
             }

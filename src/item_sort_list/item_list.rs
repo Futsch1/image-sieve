@@ -1,10 +1,12 @@
 extern crate chrono;
-extern crate glob;
 
 use self::chrono::NaiveDateTime;
 use num_derive::{FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fs;
+use std::path::Path;
+use std::path::PathBuf;
 
 use super::commit;
 use super::event;
@@ -33,40 +35,47 @@ pub struct ItemList {
     /// List of events
     pub events: Vec<event::Event>,
     /// Base path that was used to create the item list
-    pub path: String,
+    pub path: PathBuf,
 }
 
 impl ItemList {
-    /// Synchronize an existing items list with the items found in a path
-    pub fn synchronize(&mut self, path: &str) {
-        let mut found_item_paths = find_items(path);
+    /// Remove all missing files from the item list
+    pub fn drain_missing(&mut self) {
+        self.items = self.items.drain(..).filter(|i| i.path.exists()).collect();
+    }
 
-        self.items = self
-            .items
-            .drain(..)
-            .filter(|i| i.get_path().exists() && found_item_paths.contains(i.get_path_as_str()))
-            .collect();
+    /// Synchronize a given path with the item list adding all items that are new
+
+    /// Synchronize an existing items list with the items found in a path
+    pub fn synchronize(&mut self, path: &Path) {
+        let mut found_item_paths = find_items(path);
 
         // Add all newly found
         for item_path in found_item_paths.drain(..) {
             let item = Self::create_item(item_path, true, "");
-            let path = item.get_path();
-            if !self.items.iter().any(|i| i.get_path() == path) {
+            let path = &item.path;
+            if !self.items.iter().any(|i| &i.path == path) {
                 self.items.push(item);
             }
         }
+    }
+
+    pub fn finish_synchronizing(&mut self, base_path: &Path) {
         self.items.sort();
-        self.path = String::from(path);
+        self.path = base_path.to_path_buf();
     }
 
     /// Adds an item to the list
-    pub fn add_item(&mut self, item_path: String, take_over: bool, encoded_hash: &str) {
-        self.items
-            .push(Self::create_item(item_path, take_over, encoded_hash));
+    pub fn add_item(&mut self, item_path: &Path, take_over: bool, encoded_hash: &str) {
+        self.items.push(Self::create_item(
+            item_path.to_path_buf(),
+            take_over,
+            encoded_hash,
+        ));
     }
 
     /// Internal function to create a new file item
-    fn create_item(item_path: String, take_over: bool, encoded_hash: &str) -> file_item::FileItem {
+    fn create_item(item_path: PathBuf, take_over: bool, encoded_hash: &str) -> file_item::FileItem {
         let resolver = resolvers::get_resolver(&item_path);
         file_item::FileItem::new(item_path, resolver, take_over, encoded_hash)
     }
@@ -140,7 +149,7 @@ impl ItemList {
     /// The progress is reported by calling a callback function with the file that is currently processed.
     pub fn commit(
         &self,
-        path: &str,
+        path: &Path,
         commit_method: CommitMethod,
         progress_callback: impl Fn(String),
     ) {
@@ -161,21 +170,21 @@ impl ItemList {
 }
 
 /// Find all files in a directory with the extensions supported by FileItem
-fn find_items(path: &str) -> Vec<String> {
-    let match_options = glob::MatchOptions {
-        case_sensitive: false,
-        require_literal_leading_dot: false,
-        require_literal_separator: false,
-    };
-    let mut files: Vec<String> = Vec::new();
+fn find_items(path: &Path) -> Vec<PathBuf> {
+    let mut files: Vec<PathBuf> = Vec::new();
 
-    for extension in file_item::FileItem::get_extensions() {
-        let glob_pattern = format!("{}/**/*.{}", path, extension);
-        let entries = glob::glob_with(&glob_pattern, match_options).unwrap();
-        for entry in entries.flatten() {
-            files.push(entry.to_str().unwrap().to_string());
+    let paths = fs::read_dir(path).unwrap();
+
+    for path in paths.flatten() {
+        if let Some(extension) = path.path().extension() {
+            if let Some(extension) = extension.to_str() {
+                if file_item::FileItem::get_extensions().contains(&extension) {
+                    files.push(path.path());
+                }
+            }
         }
     }
+
     files
 }
 
@@ -208,7 +217,7 @@ mod tests {
         let mut items: Vec<file_item::FileItem> = vec![];
         for _ in 0..6 {
             items.push(file_item::FileItem::new(
-                String::from(""),
+                PathBuf::from(""),
                 Box::new(MockResolver {}),
                 true,
                 "",
@@ -217,7 +226,7 @@ mod tests {
         let mut item_list = ItemList {
             items,
             events: vec![],
-            path: String::from(""),
+            path: PathBuf::from(""),
         };
 
         item_list.find_similar(5);
@@ -228,5 +237,17 @@ mod tests {
         assert_eq!(0, item_list.items[3].get_similars().len());
         assert_eq!(1, item_list.items[4].get_similars().len());
         assert_eq!(1, item_list.items[5].get_similars().len());
+    }
+
+    #[test]
+    fn updating() {
+        let mut item_list = ItemList {
+            items: vec![],
+            events: vec![],
+            path: PathBuf::from(""),
+        };
+
+        item_list.synchronize(Path::new("tests"));
+        assert_eq!(3, item_list.items.len());
     }
 }

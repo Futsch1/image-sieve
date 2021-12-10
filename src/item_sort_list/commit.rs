@@ -64,7 +64,7 @@ impl CommitIO for FileCommitIO {
 /// The progress is reported by calling a callback function with the file that is currently processed.
 pub fn commit<T>(
     item_list: &ItemList,
-    path: &str,
+    path: &Path,
     commit_method: CommitMethod,
     commit_io: &T,
     progress_callback: impl Fn(String),
@@ -72,14 +72,13 @@ pub fn commit<T>(
     T: CommitIO,
 {
     if commit_method != CommitMethod::Delete {
-        let path = Path::new(path);
         prepare_path(path, commit_io);
 
         for item in &item_list.items {
             if item.get_take_over() {
                 let full_path = path.join(get_sub_path(item_list, item));
                 prepare_path(&full_path, commit_io);
-                let source = item.get_path();
+                let source = &item.path;
                 let target = full_path.join(source.file_name().unwrap());
                 progress_callback(format!("{:?} -> {:?}", source, target));
 
@@ -95,7 +94,7 @@ pub fn commit<T>(
                     }
                 };
             } else if commit_method == CommitMethod::MoveAndDelete {
-                let source = item.get_path();
+                let source = &item.path;
                 progress_callback(format!("Delete {:?}", source));
                 match commit_io.remove_file(source) {
                     Ok(_) => (),
@@ -106,7 +105,7 @@ pub fn commit<T>(
     } else {
         for item in &item_list.items {
             if !item.get_take_over() {
-                let source = item.get_path();
+                let source = &item.path;
                 progress_callback(format!("Delete {:?}", source));
                 match commit_io.remove_file(source) {
                     Ok(_) => (),
@@ -237,7 +236,7 @@ mod test {
                     end_date: NaiveDate::from_ymd(2021, 9, 27),
                 },
             ],
-            path: String::from(""),
+            path: PathBuf::from(""),
         };
         let test_cases = [
             ("2021-09-14 00:00", "2021-09-14 Test1"),
@@ -273,13 +272,13 @@ mod test {
                 FileItem::dummy("test/test2", 0, false),
             ],
             events: vec![],
-            path: String::from(""),
+            path: PathBuf::from(""),
         };
         let mut commit_io = TestCommitIO::new();
 
         commit(
             &item_list,
-            "target",
+            Path::new("target"),
             CommitMethod::Delete,
             &commit_io,
             |_: String| {},
@@ -296,7 +295,7 @@ mod test {
         commit_io.reset();
         commit(
             &item_list,
-            "target",
+            Path::new("target"),
             CommitMethod::Copy,
             &commit_io,
             |_: String| {},
@@ -321,7 +320,7 @@ mod test {
         commit_io.reset();
         commit(
             &item_list,
-            "target",
+            Path::new("target"),
             CommitMethod::Move,
             &commit_io,
             |_: String| {},
@@ -346,7 +345,7 @@ mod test {
         commit_io.reset();
         commit(
             &item_list,
-            "target",
+            Path::new("target"),
             CommitMethod::MoveAndDelete,
             &commit_io,
             |_: String| {},
