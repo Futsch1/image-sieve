@@ -150,11 +150,11 @@ impl FileItem {
     }
 
     fn has_similars(&self) -> bool {
-        return self.similar.is_empty();
+        self.similar.is_empty()
     }
 
     pub fn clean_similars(&mut self, item_index: usize) {
-        self.similar.sort();
+        self.similar.sort_unstable();
         self.similar.dedup();
         if let Ok(similar_index) = self.similar.binary_search(&item_index) {
             self.similar.remove(similar_index);
