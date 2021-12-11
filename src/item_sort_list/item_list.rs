@@ -4,7 +4,6 @@ use self::chrono::NaiveDateTime;
 use num_derive::{FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -44,22 +43,22 @@ impl ItemList {
         self.items = self.items.drain(..).filter(|i| i.path.exists()).collect();
     }
 
-    /// Synchronize a given path with the item list adding all items that are new
-
-    /// Synchronize an existing items list with the items found in a path
-    pub fn synchronize(&mut self, path: &Path) {
-        let mut found_item_paths = find_items(path);
-
-        // Add all newly found
-        for item_path in found_item_paths.drain(..) {
-            let item = Self::create_item(item_path, true, "");
-            let path = &item.path;
-            if !self.items.iter().any(|i| &i.path == path) {
-                self.items.push(item);
+    /// Check if a path can be added
+    pub fn check_and_add(&mut self, path: &Path) -> bool {
+        if let Some(extension) = path.extension() {
+            if let Some(extension) = extension.to_ascii_lowercase().to_str() {
+                if file_item::FileItem::get_extensions().contains(&extension)
+                    && !self.items.iter().any(|i| i.path == path)
+                {
+                    let item = Self::create_item(path.to_path_buf(), true, "");
+                    self.items.push(item);
+                }
             }
         }
+        false
     }
 
+    /// Finish the synchronization progress
     pub fn finish_synchronizing(&mut self, base_path: &Path) {
         self.items.sort();
         self.path = base_path.to_path_buf();
@@ -169,25 +168,6 @@ impl ItemList {
     }
 }
 
-/// Find all files in a directory with the extensions supported by FileItem
-fn find_items(path: &Path) -> Vec<PathBuf> {
-    let mut files: Vec<PathBuf> = Vec::new();
-
-    let paths = fs::read_dir(path).unwrap();
-
-    for path in paths.flatten() {
-        if let Some(extension) = path.path().extension() {
-            if let Some(extension) = extension.to_str() {
-                if file_item::FileItem::get_extensions().contains(&extension) {
-                    files.push(path.path());
-                }
-            }
-        }
-    }
-
-    files
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -247,7 +227,19 @@ mod tests {
             path: PathBuf::from(""),
         };
 
-        item_list.synchronize(Path::new("tests"));
+        item_list.check_and_add(Path::new("tests/test_no_date.jpg"));
+        item_list.check_and_add(Path::new("tests/test_no_exif.jpg"));
+        item_list.check_and_add(Path::new("tests/test.jpg"));
+        item_list.check_and_add(Path::new("tests/test_no_date.jpg"));
+        item_list.check_and_add(Path::new("tests/test"));
+        assert_eq!(3, item_list.items.len());
+
+        item_list.finish_synchronizing(Path::new("tests"));
+        assert_eq!("tests", item_list.path.to_str().unwrap());
+
+        item_list.add_item(Path::new("tests/not_there"), true, "");
+        assert_eq!(4, item_list.items.len());
+        item_list.drain_missing();
         assert_eq!(3, item_list.items.len());
     }
 }

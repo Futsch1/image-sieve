@@ -69,8 +69,7 @@ Depending on the mode, you need to indicate a target directory that is used for 
 - Navigation with previous/next through similar items can be improved
 - Folder structure of destination should be customizable (by month, by day, by year)
 - Help tab can be added
-- Image search synchronization thread is not ended when program is closed
-- Image synchronization thread should indicate progress and may be cancellable
+- Icons should look the same on all platforms
 
 ## Misc
 If you want to help, clone and pull-request. The tool uses the [sixtyfps](https://github.com/sixtyfpsui/sixtyfps) GUI framework, a few of the great [bootstrap icons](https://icons.getbootstrap.com/) and the [Ubuntu font](https://design.ubuntu.com/font/).

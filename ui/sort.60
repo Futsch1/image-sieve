@@ -64,7 +64,6 @@ export SortView := HorizontalBox {
             }
             Text {
                 text: "\u{231B} Please wait, calculating similarities...";
-                font-size: 20px;
                 visible: calculating-similarities;
             }
         }

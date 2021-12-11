@@ -15,7 +15,7 @@ ImageSieve := Window {
     icon: @image-url("ImageSieve.png");
 
     property <string> window-title <=> root.title;
-    property <bool> loading: false;    
+    property <bool> loading: true;    
     property <string> loading-progress <=> loading-progress.text;
     callback cancel-loading;
 
@@ -79,18 +79,26 @@ ImageSieve := Window {
             accept
         }
     }
-    HorizontalBox { 
+    VerticalLayout { 
         alignment: center;
-        VerticalBox { 
+        spacing: 10px;
+
+        HorizontalLayout { 
             alignment: center;
             Text {
                 text: "Please wait, searching for images...";
                 visible: loading;
                 font-size: 20px;
             }
+        }
+        HorizontalLayout { 
+            alignment: center;
             loading-progress := Text {
                 visible: loading;
             }
+        }
+        HorizontalLayout { 
+            alignment: center;
             Button {
                 text: "\u{274C} Cancel";
                 visible: loading;

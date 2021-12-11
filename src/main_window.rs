@@ -49,6 +49,7 @@ pub struct MainWindow {
     events_model: Rc<sixtyfps::VecModel<Event>>,
     commit_result_model: Rc<sixtyfps::VecModel<CommitResult>>,
     image_cache: Rc<ImageCache>,
+    synchronizer: Rc<Synchronizer>,
 }
 
 impl Default for MainWindow {
@@ -88,8 +89,8 @@ impl MainWindow {
         // Construct main window
         let image_sieve = ImageSieve::new();
 
+        let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve);
         if !settings.source_directory.is_empty() {
-            let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve);
             // Start synchronization in a background thread
             synchronizer.synchronize(
                 Some(Path::new(&settings.source_directory)),
@@ -108,6 +109,7 @@ impl MainWindow {
             events_model: event_list_model,
             commit_result_model,
             image_cache: Rc::new(cache),
+            synchronizer: Rc::new(synchronizer),
         };
 
         // Set initial values
@@ -149,6 +151,8 @@ impl MainWindow {
     /// Start the event loop
     pub fn run(&self) {
         self.window.run();
+
+        self.synchronizer.stop();
 
         // Save settings when program exits
         let settings = Settings::from_window(&self.window);
@@ -227,7 +231,7 @@ impl MainWindow {
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
             let window_weak = self.window.as_weak();
-            let synchronizer = Synchronizer::new(self.item_list.clone(), &self.window);
+            let synchronizer = self.synchronizer.clone();
 
             move || {
                 let file_dialog = FileDialog::new();
@@ -380,12 +384,19 @@ impl MainWindow {
         self.window.on_recheck_similarities({
             // Browse source was clicked, select new path
             let window_weak = self.window.as_weak();
-            let synchronizer = Synchronizer::new(self.item_list.clone(), &self.window);
+            let synchronizer = self.synchronizer.clone();
 
             move || {
                 // Synchronize in a background thread
                 window_weak.unwrap().set_calculating_similarities(true);
                 synchronizer.synchronize(None, Settings::from_window(&window_weak.unwrap()));
+            }
+        });
+
+        self.window.on_cancel_loading({
+            let synchronizer = self.synchronizer.clone();
+            move || {
+                synchronizer.stop();
             }
         });
     }

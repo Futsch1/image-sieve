@@ -32,6 +32,8 @@ pub struct FileItem {
     #[serde(serialize_with = "serialize_hash")]
     #[serde(deserialize_with = "deserialize_hash")]
     hash: Option<HashType>,
+    /// Image extension (implicit property of path, but saved for performance purposes)
+    extension: String,
 }
 
 pub fn serialize_hash<S>(hash: &Option<HashType>, s: S) -> Result<S::Ok, S::Error>
@@ -67,6 +69,7 @@ impl FileItem {
         let timestamp = property_resolver.get_timestamp();
         let orientation = property_resolver.get_orientation();
         let hash = process_encoded_hash(encoded_hash);
+        let extension = extension(&path);
 
         Self {
             path,
@@ -75,6 +78,7 @@ impl FileItem {
             similar: vec![],
             orientation,
             hash,
+            extension,
         }
     }
 
@@ -88,6 +92,7 @@ impl FileItem {
             take_over,
             similar: vec![],
             hash: None,
+            extension: extension(Path::new(path)),
         }
     }
 
@@ -166,7 +171,12 @@ impl FileItem {
     /// Check if the item is an image
     pub fn is_image(&self) -> bool {
         matches!(
-            self.path.extension().unwrap().to_str().unwrap(),
+            self.path
+                .extension()
+                .unwrap()
+                .to_ascii_lowercase()
+                .to_str()
+                .unwrap(),
             "jpg" | "png" | "tif"
         )
     }
@@ -252,6 +262,12 @@ impl Ord for FileItem {
     fn cmp(&self, other: &Self) -> Ordering {
         self.timestamp.cmp(&other.timestamp)
     }
+}
+
+/// Gets the extension from a path
+fn extension(path: &Path) -> String {
+    let extension = path.extension().unwrap_or_default().to_ascii_lowercase();
+    String::from(extension.to_str().unwrap())
 }
 
 /// Process an encoded hash and create an image hash from it

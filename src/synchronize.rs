@@ -11,19 +11,22 @@ use sixtyfps::SharedString;
 use sixtyfps::VecModel;
 use walkdir::WalkDir;
 
-use crate::main_window::synchronize_event_list_model;
-use crate::main_window::synchronize_item_list_model;
-use crate::main_window::Event;
-use crate::main_window::ImageSieve;
+use crate::main_window::{
+    synchronize_event_list_model, synchronize_item_list_model, Event, ImageSieve, SortImage,
+};
 use crate::misc::images::get_empty_image;
 use crate::persistence::json::get_project_filename;
 use crate::persistence::json::JsonPersistence;
 use std::collections::HashMap;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::thread::sleep;
+use std::time::Duration;
 
 /// Combined path and settings used to send changes to the synchronize thread.
 enum Command {
@@ -45,7 +48,7 @@ impl Synchronizer {
         std::thread::spawn({
             let handle_weak = image_sieve.as_weak();
             move || {
-                synchronize_run(item_list, receiver, handle_weak);
+                synchronize_run(item_list, &receiver, handle_weak);
             }
         });
         Self { channel }
@@ -60,6 +63,11 @@ impl Synchronizer {
         } else {
             self.channel.send(Command::Similarities(settings)).ok();
         }
+    }
+
+    /// Stop the current synchronization process
+    pub fn stop(&self) {
+        self.channel.send(Command::Stop).ok();
     }
 }
 
@@ -77,7 +85,7 @@ impl Drop for Synchronizer {
 /// similarity is calculated and afterwards the image similarity (depending on if it is enabled or not)
 fn synchronize_run(
     item_list: Arc<Mutex<ItemList>>,
-    receiver: Receiver<Command>,
+    receiver: &Receiver<Command>,
     image_sieve: sixtyfps::Weak<ImageSieve>,
 ) {
     for command in receiver {
@@ -92,7 +100,11 @@ fn synchronize_run(
         let settings = match command {
             Command::Stop => break,
             Command::Scan(path, settings) => {
-                scan_files(&path, item_list.clone(), &image_sieve);
+                if scan_files(&path, item_list.clone(), &image_sieve, receiver).is_err() {
+                    let mut item_list_loc = item_list.lock().unwrap();
+                    item_list_loc.items.clear();
+                }
+                update_item_list(item_list.clone(), &image_sieve);
                 settings
             }
             Command::Similarities(settings) => settings,
@@ -130,28 +142,46 @@ fn scan_files(
     path: &Path,
     item_list: Arc<Mutex<ItemList>>,
     image_sieve: &sixtyfps::Weak<ImageSieve>,
-) {
-    {
-        let mut item_list_loc = item_list.lock().unwrap();
+    receiver: &Receiver<Command>,
+) -> Result<(), ()> {
+    let mut item_list_loc = item_list.lock().unwrap();
 
-        // Check if folder already contains an item list
-        let loaded_item_list: Option<ItemList> = JsonPersistence::load(&get_project_filename(path));
-        if let Some(loaded_item_list) = loaded_item_list {
-            item_list_loc.clone_from(&loaded_item_list);
-        }
+    item_list_loc.items.clear();
 
+    report_progress(image_sieve, String::from("Checking existing project..."));
+    check_abort(receiver)?;
+    // Check if folder already contains an item list
+    let loaded_item_list: Option<ItemList> = JsonPersistence::load(&get_project_filename(path));
+    if let Some(loaded_item_list) = loaded_item_list {
+        item_list_loc.clone_from(&loaded_item_list);
+    }
+
+    if !item_list_loc.items.is_empty() {
+        report_progress(image_sieve, String::from("Checking existing files..."));
+        check_abort(receiver)?;
         // First, drain missing files
         item_list_loc.drain_missing();
-
-        // Now, walk dirs and synchronize each
-        for entry in WalkDir::new(path).into_iter().flatten() {
-            item_list_loc.synchronize(entry.path());
-        }
-
-        item_list_loc.finish_synchronizing(path);
     }
+
+    // Now, walk dirs and synchronize each
+    for (file_counter, entry) in WalkDir::new(path).into_iter().flatten().enumerate() {
+        if file_counter % 100 == 0 {
+            report_progress(image_sieve, format!("Searching {}", entry.path().display()));
+        }
+        check_abort(receiver)?;
+        item_list_loc.check_and_add(entry.path());
+    }
+
+    item_list_loc.finish_synchronizing(path);
+    Ok(())
+}
+
+/// Update the item list to the main window
+fn update_item_list(item_list: Arc<Mutex<ItemList>>, image_sieve: &sixtyfps::Weak<ImageSieve>) {
+    let flag = Arc::new(AtomicBool::new(false));
     image_sieve.clone().upgrade_in_event_loop({
         let item_list = item_list.lock().unwrap().to_owned();
+        let flag = flag.clone();
         move |h| {
             synchronize_item_list_model(
                 &item_list,
@@ -173,19 +203,45 @@ fn scan_files(
             if num_items > 0 {
                 h.invoke_item_selected(0);
             } else {
-                let empty_image = crate::main_window::SortImage {
+                let empty_image = SortImage {
                     image: get_empty_image(),
                     take_over: true,
                     text: SharedString::from("No images found"),
                 };
                 h.set_current_image(empty_image);
                 h.set_current_image_index(0);
+                let model_handle = h.get_images_model();
+                let images_list_model = model_handle
+                    .as_any()
+                    .downcast_ref::<VecModel<SortImage>>()
+                    .unwrap();
+                for _ in 0..images_list_model.row_count() {
+                    images_list_model.remove(0);
+                }
             }
 
             // And finally enable the GUI by setting the loading flag to false
             h.set_loading(false);
+
+            flag.store(true, Ordering::Relaxed);
         }
     });
+
+    // Since the closure needs to lock the item list, it needs to be finished first before we continue working on the item list
+    // Busy waiting is a hacky solution here, but creating another synchronization channel seems overkill
+    while !flag.load(Ordering::Relaxed) {
+        sleep(Duration::from_millis(1));
+    }
+}
+
+/// Check if an abort command was received
+fn check_abort(receiver: &Receiver<Command>) -> Result<(), ()> {
+    let command = receiver.try_recv();
+    if let Ok(Command::Stop) = command {
+        Err(())
+    } else {
+        Ok(())
+    }
 }
 
 /// Extract the timestamp from all items in the item list and find similar items based on a maximum difference.
@@ -199,7 +255,6 @@ fn calculate_similar_timestamps(
         let mut item_list_loc = item_list.lock().unwrap();
         item_list_loc.find_similar(settings.timestamp_max_diff);
     }
-
     image_sieve.clone().upgrade_in_event_loop({
         let item_list = item_list.lock().unwrap().to_owned();
         let use_hash = settings.use_hash;
@@ -259,4 +314,13 @@ fn calculate_similar_hashes(item_list: Arc<Mutex<ItemList>>, settings: &Settings
         }
         item_list_loc.find_similar_hashes(settings.hash_max_diff);
     }
+}
+
+/// Report a progress string back to the main window
+fn report_progress(image_sieve: &sixtyfps::Weak<ImageSieve>, progress: String) {
+    image_sieve.clone().upgrade_in_event_loop({
+        move |h| {
+            h.set_loading_progress(SharedString::from(progress));
+        }
+    });
 }

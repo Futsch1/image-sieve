@@ -5,15 +5,17 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - 
+ - No directory is now the default
+ - Performance checking for files significantly improved
 
 ### Added
 
- - 
+ - Checking for images can now be cancelled
 
 ### Fixed
 
- - 
+ - When selecting a folder without images, the similar images model is now cleared
+ - Fixed a crash when a folder was selected with insufficient rights to access
 
 ## [0.3.0] - 2021-12-06
 
