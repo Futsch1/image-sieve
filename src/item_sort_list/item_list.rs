@@ -95,13 +95,10 @@ impl ItemList {
                 if (index == self.items.len())
                     || (timestamp + max_diff_seconds < self.items[index].get_timestamp())
                 {
+                    let similars = start_similar_index..index;
                     // The item has a larger diff, so set all items between start_similar_index and index to be similar to each other
                     for similar_index in start_similar_index..index {
-                        for other_index in start_similar_index..index {
-                            if similar_index != other_index {
-                                self.items[similar_index].add_similar(other_index);
-                            }
-                        }
+                        self.items[similar_index].add_similars(&similars);
                     }
                     start_similar_index = index;
                 }
@@ -109,6 +106,9 @@ impl ItemList {
                     timestamp = self.items[index].get_timestamp();
                 }
             }
+        }
+        for index in 0..self.items.len() {
+            self.items[index].clean_similars(index);
         }
     }
 
@@ -141,6 +141,7 @@ impl ItemList {
             for (_, other_index) in similar_list {
                 self.items[index].add_similar(*other_index);
             }
+            self.items[index].clean_similars(index);
         }
     }
 

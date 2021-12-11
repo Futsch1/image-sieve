@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::fmt::Debug;
 use std::fmt::Display;
 use std::fmt::Formatter;
+use std::ops::Range;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -75,7 +76,7 @@ impl FileItem {
             path,
             timestamp,
             take_over,
-            similar: vec![],
+            similar: Vec::new(),
             orientation,
             hash,
             extension,
@@ -90,7 +91,7 @@ impl FileItem {
             timestamp,
             orientation: None,
             take_over,
-            similar: vec![],
+            similar: Vec::new(),
             hash: None,
             extension: extension(Path::new(path)),
         }
@@ -129,12 +130,16 @@ impl FileItem {
 
     /// Adds another item's index as a similar item
     pub fn add_similar(&mut self, other_index: usize) {
-        if !self.similar.contains(&other_index) {
-            self.similar.push(other_index);
-        }
+        self.similar.push(other_index);
     }
 
-    /// Get the list of similar item indices
+    /// Add a list of similars
+    pub fn add_similars(&mut self, similars: &Range<usize>) {
+        self.similar.extend(similars.clone().into_iter());
+    }
+
+    /// Get the list of similar item indices. Needs a mut because the cleanup of the similar list is done
+    /// in a lazy fashion and might happen here.
     pub fn get_similars(&self) -> &Vec<usize> {
         &self.similar
     }
@@ -142,6 +147,18 @@ impl FileItem {
     /// Reset the list of similar item indices
     pub fn reset_similars(&mut self) {
         self.similar.clear()
+    }
+
+    fn has_similars(&self) -> bool {
+        return self.similar.is_empty();
+    }
+
+    pub fn clean_similars(&mut self, item_index: usize) {
+        self.similar.sort();
+        self.similar.dedup();
+        if let Ok(similar_index) = self.similar.binary_search(&item_index) {
+            self.similar.remove(similar_index);
+        }
     }
 
     /// Get the orientation of the image
@@ -152,7 +169,7 @@ impl FileItem {
     /// Gets a string representing the item type and if it has simlar items or not, if it will be discarded and the item path
     pub fn get_item_string(&self, base_path: &Path) -> String {
         let path = self.path.strip_prefix(base_path).unwrap_or(&self.path);
-        let similars_str = if !self.get_similars().is_empty() {
+        let similars_str = if !self.has_similars() {
             "\u{1F500} "
         } else {
             ""
