@@ -13,7 +13,6 @@ ImageSieve := Window {
     min-height: 800px;
     title: "ImageSieve";
     icon: @image-url("ImageSieve.png");
-    default-font-family: "Noto Color Emoji";
 
     property <string> window-title <=> root.title;
     property <bool> loading: false;    
