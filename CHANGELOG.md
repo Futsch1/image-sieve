@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
  - Checking for images can now be cancelled
+ - Events are now sorted by date
+ - Error message is shown when an event was edited
 
 ### Fixed
 
