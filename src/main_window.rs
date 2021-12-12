@@ -160,7 +160,9 @@ impl MainWindow {
 
         // and save item list
         let item_list = self.item_list.lock().unwrap();
-        JsonPersistence::save(&get_project_filename(&item_list.path), &item_list.clone());
+        if !item_list.items.is_empty() || !item_list.events.is_empty() {
+            JsonPersistence::save(&get_project_filename(&item_list.path), &item_list.clone());
+        }
     }
 
     /// Setup sixtyfps GUI callbacks
