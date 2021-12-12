@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+ - 
+
+### Added
+
+ - 
+
+### Fixed
+
+ - 
+
+## [0.3.1] - 2021-12-12
+
+### Changed
+
  - No directory is now the default
  - Performance checking for files significantly improved
 
