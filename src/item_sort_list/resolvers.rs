@@ -63,10 +63,15 @@ struct ExifResolver {
 
 impl ExifResolver {
     pub fn new(path: &Path) -> Self {
-        let file = std::fs::File::open(path).expect("Error reading file");
-        let mut bufreader = std::io::BufReader::new(&file);
-        let exif_reader = exif::Reader::new();
-        let result = exif_reader.read_from_container(&mut bufreader).ok();
+        let file = std::fs::File::open(path);
+        let result = match file {
+            Ok(file) => {
+                let mut bufreader = std::io::BufReader::new(&file);
+                let exif_reader = exif::Reader::new();
+                exif_reader.read_from_container(&mut bufreader).ok()
+            }
+            Err(_) => None,
+        };
         Self {
             exif: result,
             path: PathBuf::from(path),

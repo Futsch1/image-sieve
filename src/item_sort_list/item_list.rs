@@ -232,15 +232,16 @@ mod tests {
         item_list.check_and_add(Path::new("tests/test_no_exif.jpg"));
         item_list.check_and_add(Path::new("tests/test.jpg"));
         item_list.check_and_add(Path::new("tests/test_no_date.jpg"));
+        item_list.check_and_add(Path::new("tests/test_invalid.jpg"));
         item_list.check_and_add(Path::new("tests/test"));
-        assert_eq!(3, item_list.items.len());
+        assert_eq!(4, item_list.items.len());
 
         item_list.finish_synchronizing(Path::new("tests"));
         assert_eq!("tests", item_list.path.to_str().unwrap());
 
         item_list.add_item(Path::new("tests/not_there"), true, "");
-        assert_eq!(4, item_list.items.len());
+        assert_eq!(5, item_list.items.len());
         item_list.drain_missing();
-        assert_eq!(3, item_list.items.len());
+        assert_eq!(4, item_list.items.len());
     }
 }
