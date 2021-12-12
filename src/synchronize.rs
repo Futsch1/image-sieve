@@ -154,6 +154,7 @@ fn scan_files(
     let loaded_item_list: Option<ItemList> = JsonPersistence::load(&get_project_filename(path));
     if let Some(loaded_item_list) = loaded_item_list {
         item_list_loc.clone_from(&loaded_item_list);
+        item_list_loc.events.sort_unstable();
     }
 
     if !item_list_loc.items.is_empty() {

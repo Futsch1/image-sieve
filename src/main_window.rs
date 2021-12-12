@@ -324,13 +324,10 @@ impl MainWindow {
                     end_date.as_str(),
                 )
                 .unwrap();
-                events_model.push(Event {
-                    name,
-                    start_date,
-                    end_date,
-                });
                 let mut item_list = item_list.lock().unwrap();
                 item_list.events.push(event);
+                item_list.events.sort_unstable();
+                synchronize_event_list_model(&item_list, &events_model);
                 // Synchronize the item list to update the icons of the entries
                 synchronize_item_list_model(&item_list, &item_list_model.clone());
             }
@@ -354,6 +351,8 @@ impl MainWindow {
                     event.start_date.as_str(),
                     event.end_date.as_str(),
                 ) {
+                    item_list.events.sort_unstable();
+                    synchronize_event_list_model(&item_list, &events_model);
                     synchronize_item_list_model(&item_list, &item_list_model.clone());
                 }
             }
@@ -434,7 +433,7 @@ pub fn synchronize_event_list_model(
     item_list: &ItemList,
     event_list_model: &sixtyfps::VecModel<Event>,
 ) {
-    let empty_model = event_list_model.row_count() == 0;
+    let model_count = event_list_model.row_count();
     // Event model
     for (index, event) in item_list.events.iter().enumerate() {
         let _event = Event {
@@ -442,7 +441,7 @@ pub fn synchronize_event_list_model(
             start_date: SharedString::from(event.start_date_as_string()),
             end_date: SharedString::from(event.end_date_as_string()),
         };
-        if empty_model {
+        if index >= model_count {
             event_list_model.push(_event);
         } else {
             event_list_model.set_row_data(index, _event);

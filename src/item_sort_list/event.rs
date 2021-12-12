@@ -1,5 +1,7 @@
 extern crate chrono;
 
+use std::cmp::Ordering;
+
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 
@@ -9,7 +11,7 @@ pub const EVENT_DATE_FORMAT: &str = "%Y-%m-%d";
 
 /// An event representing a name and a start and end date
 #[serde_as]
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Event {
     /// Event name
     pub name: String,
@@ -80,6 +82,18 @@ pub fn parse_date(date: &str) -> Result<NaiveDate, String> {
     Err(format!("Cannot parse string {}", date))
 }
 
+impl PartialOrd for Event {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Event {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.start_date.cmp(&other.start_date)
+    }
+}
+
 mod tests {
     #[cfg(test)]
     use super::*;
@@ -145,5 +159,16 @@ mod tests {
         assert!(event.contains(&NaiveDate::from_ymd(2021, 9, 16)));
         assert!(!event.contains(&NaiveDate::from_ymd(2021, 9, 13)));
         assert!(!event.contains(&NaiveDate::from_ymd(2021, 9, 17)));
+    }
+
+    #[test]
+    fn test_compare() {
+        let event1 = Event::new("test1".to_string(), "2021-09-14", "2021-09-15").unwrap();
+        let event2 = Event::new("test2".to_string(), "2021-09-14", "2021-09-15").unwrap();
+        let event3 = Event::new("test3".to_string(), "2021-09-12", "2021-09-16").unwrap();
+
+        assert_eq!(event1.cmp(&event2), Ordering::Equal);
+        assert_eq!(event1.cmp(&event3), Ordering::Greater);
+        assert_eq!(event3.cmp(&event1), Ordering::Less);
     }
 }
