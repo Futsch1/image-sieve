@@ -62,11 +62,11 @@ impl JsonPersistence for Settings {
 
 impl JsonPersistence for ItemList {
     fn load(file_name: &Path) -> Option<ItemList> {
-        let settings = fs::read_to_string(file_name).unwrap_or_default();
+        let item_list = fs::read_to_string(file_name).unwrap_or_default();
 
-        let contents = serde_json::from_str::<ItemList>(&settings);
-        if let Ok(settings) = contents {
-            Some(settings)
+        let contents = serde_json::from_str::<ItemList>(&item_list);
+        if let Ok(item_list) = contents {
+            Some(item_list)
         } else {
             None
         }
