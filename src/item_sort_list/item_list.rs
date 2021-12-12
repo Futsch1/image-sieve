@@ -98,7 +98,7 @@ impl ItemList {
                     let similars = start_similar_index..index;
                     // The item has a larger diff, so set all items between start_similar_index and index to be similar to each other
                     for similar_index in start_similar_index..index {
-                        self.items[similar_index].add_similars(&similars);
+                        self.items[similar_index].add_similar_range(&similars);
                     }
                     start_similar_index = index;
                 }
@@ -114,7 +114,7 @@ impl ItemList {
 
     /// Go through all images and find similar ones by comparing the hash
     pub fn find_similar_hashes(&mut self, max_diff_hash: u32) {
-        let mut similar_lists: HashMap<usize, Vec<(u32, usize)>> = HashMap::new();
+        let mut similar_lists: HashMap<usize, Vec<usize>> = HashMap::new();
         for index in 0..self.items.len() {
             similar_lists.insert(index, vec![]);
         }
@@ -123,24 +123,15 @@ impl ItemList {
                 if other_index != index {
                     let distance = self.items[index].get_hash_distance(&self.items[other_index]);
                     if distance < max_diff_hash {
-                        similar_lists
-                            .get_mut(&index)
-                            .unwrap()
-                            .push((distance, other_index));
-                        similar_lists
-                            .get_mut(&other_index)
-                            .unwrap()
-                            .push((distance, index));
+                        similar_lists.get_mut(&index).unwrap().push(other_index);
+                        similar_lists.get_mut(&other_index).unwrap().push(index);
                     }
                 }
             }
         }
         for index in 0..self.items.len() {
-            let similar_list = similar_lists.get_mut(&index).unwrap();
-            similar_list.sort_unstable();
-            for (_, other_index) in similar_list {
-                self.items[index].add_similar(*other_index);
-            }
+            let similar_list = similar_lists.get(&index).unwrap();
+            self.items[index].add_similar_vec(similar_list);
             self.items[index].clean_similars(index);
         }
     }
@@ -173,6 +164,7 @@ impl ItemList {
 mod tests {
     use super::*;
     use crate::item_sort_list::item_traits::PropertyResolver;
+    extern crate base64;
 
     static mut CALL_COUNT: usize = 0;
 
@@ -218,6 +210,31 @@ mod tests {
         assert_eq!(0, item_list.items[3].get_similars().len());
         assert_eq!(1, item_list.items[4].get_similars().len());
         assert_eq!(1, item_list.items[5].get_similars().len());
+    }
+
+    #[test]
+    fn find_similar_hashes() {
+        let mut items: Vec<file_item::FileItem> = vec![];
+        let hashes = ["a", "b", "c", "h", "i", "j"];
+        for hash in hashes {
+            let encoded = base64::encode(hash).unwrap();
+            items.push(file_item::FileItem::new(
+                PathBuf::from(""),
+                Box::new(MockResolver {}),
+                true,
+                &encoded,
+            ));
+        }
+        let mut item_list = ItemList {
+            items,
+            events: vec![],
+            path: PathBuf::from(""),
+        };
+
+        item_list.find_similar_hashes(2);
+
+        assert_eq!(2, item_list.items[0].get_similars().len());
+        assert_eq!(2, item_list.items[4].get_similars().len());
     }
 
     #[test]

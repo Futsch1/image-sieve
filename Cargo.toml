@@ -26,6 +26,9 @@ serde_with = "^1.0"
 home = "^0.5"
 walkdir = "2"
 
+[dev-dependencies]
+base64 = "^0.1"
+
 [build-dependencies]
 sixtyfps-build = "0.1.5"
 winres = "^0.1"

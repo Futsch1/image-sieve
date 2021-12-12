@@ -128,13 +128,13 @@ impl FileItem {
         }
     }
 
-    /// Adds another item's index as a similar item
-    pub fn add_similar(&mut self, other_index: usize) {
-        self.similar.push(other_index);
+    /// Adds a vector of similars
+    pub fn add_similar_vec(&mut self, similars: &[usize]) {
+        self.similar.extend(similars);
     }
 
-    /// Add a list of similars
-    pub fn add_similars(&mut self, similars: &Range<usize>) {
+    /// Add a range of similars
+    pub fn add_similar_range(&mut self, similars: &Range<usize>) {
         self.similar.extend(similars.clone().into_iter());
     }
 
