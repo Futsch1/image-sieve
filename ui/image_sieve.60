@@ -55,6 +55,7 @@ ImageSieve := Window {
     property use-similarity <=> settings-view.use-similarity;
     property similarity-sensitivity <=> settings-view.similarity-sensitivity;
     callback recheck-similarities <=> settings-view.recheck-similarities;
+    callback open-url <=> settings-view.open-url;
 
     forward-focus: key-handler;
     key-handler:= FocusScope {  

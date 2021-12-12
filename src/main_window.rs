@@ -382,6 +382,12 @@ impl MainWindow {
             }
         });
 
+        self.window.on_open_url({
+            move |url: SharedString| {
+                opener::open(url.as_str()).ok();
+            }
+        });
+
         self.window.on_recheck_similarities({
             // Browse source was clicked, select new path
             let window_weak = self.window.as_weak();

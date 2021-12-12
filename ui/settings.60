@@ -1,4 +1,4 @@
-import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox } from "sixtyfps_widgets.60";
+import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSixtyFPS } from "sixtyfps_widgets.60";
 
 export SettingsView := VerticalBox { 
     property use-timestamps <=> use-timestamps-checkbox.checked;
@@ -7,10 +7,10 @@ export SettingsView := VerticalBox {
     property similarity-sensitivity <=> sensitivity-combobox.current-value;
 
     callback recheck-similarities;
-
-    alignment: start;
+    callback open-url(string);
 
     GroupBox { 
+        alignment: start;
         title: "Similar pictures";
         HorizontalBox { 
             alignment: start;
@@ -56,10 +56,37 @@ export SettingsView := VerticalBox {
                     current-value: "Medium";                
                     enabled: use-similarity-checkbox.checked;
                     selected => { 
-                        recheck_similarities();
+                        recheck-similarities();
                     }
                 }
             }
+        }            
+    }
+    HorizontalBox { 
+        TouchArea { 
+            VerticalBox { 
+                alignment: start;
+                Text {
+                    text: "Developed by Florian Fetz";
+                    color: blue;
+                }
+                Text {
+                    text: "https://www.github.com/Futsch1/image-sieve";
+                    color: blue;
+                }
+            }
+            clicked => { 
+                open-url("https://www.github.com/Futsch1/image-sieve");
+            }
         }
-    }    
+        TouchArea { 
+            width: 256px;
+            height: 128px;
+            AboutSixtyFPS {  }
+            clicked => { 
+                open-url("https://www.github.com/sixtyfpsui/sixtyfps");
+            }
+        }
+    }
+    
 }
