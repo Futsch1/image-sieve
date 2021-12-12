@@ -43,7 +43,8 @@ EventsView := ScrollView {
                 start-date := LineEdit { 
                     text: item.start-date;
                     accepted => {
-                        if (date-valid(start-date.text) && "" == check-event(start-date.text, item.end-date, false)) {
+                        error-message.text = check-event(start-date.text, item.end-date, false);
+                        if (date-valid(start-date.text) && "" == error-message.text) {
                             item.start-date = start-date.text;
                             update-event(i);
                         }
@@ -60,7 +61,8 @@ EventsView := ScrollView {
                 end-date := LineEdit { 
                     text: item.end-date;
                     accepted => {
-                        if (date-valid(end-date.text) && "" == check-event(item.start-date, end-date.text, false)) {
+                        error-message.text = check-event(item.start-date, end-date.text, false);
+                        if (date-valid(end-date.text) && "" == error-message.text) {
                             item.end-date = end-date.text;
                             update-event(i);
                         }
@@ -94,7 +96,6 @@ EventsView := ScrollView {
                     text: "\u{2795} Add";
                     width: 300px;
                     clicked => { 
-                        error-message.visible = false;
                         if (date-valid(new-start-date.text) && date-valid(new-end-date.text)) {
                             error-message.text = check-event(new-start-date.text, new-end-date.text, true);
                             if (error-message.text == "") {                            
@@ -103,19 +104,15 @@ EventsView := ScrollView {
                                 new-start-date.text = "";
                                 new-end-date.text = "";
                             }
-                            else {
-                                error-message.visible = true;
-                            }
                         } else {
                             error-message.text = "Invalid date";
-                            error-message.visible = true;
                         }
                     }
                 }
                 error-message := Text {
                     text: "";
                     color: red;
-                    visible: false;
+                    visible: text != "";
                 }
             }
         }
