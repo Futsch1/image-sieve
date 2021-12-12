@@ -1,4 +1,4 @@
-import { ListView, Button, LineEdit, GroupBox, VerticalBox, ScrollView } from "sixtyfps_widgets.60";
+import { ListView, Button, LineEdit, GroupBox, ScrollView, VerticalBox } from "sixtyfps_widgets.60";
 
 
 struct Event := {
@@ -8,74 +8,84 @@ struct Event := {
 }
 
 EventsView := ScrollView { 
-    property <[Event]> events-model;
+    property <[Event]> events-model : [{name: "Test", start-date:"1/1/2017", end-date:"1/1/2017"}];
     callback add-event(string, string, string);
     callback check-event(string, string, bool) -> string;
     callback date-valid(string) -> bool;
     callback remove-event(int);
     callback update-event(int);
 
-    VerticalBox { 
+     
+    VerticalLayout { 
         alignment: start;
 
-        for item[i] in events-model: GroupBox {             
-            title: item.name + ", " + item.start-date + " - " + item.end-date;
-            padding: 5px;
-            GridLayout {
-                spacing: 5px;
+        HorizontalLayout { 
+            alignment: start;
+            for item[i] in events-model: GroupBox {             
+                title: item.name + ", " + item.start-date + " - " + item.end-date;
                 padding: 5px;
-                Text {
-                    text: "Event name";
-                    vertical-alignment: center;
-                }
-                event-name := LineEdit { 
-                    text: item.name;
-                    accepted => {
-                        item.name = event-name.text;
-                        update-event(i);
+
+                GridLayout {
+                    spacing: 5px;
+                    padding: 5px;
+                    Text {
+                        text: "Event name";
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
                     }
-                }
-                Text {
-                    text: "\u{1F4C5} Start date";
-                    row: 1;
-                    vertical-alignment: center;
-                }
-                start-date := LineEdit { 
-                    text: item.start-date;
-                    accepted => {
-                        error-message.text = check-event(start-date.text, item.end-date, false);
-                        if (date-valid(start-date.text) && "" == error-message.text) {
-                            item.start-date = start-date.text;
+                    event-name := LineEdit { 
+                        text: item.name;
+                        accepted => {
+                            item.name = event-name.text;
                             update-event(i);
                         }
-                        else {
-                            start-date.text = item.start-date;
+                    }
+                    Text {
+                        text: "\u{1F4C5} Start date";
+                        row: 1;
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                    }
+                    start-date := LineEdit { 
+                        text: item.start-date;
+                        width: 300px;
+                        accepted => {
+                            error-message.text = check-event(start-date.text, item.end-date, false);
+                            if (date-valid(start-date.text) && "" == error-message.text) {
+                                item.start-date = start-date.text;
+                                update-event(i);
+                            }
+                            else {
+                                start-date.text = item.start-date;
+                            }
+                        }
+                    }
+                    Text {
+                        text: "\u{1F4C5} End date";
+                        row: 2;
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                    }
+                    end-date := LineEdit { 
+                        text: item.end-date;
+                        width: 300px;
+                        accepted => {
+                            error-message.text = check-event(item.start-date, end-date.text, false);
+                            if (date-valid(end-date.text) && "" == error-message.text) {
+                                item.end-date = end-date.text;
+                                update-event(i);
+                            }
+                            else {
+                                end-date.text = item.end-date;
+                            }
                         }
                     }
                 }
-                Text {
-                    text: "\u{1F4C5} End date";
-                    row: 2;
-                    vertical-alignment: center;
+                Button {
+                    width: 300px;
+                    text: "\u{1F5D1} Remove";
+                    clicked => { remove-event(i) }
                 }
-                end-date := LineEdit { 
-                    text: item.end-date;
-                    accepted => {
-                        error-message.text = check-event(item.start-date, end-date.text, false);
-                        if (date-valid(end-date.text) && "" == error-message.text) {
-                            item.end-date = end-date.text;
-                            update-event(i);
-                        }
-                        else {
-                            end-date.text = item.end-date;
-                        }
-                    }
-                }
-            }
-            Button {
-                width: 300px;
-                text: "\u{1F5D1} Remove";
-                clicked => { remove-event(i) }
             }
         }
         GroupBox { 
@@ -87,9 +97,11 @@ EventsView := ScrollView {
                     placeholder-text: "Event name";
                 }
                 new-start-date := LineEdit { 
+                    width: 300px;
                     placeholder-text: "Start date (YYYY-MM-DD or DD-MM-YYYY)";
                 }
                 new-end-date := LineEdit { 
+                    width: 300px;
                     placeholder-text: "End date (YYYY-MM-DD or DD-MM-YYYY)";
                 }
                 Button {
