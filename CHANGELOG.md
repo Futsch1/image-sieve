@@ -15,6 +15,22 @@ All notable changes to this project will be documented in this file.
 
  - 
 
+## [0.3.2] - 2021-12-23
+
+### Changed
+
+ - Performance and robustness improvements
+ - Improved layout of events tab
+
+### Added
+
+ - About information in settings tab
+ - Help tab
+
+### Fixed
+
+ - Added a space between file info and event name
+
 ## [0.3.1] - 2021-12-12
 
 ### Changed
