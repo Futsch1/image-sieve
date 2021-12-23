@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+  <Identity Name="62087FlorianFetz.ImageSieve" 
+            Version="MSIXVERSION" 
+            Publisher="CN=D9DECE6F-2A4F-43B2-B580-7043E63BDACB"
+            ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>ImageSieve</DisplayName>
+    <PublisherDisplayName>Florian Fetz</PublisherDisplayName>
+    <Logo>ImageSieve_44x44.png</Logo>
+  </Properties>
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust"/>
+  </Capabilities>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19043.0" />
+    <PackageDependency Name="Microsoft.VCLibs.140.00" MinVersion="14.0.24217.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"/>
+  </Dependencies>
+  <Applications>
+        <Application Id="ImageSieve"     
+            Executable="ImageSieve.exe" EntryPoint="Windows.FullTrustApplication">
+            <uap:VisualElements
+                BackgroundColor="#464646"
+                DisplayName="ImageSieve"
+                Square150x150Logo="ImageSieve_150x150.png"
+                Square44x44Logo="ImageSieve_44x44.png"
+                Description="ImageSieve aims to help in the process of sorting through images taken by several people with several devices and collect the images worth keeping in a folder structure  suitable for achiving or to eliminate potential duplicates or irrelevant images from a folder structure." />
+        </Application>
+  </Applications>
+</Package>

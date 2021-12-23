@@ -1,0 +1,8 @@
+[Files]
+"installer\ImageSieve_150x150.png"      "ImageSieve_150x150.png"
+"installer\ImageSieve_44x44.png"        "ImageSieve_44x44.png"
+"target\release\image_sieve.exe"        "ImageSieve.exe"
+
+[ResourceMetadata]
+"ResourceDimensions"                    "language-en-us"
+"ResourceId"                            "English"
