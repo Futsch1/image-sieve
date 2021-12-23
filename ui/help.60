@@ -1,0 +1,44 @@
+import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ScrollView, HorizontalBox } from "sixtyfps_widgets.60";
+
+export HelpView := ScrollView { 
+    VerticalBox { 
+        Text {
+            text: "\u{1F4F7} \u{1F4F9} Sorting images";
+            font-size: 20px;
+        }
+        HorizontalBox {
+            Text { text: "To get started, first open a folder containing images and videos in the \"\u{1F4F7} \u{1F4F9}  Images\" tab.\n\nA folder can be selected by pressing the \"\u{1F4C2} Browse...\" button. All images and videos from the folder and from all subfolders will be analyzed.\nDepending on the amount of images, this might take a while.\nNote that the last selected folder will be re-opened when ImageSieve is started for the next time."; } 
+    //        Image {
+    //            source: @image-url("../doc/screenshot.png");
+    //            height: 200px;
+    //        }
+        }
+        HorizontalBox {
+            Text { text: "Once the folder has been processed, a list of file names will appear in the box to the right.\nThis list contains the files that have been found in the folder and that will be considered in the sieving process.\nEach file has a set of icons that indicate its state.\nThe following icons are used:\n\n- \u{1F4F7}: The file is an image\n\n- \u{1F4F9}: The file is a video\n\n- \u{1F5D1}: The file is discarded\n\n- \u{1F500}: There are similar files to this one\n\n- \u{1F4C5}: File is in the date range of an event"; } 
+        }
+        HorizontalBox {
+            Text { text: "To select a file, click it and it will be shown in the image area. Below the image, some details about the file are listed.\nIn order to discard an image, just click it and it will be displayed in a translucent way.\nAs an alternative, you can hit the space bar to toggle between discarded and kept state.\nTo navigate between images, you can use the \"\u{2B05} Previous\" and \"Next \u{27A1}\" buttons or hit the left and right key on your keyboard.\n\nIf you want to open an image or a video with the default application in your OS, click the \"\u{1F4C2} Open\" button.\n\nIf an image belongs to a group of similar images, all these similar images are displayed below the current image.\nThe currently selected one is highlighted in blue.\n\nNote that video files are also displayed in the list of images, but cannot be previewed.\nHowever, they are also kept or discarded in the sieving process as are the image files."; } 
+        }
+        Text {
+            text: "\u{1F4C5} Events";
+            font-size: 20px;
+        }
+        HorizontalBox {
+            Text { text: "Per default, the images will be sorted in folders corresponding to the months they were taken, like \"09-2021\", \"10-2021\" etc.\nTo be able to find images more quickly in an archive, ImageSieve supports grouping pictures with the help of events in the \"\u{1F4C5}  Events\" tab.\nEvents are named date spans that will provide a target folder name during the sieve process, like \"2021-10-07 - 2021-10-10 Cool trip\".\nAll images taken in the given period of time will be put into that folder.\nYou can specify an arbitrary number of events, but be aware that in case of overlapping dates, an image is put into the folder of the first matching event.\n\nTo add an event, fill the start date, end date and name text box and click the \"\u{2795} Add\" button. Valid date formats are YYYY-MM-DD or DD.MM.YYYY.\nYou can edit existing events by modifying their fields and pressing enter - the updated values will be visible in the event's caption.\nTo remove an event, click the \"\u{1F5D1} Remove\" button.\n\nThe time spans of events must not overlap.\n\nBe aware that the events are saved in the currently selected folder along with the selection of images."; } 
+        }
+        Text {
+            text: "\u{2699} Settings";
+            font-size: 20px;
+        }
+        HorizontalBox {
+            Text { text: "In the settings tab, you can specify the behavior of the similarity detection process.\nYou can turn on and off both the use of the file/capture date as an indicator for similarity and the similarity calculation.\n\nNote that the similarity calculation takes some time and will not be available right from the start of the tool, especially if the number of files is huge.\nThe similarity can be tweaked in order to provide better results."; } 
+        }
+        Text {
+            text: "\u{1F4BE} Sieving";
+            font-size: 20px;
+        }
+        HorizontalBox {
+            Text { text: "When you are done sorting the images, the sieving process can be started. Go to the \"\u{1F4BE}  Sieve\" tab and select a sieving mode. The following modes are supported:\n\n- Copy to target directory: Copies only the kept items to the target directory creating folders for the items, the source directory will be left untouched.\n- Move to target directory: Moves the kept items to the target directory creating folders for the items, effectively removing them from the source directory.\nDiscarded items will stay in the source directory.\n- Move to target directory and delete in source directory: Moves the kept items to the target directory creating folders for the items and deletes discarded items\nin the source directory.\nIf the source directory contained only images and videos, it will be empty afterwards (except for sub folders).\n- Delete in source directory: Deletes all discarded items in the source directory.\n\nDepending on the mode, you need to indicate a target directory that is used for the result of the sieving process.\nOnce you are done, click the start button and the sieve process will start."; } 
+        }
+    }
+}

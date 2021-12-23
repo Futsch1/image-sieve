@@ -64,7 +64,7 @@ export SettingsView := VerticalBox {
     }
     HorizontalBox { 
         TouchArea { 
-            VerticalBox { 
+            VerticalBox {                 
                 alignment: start;
                 Text {
                     text: "Developed by Florian Fetz";

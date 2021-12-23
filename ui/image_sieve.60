@@ -5,6 +5,7 @@ import { SortView } from "sort.60";
 import { EventsView } from "events.60";
 import { CommitView, CommitMethodValues } from "commit.60";
 import { SettingsView } from "settings.60";
+import { HelpView } from "help.60";
 
 export { CommitMethodValues }
 
@@ -137,9 +138,15 @@ ImageSieve := Window {
         }
 
         Tab {
-            title: "\u{2699} Settings";
+            title: "\u{2699}  Settings";
             
             settings-view := SettingsView {                
+            }
+        }
+
+        Tab {
+            title: "\u{2753}  Help";
+            help-view := HelpView {
             }
         }
     }
