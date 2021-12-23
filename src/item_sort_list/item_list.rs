@@ -185,8 +185,16 @@ mod tests {
         }
     }
 
+    fn reset_call_count() {
+        #[allow(unsafe_code)]
+        unsafe {
+            CALL_COUNT = 0;
+        }
+    }
+
     #[test]
     fn find_similar() {
+        reset_call_count();
         let mut items: Vec<file_item::FileItem> = vec![];
         for _ in 0..6 {
             items.push(file_item::FileItem::new(
@@ -214,6 +222,7 @@ mod tests {
 
     #[test]
     fn find_similar_hashes() {
+        reset_call_count();
         let mut items: Vec<file_item::FileItem> = vec![];
         let hashes = ["a", "b", "c", "h", "i", "j"];
         for hash in hashes {
