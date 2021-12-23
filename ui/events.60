@@ -8,7 +8,7 @@ struct Event := {
 }
 
 EventsView := ScrollView { 
-    property <[Event]> events-model : [{name: "Test", start-date:"1/1/2017", end-date:"1/1/2017"}];
+    property <[Event]> events-model;
     callback add-event(string, string, string);
     callback check-event(string, string, bool) -> string;
     callback date-valid(string) -> bool;
@@ -89,7 +89,7 @@ EventsView := ScrollView {
             }
         }
         GroupBox { 
-
+            padding: 5px;
             title: "New event";
             VerticalBox { 
                 alignment: start;
