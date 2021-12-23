@@ -562,7 +562,7 @@ pub fn get_item_text(index: usize, item_list: &ItemList) -> SharedString {
     } else {
         ""
     };
-    SharedString::from(item.to_string() + event_str)
+    SharedString::from(item.to_string() + " " + event_str)
 }
 
 /// Commits the item list in a background thread
