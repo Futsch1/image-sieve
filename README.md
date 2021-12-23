@@ -17,10 +17,10 @@ ImageSieve aims to help in the process of sorting through images taken by severa
 - Sieve the images by either deleting discarded ones, copying or moving kept images to a target folder
 
 ## Installation
-Precompiled Windows binaries are available for every release for [download](https://github.com/Futsch1/image-sieve/releases). For Linux, a release is
+A Windows installer is available for every release for [download](https://github.com/Futsch1/image-sieve/releases). For Linux, ImageSieve is
 available on the [Snap Store](https://snapcraft.io/image-sieve).
 
-Linux and macOS users can also install [Rust](https://rustup.rs/), clone the repository and run
+On Windows, Linux or macOS, it is also possible to install [Rust](https://rustup.rs/), clone the repository and run
 
 ``` cargo install image_sieve ```
 
@@ -66,7 +66,7 @@ When you are done sorting the images, the sieving process can be started. Go to 
 Depending on the mode, you need to indicate a target directory that is used for the result of the sieving process. Once you are done, click the start button and the sieve process will start.
 
 ## Misc
-If you want to help, clone and pull-request. The tool uses the [sixtyfps](https://github.com/sixtyfpsui/sixtyfps) GUI framework, a few of the great [bootstrap icons](https://icons.getbootstrap.com/) and the [Ubuntu font](https://design.ubuntu.com/font/).
+If you want to help, clone and pull-request. The tool uses the [sixtyfps](https://github.com/sixtyfpsui/sixtyfps) GUI framework and a few of the great [bootstrap icons](https://icons.getbootstrap.com/).
 
 ## Disclaimer
 This tool is free software. The author does not take any responsibility or liability for data lost due to bugs or faulty use of the software. Note that the software is in constant development and may contain bugs. Use at your own risk!
