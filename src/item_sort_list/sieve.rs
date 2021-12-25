@@ -6,20 +6,20 @@ use std::{
 
 use chrono::NaiveDateTime;
 
-use super::{file_item, CommitMethod, ItemList};
+use super::{file_item, ItemList, SieveMethod};
 
-/// Trait to encapsulate commit file IO operations
-pub trait CommitIO {
+/// Trait to encapsulate sieve file IO operations
+pub trait SieveIO {
     fn copy(&self, src: &Path, dest: &Path) -> Result<(), Error>;
     fn remove_file(&self, path: &Path) -> Result<(), Error>;
     fn r#move(&self, src: &Path, dest: &Path) -> Result<(), Error>;
     fn create_dir_all(&self, path: &Path) -> Result<(), Error>;
 }
 
-/// Struct with implementation for std::fs implementation of CommitIO
-pub struct FileCommitIO;
+/// Struct with implementation for std::fs implementation of SieveIO
+pub struct FileSieveIO;
 
-impl FileCommitIO {
+impl FileSieveIO {
     fn assert_not_exists(&self, path: &Path) -> Result<(), Error> {
         if path.exists() {
             let e = Error::new(
@@ -33,7 +33,7 @@ impl FileCommitIO {
     }
 }
 
-impl CommitIO for FileCommitIO {
+impl SieveIO for FileSieveIO {
     fn copy(&self, src: &Path, dest: &Path) -> Result<(), Error> {
         self.assert_not_exists(dest)?;
         copy(src, dest)?;
@@ -60,43 +60,43 @@ impl CommitIO for FileCommitIO {
     }
 }
 
-/// Commits an item list taking the take_over flag into account to a new directory.
+/// Sieves an item list taking the take_over flag into account to a new directory.
 /// The progress is reported by calling a callback function with the file that is currently processed.
-pub fn commit<T>(
+pub fn sieve<T>(
     item_list: &ItemList,
     path: &Path,
-    commit_method: CommitMethod,
-    commit_io: &T,
+    sieve_method: SieveMethod,
+    sieve_io: &T,
     progress_callback: impl Fn(String),
 ) where
-    T: CommitIO,
+    T: SieveIO,
 {
-    if commit_method != CommitMethod::Delete {
-        prepare_path(path, commit_io);
+    if sieve_method != SieveMethod::Delete {
+        prepare_path(path, sieve_io);
 
         for item in &item_list.items {
             if item.get_take_over() {
                 let full_path = path.join(get_sub_path(item_list, item));
-                prepare_path(&full_path, commit_io);
+                prepare_path(&full_path, sieve_io);
                 let source = &item.path;
                 let target = full_path.join(source.file_name().unwrap());
                 progress_callback(format!("{:?} -> {:?}", source, target));
 
-                if commit_method == CommitMethod::Copy {
-                    match commit_io.copy(source, &target) {
+                if sieve_method == SieveMethod::Copy {
+                    match sieve_io.copy(source, &target) {
                         Ok(_) => (),
                         Err(e) => progress_callback(format!("Error copying {}: {}", item, e)),
                     }
                 } else {
-                    match commit_io.r#move(source, &target) {
+                    match sieve_io.r#move(source, &target) {
                         Ok(_) => (),
                         Err(e) => progress_callback(format!("Error moving {}: {}", item, e)),
                     }
                 };
-            } else if commit_method == CommitMethod::MoveAndDelete {
+            } else if sieve_method == SieveMethod::MoveAndDelete {
                 let source = &item.path;
                 progress_callback(format!("Delete {:?}", source));
-                match commit_io.remove_file(source) {
+                match sieve_io.remove_file(source) {
                     Ok(_) => (),
                     Err(e) => progress_callback(format!("Error deleting {}: {}", item, e)),
                 }
@@ -107,7 +107,7 @@ pub fn commit<T>(
             if !item.get_take_over() {
                 let source = &item.path;
                 progress_callback(format!("Delete {:?}", source));
-                match commit_io.remove_file(source) {
+                match sieve_io.remove_file(source) {
                     Ok(_) => (),
                     Err(e) => progress_callback(format!("Error deleting {:?}: {}", item, e)),
                 }
@@ -141,12 +141,12 @@ fn get_sub_path(item_list: &ItemList, item: &file_item::FileItem) -> String {
 }
 
 /// Prepares the path by creating it if it does not exist
-fn prepare_path<T>(path: &Path, commit_io: &T)
+fn prepare_path<T>(path: &Path, sieve_io: &T)
 where
-    T: CommitIO,
+    T: SieveIO,
 {
     if !path.exists() {
-        match commit_io.create_dir_all(path) {
+        match sieve_io.create_dir_all(path) {
             Ok(_) => (),
             Err(e) => println!("Error creating path {}: {}", e, path.display()),
         }
@@ -156,21 +156,21 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::item_sort_list::commit::CommitIO;
-    use crate::item_sort_list::{commit::get_sub_path, Event, FileItem, ItemList};
+    use crate::item_sort_list::sieve::SieveIO;
+    use crate::item_sort_list::{sieve::get_sub_path, Event, FileItem, ItemList};
     use std::cell::RefCell;
     use std::path::PathBuf;
 
-    struct TestCommitIO {
+    struct TestSieveIO {
         pub copies: RefCell<Vec<(PathBuf, PathBuf)>>,
         pub renames: RefCell<Vec<(PathBuf, PathBuf)>>,
         pub removes: RefCell<Vec<PathBuf>>,
         pub creates: RefCell<Vec<PathBuf>>,
     }
 
-    impl TestCommitIO {
+    impl TestSieveIO {
         pub fn new() -> Self {
-            TestCommitIO {
+            TestSieveIO {
                 copies: RefCell::new(vec![]),
                 renames: RefCell::new(vec![]),
                 removes: RefCell::new(vec![]),
@@ -186,7 +186,7 @@ mod test {
         }
     }
 
-    impl CommitIO for TestCommitIO {
+    impl SieveIO for TestSieveIO {
         fn copy(&self, src: &Path, dest: &Path) -> Result<(), Error> {
             self.copies
                 .borrow_mut()
@@ -265,7 +265,7 @@ mod test {
     }
 
     #[test]
-    fn test_commit_methods() {
+    fn test_sieve_methods() {
         let item_list = ItemList {
             items: vec![
                 FileItem::dummy("test/test1", 0, true),
@@ -274,101 +274,95 @@ mod test {
             events: vec![],
             path: PathBuf::from(""),
         };
-        let mut commit_io = TestCommitIO::new();
+        let mut sieve_io = TestSieveIO::new();
 
-        commit(
+        sieve(
             &item_list,
             Path::new("target"),
-            CommitMethod::Delete,
-            &commit_io,
+            SieveMethod::Delete,
+            &sieve_io,
             |_: String| {},
         );
-        assert_eq!(commit_io.copies.borrow().len(), 0);
-        assert_eq!(commit_io.creates.borrow().len(), 0);
-        assert_eq!(commit_io.renames.borrow().len(), 0);
-        assert_eq!(commit_io.removes.borrow().len(), 1);
-        assert_eq!(
-            commit_io.removes.borrow()[0].to_str().unwrap(),
-            "test/test2"
-        );
+        assert_eq!(sieve_io.copies.borrow().len(), 0);
+        assert_eq!(sieve_io.creates.borrow().len(), 0);
+        assert_eq!(sieve_io.renames.borrow().len(), 0);
+        assert_eq!(sieve_io.removes.borrow().len(), 1);
+        assert_eq!(sieve_io.removes.borrow()[0].to_str().unwrap(), "test/test2");
 
-        commit_io.reset();
-        commit(
+        sieve_io.reset();
+        sieve(
             &item_list,
             Path::new("target"),
-            CommitMethod::Copy,
-            &commit_io,
+            SieveMethod::Copy,
+            &sieve_io,
             |_: String| {},
         );
-        assert_eq!(commit_io.copies.borrow().len(), 1);
+        assert_eq!(sieve_io.copies.borrow().len(), 1);
         assert_eq!(
-            commit_io.copies.borrow()[0].0.to_str().unwrap(),
+            sieve_io.copies.borrow()[0].0.to_str().unwrap(),
             "test/test1"
         );
         assert_eq!(
-            commit_io.copies.borrow()[0].1.to_str().unwrap(),
+            sieve_io.copies.borrow()[0].1.to_str().unwrap(),
             "target/1970-01/test1"
         );
-        assert_eq!(commit_io.creates.borrow().len(), 1);
+        assert_eq!(sieve_io.creates.borrow().len(), 1);
         assert_eq!(
-            commit_io.creates.borrow()[0].to_str().unwrap(),
+            sieve_io.creates.borrow()[0].to_str().unwrap(),
             "target/1970-01"
         );
-        assert_eq!(commit_io.renames.borrow().len(), 0);
-        assert_eq!(commit_io.removes.borrow().len(), 0);
+        assert_eq!(sieve_io.renames.borrow().len(), 0);
+        assert_eq!(sieve_io.removes.borrow().len(), 0);
 
-        commit_io.reset();
-        commit(
+        sieve_io.reset();
+        sieve(
             &item_list,
             Path::new("target"),
-            CommitMethod::Move,
-            &commit_io,
+            SieveMethod::Move,
+            &sieve_io,
             |_: String| {},
         );
-        assert_eq!(commit_io.copies.borrow().len(), 0);
-        assert_eq!(commit_io.creates.borrow().len(), 1);
+        assert_eq!(sieve_io.copies.borrow().len(), 0);
+        assert_eq!(sieve_io.creates.borrow().len(), 1);
         assert_eq!(
-            commit_io.creates.borrow()[0].to_str().unwrap(),
+            sieve_io.creates.borrow()[0].to_str().unwrap(),
             "target/1970-01"
         );
-        assert_eq!(commit_io.renames.borrow().len(), 1);
+        assert_eq!(sieve_io.renames.borrow().len(), 1);
         assert_eq!(
-            commit_io.renames.borrow()[0].0.to_str().unwrap(),
+            sieve_io.renames.borrow()[0].0.to_str().unwrap(),
             "test/test1"
         );
         assert_eq!(
-            commit_io.renames.borrow()[0].1.to_str().unwrap(),
+            sieve_io.renames.borrow()[0].1.to_str().unwrap(),
             "target/1970-01/test1"
         );
-        assert_eq!(commit_io.removes.borrow().len(), 0);
+        assert_eq!(sieve_io.removes.borrow().len(), 0);
 
-        commit_io.reset();
-        commit(
+        sieve_io.reset();
+        sieve(
             &item_list,
             Path::new("target"),
-            CommitMethod::MoveAndDelete,
-            &commit_io,
+            SieveMethod::MoveAndDelete,
+            &sieve_io,
             |_: String| {},
         );
-        assert_eq!(commit_io.copies.borrow().len(), 0);
-        assert_eq!(commit_io.creates.borrow().len(), 1);
+        assert_eq!(sieve_io.copies.borrow().len(), 0);
+        assert_eq!(sieve_io.creates.borrow().len(), 1);
         assert_eq!(
-            commit_io.creates.borrow()[0].to_str().unwrap(),
+            sieve_io.creates.borrow()[0].to_str().unwrap(),
             "target/1970-01"
         );
-        assert_eq!(commit_io.renames.borrow().len(), 1);
+        assert_eq!(sieve_io.renames.borrow().len(), 1);
         assert_eq!(
-            commit_io.renames.borrow()[0].0.to_str().unwrap(),
+            sieve_io.renames.borrow()[0].0.to_str().unwrap(),
             "test/test1"
         );
         assert_eq!(
-            commit_io.renames.borrow()[0].1.to_str().unwrap(),
+            sieve_io.renames.borrow()[0].1.to_str().unwrap(),
             "target/1970-01/test1"
         );
-        assert_eq!(commit_io.removes.borrow().len(), 1);
-        assert_eq!(
-            commit_io.removes.borrow()[0].to_str().unwrap(),
-            "test/test2"
-        );
+        assert_eq!(sieve_io.removes.borrow().len(), 1);
+        assert_eq!(sieve_io.removes.borrow()[0].to_str().unwrap(), "test/test2");
     }
 }

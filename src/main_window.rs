@@ -17,7 +17,7 @@ use std::thread;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::item_sort_list::parse_date;
-use crate::item_sort_list::{CommitMethod, ItemList};
+use crate::item_sort_list::{ItemList, SieveMethod};
 use crate::misc::image_cache::{self, ImageCache, Purpose};
 use crate::persistence::json::JsonPersistence;
 use crate::persistence::json::{get_project_filename, get_settings_filename};
@@ -47,7 +47,7 @@ pub struct MainWindow {
     similar_items_model: Rc<sixtyfps::VecModel<SortImage>>,
     items_model_map: Rc<RefCell<ImagesModelMap>>,
     events_model: Rc<sixtyfps::VecModel<Event>>,
-    commit_result_model: Rc<sixtyfps::VecModel<CommitResult>>,
+    sieve_result_model: Rc<sixtyfps::VecModel<SieveResult>>,
     image_cache: Rc<ImageCache>,
     synchronizer: Rc<Synchronizer>,
 }
@@ -84,7 +84,7 @@ impl MainWindow {
 
         let event_list_model = Rc::new(sixtyfps::VecModel::<Event>::default());
         let item_list_model = Rc::new(sixtyfps::VecModel::<SharedString>::default());
-        let commit_result_model = Rc::new(sixtyfps::VecModel::<CommitResult>::default());
+        let sieve_result_model = Rc::new(sixtyfps::VecModel::<SieveResult>::default());
 
         // Construct main window
         let image_sieve = ImageSieve::new();
@@ -107,7 +107,7 @@ impl MainWindow {
             similar_items_model: Rc::new(sixtyfps::VecModel::<SortImage>::default()),
             items_model_map: Rc::new(RefCell::new(HashMap::new())),
             events_model: event_list_model,
-            commit_result_model,
+            sieve_result_model,
             image_cache: Rc::new(cache),
             synchronizer: Rc::new(synchronizer),
         };
@@ -139,8 +139,8 @@ impl MainWindow {
             .set_events_model(sixtyfps::ModelHandle::new(main_window.events_model.clone()));
         main_window
             .window
-            .set_commit_result_model(sixtyfps::ModelHandle::new(
-                main_window.commit_result_model.clone(),
+            .set_sieve_result_model(sixtyfps::ModelHandle::new(
+                main_window.sieve_result_model.clone(),
             ));
 
         main_window.setup_callbacks();
@@ -187,17 +187,17 @@ impl MainWindow {
             }
         });
 
-        self.window.on_commit({
-            // Commit pressed - perform selected action
+        self.window.on_sieve({
+            // Sieve pressed - perform selected action
             let window_weak = self.window.as_weak();
             let item_list = self.item_list.clone();
-            let commit_result_model = self.commit_result_model.clone();
+            let sieve_result_model = self.sieve_result_model.clone();
 
             move || {
-                commit(
+                sieve(
                     &item_list.lock().unwrap(),
                     window_weak.clone(),
-                    commit_result_model.clone(),
+                    sieve_result_model.clone(),
                 );
             }
         });
@@ -265,7 +265,7 @@ impl MainWindow {
         });
 
         self.window.on_browse_target({
-            // Commit target path was changed
+            // Sieve target path was changed
             let window_weak = self.window.as_weak();
 
             move || {
@@ -565,23 +565,23 @@ pub fn get_item_text(index: usize, item_list: &ItemList) -> SharedString {
     SharedString::from(item.to_string() + " " + event_str)
 }
 
-/// Commits the item list in a background thread
-pub fn commit(
+/// Sieves the item list in a background thread
+pub fn sieve(
     item_list: &ItemList,
     window_weak: sixtyfps::Weak<ImageSieve>,
-    commit_result_model: Rc<sixtyfps::VecModel<CommitResult>>,
+    sieve_result_model: Rc<sixtyfps::VecModel<SieveResult>>,
 ) {
     let item_list_copy = item_list.to_owned();
     let target_path = window_weak.unwrap().get_target_directory().to_string();
-    let commit_method = FromPrimitive::from_i32(window_weak.unwrap().get_commit_method())
-        .unwrap_or(CommitMethod::Copy);
-    for _ in 0..commit_result_model.row_count() {
-        commit_result_model.remove(0);
+    let sieve_method = FromPrimitive::from_i32(window_weak.unwrap().get_sieve_method())
+        .unwrap_or(SieveMethod::Copy);
+    for _ in 0..sieve_result_model.row_count() {
+        sieve_result_model.remove(0);
     }
-    commit_result_model.push(CommitResult {
+    sieve_result_model.push(SieveResult {
         result: SharedString::from(format!(
-            "Committing using {:?} method to {}",
-            commit_method, target_path
+            "Sieving using {:?} method to {}",
+            sieve_method, target_path
         )),
         color: SharedString::from("black"),
     });
@@ -591,12 +591,12 @@ pub fn commit(
             let window_weak_copy = window_weak.clone();
             window_weak_copy.upgrade_in_event_loop(move |handle| {
                 if progress == "Done" {
-                    handle.set_commit_running(false);
+                    handle.set_sieve_running(false);
                 }
-                let commit_result_model = handle.get_commit_result_model();
-                let commit_result_model = commit_result_model
+                let sieve_result_model = handle.get_sieve_result_model();
+                let sieve_result_model = sieve_result_model
                     .as_any()
-                    .downcast_ref::<sixtyfps::VecModel<CommitResult>>()
+                    .downcast_ref::<sixtyfps::VecModel<SieveResult>>()
                     .unwrap();
                 let color = if progress == "Done" {
                     SharedString::from("green")
@@ -605,13 +605,13 @@ pub fn commit(
                 } else {
                     SharedString::from("black")
                 };
-                let commit_result = CommitResult {
+                let sieve_result = SieveResult {
                     result: SharedString::from(progress),
                     color,
                 };
-                commit_result_model.push(commit_result);
+                sieve_result_model.push(sieve_result);
             });
         };
-        item_list_copy.commit(Path::new(&target_path), commit_method, progress_callback);
+        item_list_copy.sieve(Path::new(&target_path), sieve_method, progress_callback);
     });
 }

@@ -3,11 +3,11 @@ import { ListView, Button, LineEdit, TabWidget, GroupBox, VerticalBox, Horizonta
 
 import { SortView } from "sort.60";
 import { EventsView } from "events.60";
-import { CommitView, CommitMethodValues } from "commit.60";
+import { SieveView, SieveMethodValues } from "sieve.60";
 import { SettingsView } from "settings.60";
 import { HelpView } from "help.60";
 
-export { CommitMethodValues }
+export { SieveMethodValues }
 
 ImageSieve := Window {
     min-width: 1600px;
@@ -41,14 +41,14 @@ ImageSieve := Window {
     callback update-event <=> events-view.update-event;
     callback remove-event <=> events-view.remove-event;
 
-    // Map properties of CommitView
-    property commit-result-model <=> commit-view.commit-result-model;
-    property target-directory <=> commit-view.target-directory;
-    property commit-method <=> commit-view.commit-method;
-    property commit-method-value <=> commit-view.commit-method-value;
-    property commit-running <=> commit-view.commit-running;
-    callback commit <=> commit-view.commit;
-    callback browse-target <=> commit-view.browse-target;
+    // Map properties of SieveView
+    property sieve-result-model <=> sieve-view.sieve-result-model;
+    property target-directory <=> sieve-view.target-directory;
+    property sieve-method <=> sieve-view.sieve-method;
+    property sieve-method-value <=> sieve-view.sieve-method-value;
+    property sieve-running <=> sieve-view.sieve-running;
+    callback sieve <=> sieve-view.sieve;
+    callback browse-target <=> sieve-view.browse-target;
 
     // Map properties of SettingsView
     property use-timestamps <=> settings-view.use-timestamps;
@@ -133,7 +133,7 @@ ImageSieve := Window {
         Tab {
             title: "\u{1F4BE}  Sieve";
             
-            commit-view := CommitView {
+            sieve-view := SieveView {
             }
         }
 

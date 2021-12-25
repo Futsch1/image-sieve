@@ -1,32 +1,32 @@
 import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox, ScrollView } from "sixtyfps_widgets.60";
 
-export global CommitMethodValues := {
+export global SieveMethodValues := {
     property <[string]> values: ["Copy to target directory", 
                                 "Move to target directory", 
                                 "Move to target directory and delete in source directory",
                                 "Delete in source directory"];
 }
 
-struct CommitResult := {
+struct SieveResult := {
     result: string,
     color: string,
 }
 
-export CommitView := HorizontalBox { 
-    property <[CommitResult]> commit-result-model;
+export SieveView := HorizontalBox { 
+    property <[SieveResult]> sieve-result-model;
     property target-directory <=> target-directory-edit.text;
-    property commit-method <=> commit-method-combo-box.current-index;
-    property commit-method-value <=> commit-method-combo-box.current-value;    
+    property sieve-method <=> sieve-method-combo-box.current-index;
+    property sieve-method-value <=> sieve-method-combo-box.current-value;    
 
-    // Commit
-    property <bool> commit-running: false;
-    property <bool> commit-done: false;
+    // sieve
+    property <bool> sieve-running: false;
+    property <bool> sieve-done: false;
 
     // Warning
     property <bool> show-warning: false;
 
-    // Called when the commit button was pressed
-    callback commit;
+    // Called when the sieve button was pressed
+    callback sieve;
 
     // Called when source or target was browsed
     callback browse-target;
@@ -36,19 +36,19 @@ export CommitView := HorizontalBox {
 
             GroupBox { 
             title: "Target directory";
-            enabled: commit-method-combo-box.current-index != 3;
+            enabled: sieve-method-combo-box.current-index != 3;
             
             HorizontalBox { 
                 spacing: 5px;
                 target-directory-edit := LineEdit { 
                     width: 400px;
-                    enabled: !commit-running && commit-method-combo-box.current-index != 3;
+                    enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
                     placeholder-text: "Select target directory";
                 }
                 Button {
                     text: "\u{1F4C2} Browse...";
                     width: 200px;
-                    enabled: !commit-running && commit-method-combo-box.current-index != 3;
+                    enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
                     clicked => { 
                         browse-target();
                     }
@@ -59,10 +59,10 @@ export CommitView := HorizontalBox {
             title: "Sieve method";
             HorizontalBox { 
                 spacing: 5px;
-                commit-method-combo-box := ComboBox {
-                    enabled: !commit-running;
+                sieve-method-combo-box := ComboBox {
+                    enabled: !sieve-running;
                     width: 400px;
-                    model: CommitMethodValues.values;
+                    model: SieveMethodValues.values;
                 }
             }
         }
@@ -70,14 +70,14 @@ export CommitView := HorizontalBox {
         Button {
             text: "\u{2705} Start";
             width: 300px;
-            enabled: !commit-running;
+            enabled: !sieve-running;
             clicked => {
-                if (commit-method-combo-box.current-index == 2 || commit-method-combo-box.current-index == 3) {
+                if (sieve-method-combo-box.current-index == 2 || sieve-method-combo-box.current-index == 3) {
                     show-warning = true;
-                    commit-running = true;
+                    sieve-running = true;
                 } else {
-                    commit-done = true;
-                    commit();                    
+                    sieve-done = true;
+                    sieve();                    
                 }
             }
         }
@@ -93,8 +93,8 @@ export CommitView := HorizontalBox {
                     visible: show-warning;
                     clicked => {            
                         show-warning = false;
-                        commit-done = true;
-                        commit();                    
+                        sieve-done = true;
+                        sieve();                    
                     }
                 }
                 Button {
@@ -103,7 +103,7 @@ export CommitView := HorizontalBox {
                     visible: show-warning;
                     clicked => {            
                         show-warning = false;
-                        commit-running = false;
+                        sieve-running = false;
                     }
                 }
             }
@@ -111,10 +111,10 @@ export CommitView := HorizontalBox {
     }  
 
     ScrollView {
-        visible: commit-done;
+        visible: sieve-done;
 
         VerticalBox { 
-        for item[i] in commit-result-model:
+        for item[i] in sieve-result-model:
             Text {
                 text: item.result;               
                 color: item.color == "red" ? red : (item.color == "green" ? green : black);
