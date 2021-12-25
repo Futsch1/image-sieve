@@ -15,8 +15,7 @@ struct SieveResult := {
 export SieveView := HorizontalBox { 
     property <[SieveResult]> sieve-result-model;
     property target-directory <=> target-directory-edit.text;
-    property sieve-method <=> sieve-method-combo-box.current-index;
-    property sieve-method-value <=> sieve-method-combo-box.current-value;    
+    property <string> sieve-method;
 
     // sieve
     property <bool> sieve-running: false;
@@ -63,6 +62,7 @@ export SieveView := HorizontalBox {
                     enabled: !sieve-running;
                     width: 400px;
                     model: SieveMethodValues.values;
+                    current-value <=> sieve-method;
                 }
             }
         }

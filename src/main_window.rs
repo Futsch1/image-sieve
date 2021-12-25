@@ -5,9 +5,8 @@
 extern crate rfd;
 extern crate sixtyfps;
 
-use num_traits::FromPrimitive;
 use rfd::FileDialog;
-use sixtyfps::{Model, SharedString};
+use sixtyfps::{Model, ModelHandle, SharedString};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
@@ -17,11 +16,12 @@ use std::thread;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::item_sort_list::parse_date;
-use crate::item_sort_list::{ItemList, SieveMethod};
+use crate::item_sort_list::ItemList;
 use crate::misc::image_cache::{self, ImageCache, Purpose};
 use crate::persistence::json::JsonPersistence;
 use crate::persistence::json::{get_project_filename, get_settings_filename};
 use crate::persistence::settings::Settings;
+use crate::persistence::sixtyenum::model_to_enum;
 use crate::synchronize::Synchronizer;
 
 #[allow(
@@ -573,8 +573,11 @@ pub fn sieve(
 ) {
     let item_list_copy = item_list.to_owned();
     let target_path = window_weak.unwrap().get_target_directory().to_string();
-    let sieve_method = FromPrimitive::from_i32(window_weak.unwrap().get_sieve_method())
-        .unwrap_or(SieveMethod::Copy);
+    let values: ModelHandle<SharedString> = window_weak
+        .unwrap()
+        .global::<SieveMethodValues>()
+        .get_values();
+    let sieve_method = model_to_enum(&values, &window_weak.unwrap().get_sieve_method());
     for _ in 0..sieve_result_model.row_count() {
         sieve_result_model.remove(0);
     }

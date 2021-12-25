@@ -45,7 +45,6 @@ ImageSieve := Window {
     property sieve-result-model <=> sieve-view.sieve-result-model;
     property target-directory <=> sieve-view.target-directory;
     property sieve-method <=> sieve-view.sieve-method;
-    property sieve-method-value <=> sieve-view.sieve-method-value;
     property sieve-running <=> sieve-view.sieve-running;
     callback sieve <=> sieve-view.sieve;
     callback browse-target <=> sieve-view.browse-target;
