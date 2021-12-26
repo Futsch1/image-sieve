@@ -1,6 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 use sixtyfps::{Model, ModelHandle, SharedString};
 
+/// Convert a value from a sixtyfps SharedString model to an enum by mapping the model index to the enum value.
 pub fn model_to_enum<Enum>(model: &ModelHandle<SharedString>, value: &SharedString) -> Enum
 where
     Enum: FromPrimitive,
@@ -14,6 +15,7 @@ where
     enum_value
 }
 
+/// Convert an enum to a value from a sixtyfps SharedString modelby mapping the enum value to the model index.
 pub fn enum_to_model<Enum>(model: &ModelHandle<SharedString>, value: &Enum) -> SharedString
 where
     Enum: ToPrimitive,

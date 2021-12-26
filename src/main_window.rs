@@ -20,8 +20,8 @@ use crate::item_sort_list::ItemList;
 use crate::misc::image_cache::{self, ImageCache, Purpose};
 use crate::persistence::json::JsonPersistence;
 use crate::persistence::json::{get_project_filename, get_settings_filename};
+use crate::persistence::model_to_enum::model_to_enum;
 use crate::persistence::settings::Settings;
-use crate::persistence::sixtyenum::model_to_enum;
 use crate::synchronize::Synchronizer;
 
 #[allow(

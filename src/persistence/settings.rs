@@ -3,7 +3,7 @@ use crate::main_window::{ImageSieve, SieveMethodValues};
 use serde::{Deserialize, Serialize};
 use sixtyfps::{ComponentHandle, ModelHandle, SharedString};
 
-use super::sixtyenum::{enum_to_model, model_to_enum};
+use super::model_to_enum::{enum_to_model, model_to_enum};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Settings {
