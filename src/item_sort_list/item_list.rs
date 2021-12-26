@@ -7,15 +7,15 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::path::PathBuf;
 
-use super::commit;
 use super::event;
 use super::file_item;
 use super::resolvers;
+use super::sieve;
 
-/// Method how to perform commit of sieved images
+/// Method how to perform sieve of sieved images
 #[derive(PartialEq, Eq, FromPrimitive, ToPrimitive, Clone, Debug, Serialize, Deserialize)]
 #[repr(i32)]
-pub enum CommitMethod {
+pub enum SieveMethod {
     /// Copy the images to be taken over to the target directory
     Copy = 0,
     /// Move the images to be taken over to the target directory
@@ -24,6 +24,19 @@ pub enum CommitMethod {
     MoveAndDelete,
     /// Delete the discarded files
     Delete,
+}
+
+#[derive(PartialEq, Eq, FromPrimitive, ToPrimitive, Clone, Debug, Serialize, Deserialize)]
+#[repr(i32)]
+pub enum DirectoryNames {
+    /// Directories are named by year and month
+    YearAndMonth = 0,
+    /// Directories are named by year
+    Year,
+    /// Directories are named by year, month and day
+    YearMonthAndDay,
+    /// Directories are named by year and quarter
+    YearAndQuarter,
 }
 
 /// Item list containing all file items and all events
@@ -136,16 +149,24 @@ impl ItemList {
         }
     }
 
-    /// Commits an item list taking the take_over flag into account to a new directory.
+    /// Sieves an item list taking the take_over flag into account to a new directory.
     /// The progress is reported by calling a callback function with the file that is currently processed.
-    pub fn commit(
+    pub fn sieve(
         &self,
         path: &Path,
-        commit_method: CommitMethod,
+        sieve_method: SieveMethod,
+        sieve_directory_names: DirectoryNames,
         progress_callback: impl Fn(String),
     ) {
-        let commit_io = commit::FileCommitIO {};
-        commit::commit(self, path, commit_method, &commit_io, progress_callback);
+        let sieve_io = sieve::FileSieveIO {};
+        sieve::sieve(
+            self,
+            path,
+            sieve_method,
+            sieve_directory_names,
+            &sieve_io,
+            progress_callback,
+        );
     }
 
     /// Gets the event which a file item belongs to

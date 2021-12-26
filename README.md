@@ -30,7 +30,7 @@ After the compilation, you can run the tool by typing
 
 ## Operation
 
-### &#x1F4F7; &#x1F4F9; Sorting
+### &#x1F4F7; &#x1F4F9; Images
 To get started, first open a folder containing images and videos in the "&#x1F4F7; &#x1F4F9;  Images" tab. A folder can be selected by pressing the "&#x1F4C2; Browse..." button. All images and videos from the folder and from all subfolders will be analyzed. Depending on the amount of images, this might take a while. Note that the last selected folder will be re-opened when ImageSieve is started for the next time.
 Once the folder has been processed, a list of file names will appear in the box to the right. This list contains the files that have been found in the folder and that will be considered in the sieving process. Each file has a set of icons that indicate its state. 
 The following icons are used (exact rendering depends on platform/font):

@@ -1,0 +1,144 @@
+import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox, ScrollView } from "sixtyfps_widgets.60";
+
+export global SieveComboValues := {
+    property <[string]> methods: ["Copy to target directory", 
+                                  "Move to target directory", 
+                                  "Move to target directory and delete in source directory",
+                                  "Delete in source directory"];
+
+    property <[string]> directory_names: ["Year and month (2021-12)", 
+                                          "Year (2021)", 
+                                          "Year, month and day (2021-12-27)", 
+                                          "Year and quarter (2021-Q4)"];
+}
+
+struct SieveResult := {
+    result: string,
+    color: string,
+}
+
+export SieveView := HorizontalBox { 
+    property <[SieveResult]> sieve-result-model;
+    property target-directory <=> target-directory-edit.text;
+    property <string> sieve-method;
+    property <string> sieve-directory-names;
+
+    // sieve
+    property <bool> sieve-running: false;
+    property <bool> sieve-done: false;
+
+    // Warning
+    property <bool> show-warning: false;
+
+    // Called when the sieve button was pressed
+    callback sieve;
+
+    // Called when source or target was browsed
+    callback browse-target;
+
+    VerticalBox { 
+        alignment: start;
+
+        GroupBox { 
+            title: "Target directory";
+            enabled: sieve-method-combo-box.current-index != 3;
+            VerticalBox { 
+                HorizontalBox { 
+                    spacing: 5px;
+                    target-directory-edit := LineEdit { 
+                        width: 400px;
+                        enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                        placeholder-text: "Select target directory";
+                    }
+                    Button {
+                        text: "\u{1F4C2} Browse...";
+                        width: 200px;
+                        enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                        clicked => { 
+                            browse-target();
+                        }
+                    }
+                }
+
+                HorizontalBox { 
+                    spacing: 5px;
+                    Text {
+                        text: "Directory names";
+                    }
+                    ComboBox {
+                        enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                        width: 400px;
+                        model: SieveComboValues.directory_names;
+                        current-value <=> sieve-directory-names;
+                    }
+                }
+            }
+        }
+        GroupBox { 
+            title: "Sieve method";
+            HorizontalBox { 
+                spacing: 5px;
+                sieve-method-combo-box := ComboBox {
+                    enabled: !sieve-running;
+                    width: 400px;
+                    model: SieveComboValues.methods;
+                    current-value <=> sieve-method;
+                }
+            }
+        }
+
+        Button {
+            text: "\u{2705} Start";
+            width: 300px;
+            enabled: !sieve-running && target-directory-edit.text != "";
+            clicked => {
+                if (sieve-method-combo-box.current-index == 2 || sieve-method-combo-box.current-index == 3) {
+                    show-warning = true;
+                    sieve-running = true;
+                } else {
+                    sieve-done = true;
+                    sieve();                    
+                }
+            }
+        }
+
+        GroupBox {
+            title: "Warning! The desired sieve method will delete files that cannot be recovered.\n\nAre you sure you want to proceed?";
+            visible: show-warning;
+            HorizontalBox { 
+                spacing: 5px;
+                Button {
+                    text: "\u{2705} Yes";
+                    width: 300px;
+                    visible: show-warning;
+                    clicked => {            
+                        show-warning = false;
+                        sieve-done = true;
+                        sieve();                    
+                    }
+                }
+                Button {
+                    text: "\u{274C} No";
+                    width: 300px;
+                    visible: show-warning;
+                    clicked => {            
+                        show-warning = false;
+                        sieve-running = false;
+                    }
+                }
+            }
+        }
+    }  
+
+    ScrollView {
+        visible: sieve-done;
+
+        VerticalBox { 
+        for item[i] in sieve-result-model:
+            Text {
+                text: item.result;               
+                color: item.color == "red" ? red : (item.color == "green" ? green : black);
+            }
+        }
+    }
+}
