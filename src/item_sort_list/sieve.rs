@@ -4,7 +4,7 @@ use std::{
     path::Path,
 };
 
-use chrono::NaiveDateTime;
+use chrono::{Datelike, NaiveDateTime};
 
 use super::{file_item, DirectoryNames, ItemList, SieveMethod};
 
@@ -130,22 +130,26 @@ fn get_sub_path(
     let event = item_list.get_event(item);
     if let Some(event) = event {
         if event.start_date != event.end_date {
-            return match directory_names {
-                DirectoryNames::YearAndMonth => format!(
-                    "{} - {} {}",
-                    event.start_date.format("%Y-%m-%d"),
-                    event.end_date.format("%Y-%m-%d"),
-                    event.name
-                ),
-                _ => "".to_string(),
-            };
+            return format!(
+                "{} - {} {}",
+                event.start_date.format("%Y-%m-%d"),
+                event.end_date.format("%Y-%m-%d"),
+                event.name
+            );
         } else {
             return format!("{} {}", event.start_date.format("%Y-%m-%d"), event.name);
         }
     }
-    NaiveDateTime::from_timestamp(item.get_timestamp(), 0)
-        .format("%Y-%m")
-        .to_string()
+    let timestamp = NaiveDateTime::from_timestamp(item.get_timestamp(), 0);
+    match directory_names {
+        DirectoryNames::YearAndMonth => timestamp.format("%Y-%m").to_string(),
+        DirectoryNames::Year => timestamp.format("%Y").to_string(),
+        DirectoryNames::YearMonthAndDay => timestamp.format("%Y-%m-%d").to_string(),
+        DirectoryNames::YearAndQuarter => {
+            timestamp.format("%Y-Q").to_string()
+                + &format!("{}", (timestamp.date().month() - 1) / 3 + 1)
+        }
+    }
 }
 
 /// Prepares the path by creating it if it does not exist
@@ -166,6 +170,7 @@ mod test {
     use super::*;
     use crate::item_sort_list::sieve::SieveIO;
     use crate::item_sort_list::{sieve::get_sub_path, Event, FileItem, ItemList};
+    use num_traits::FromPrimitive;
     use std::cell::RefCell;
     use std::path::PathBuf;
 
@@ -247,29 +252,77 @@ mod test {
             path: PathBuf::from(""),
         };
         let test_cases = [
-            ("2021-09-14 00:00", "2021-09-14 Test1"),
-            ("2021-09-13 23:59", "2021-09"),
-            ("2021-09-15 00:00", "2021-09"),
-            ("2021-09-20 00:00", "2021-09-20 - 2021-09-21 Test2"),
-            ("2021-09-21 16:00", "2021-09-20 - 2021-09-21 Test2"),
-            ("2021-09-25 16:00", "2021-09-24 - 2021-09-27 Test3"),
+            (
+                "2021-09-14 00:00",
+                [
+                    "2021-09-14 Test1",
+                    "2021-09-14 Test1",
+                    "2021-09-14 Test1",
+                    "2021-09-14 Test1",
+                ],
+            ),
+            (
+                "2021-09-13 23:59",
+                ["2021-09", "2021", "2021-09-13", "2021-Q3"],
+            ),
+            (
+                "2021-09-15 00:00",
+                ["2021-09", "2021", "2021-09-15", "2021-Q3"],
+            ),
+            (
+                "2021-09-20 00:00",
+                [
+                    "2021-09-20 - 2021-09-21 Test2",
+                    "2021-09-20 - 2021-09-21 Test2",
+                    "2021-09-20 - 2021-09-21 Test2",
+                    "2021-09-20 - 2021-09-21 Test2",
+                ],
+            ),
+            (
+                "2021-09-21 16:00",
+                [
+                    "2021-09-20 - 2021-09-21 Test2",
+                    "2021-09-20 - 2021-09-21 Test2",
+                    "2021-09-20 - 2021-09-21 Test2",
+                    "2021-09-20 - 2021-09-21 Test2",
+                ],
+            ),
+            (
+                "2021-09-25 16:00",
+                [
+                    "2021-09-24 - 2021-09-27 Test3",
+                    "2021-09-24 - 2021-09-27 Test3",
+                    "2021-09-24 - 2021-09-27 Test3",
+                    "2021-09-24 - 2021-09-27 Test3",
+                ],
+            ),
+            (
+                "2020-01-13 23:59",
+                ["2020-01", "2020", "2020-01-13", "2020-Q1"],
+            ),
+            (
+                "2021-04-15 00:00",
+                ["2021-04", "2021", "2021-04-15", "2021-Q2"],
+            ),
         ];
 
-        for (input, result) in test_cases {
-            assert_eq!(
-                get_sub_path(
-                    &item_list,
-                    &FileItem::dummy(
-                        "",
-                        NaiveDateTime::parse_from_str(input, "%Y-%m-%d %H:%M")
-                            .unwrap()
-                            .timestamp(),
-                        false
+        for (input, results) in test_cases {
+            for (i, result) in results.into_iter().enumerate() {
+                assert_eq!(
+                    get_sub_path(
+                        &item_list,
+                        &FileItem::dummy(
+                            "",
+                            NaiveDateTime::parse_from_str(input, "%Y-%m-%d %H:%M")
+                                .unwrap()
+                                .timestamp(),
+                            false
+                        ),
+                        &FromPrimitive::from_usize(i).unwrap()
                     ),
-                    &DirectoryNames::YearAndMonth
-                ),
-                result
-            );
+                    result
+                );
+            }
         }
     }
 
