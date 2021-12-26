@@ -1,5 +1,5 @@
 use crate::item_sort_list::SieveMethod;
-use crate::main_window::{ImageSieve, SieveMethodValues};
+use crate::main_window::{ImageSieve, SieveComboValues};
 use serde::{Deserialize, Serialize};
 use sixtyfps::{ComponentHandle, ModelHandle, SharedString};
 
@@ -31,11 +31,11 @@ impl Settings {
 
     pub fn from_window(window: &ImageSieve) -> Self {
         //TODO: Also save last selected image and restart there
-        let values: ModelHandle<SharedString> = window.global::<SieveMethodValues>().get_values();
+        let methods: ModelHandle<SharedString> = window.global::<SieveComboValues>().get_methods();
         Settings {
             source_directory: window.get_source_directory().to_string(),
             target_directory: window.get_target_directory().to_string(),
-            sieve_method: model_to_enum(&values, &window.get_sieve_method()),
+            sieve_method: model_to_enum(&methods, &window.get_sieve_method()),
             use_timestamps: window.get_use_timestamps(),
             timestamp_max_diff: convert_timestamp_difference(
                 &window.get_timestamp_difference().to_string(),
@@ -51,8 +51,8 @@ impl Settings {
     pub fn to_window(&self, window: &ImageSieve) {
         window.set_source_directory(SharedString::from(self.source_directory.clone()));
         window.set_target_directory(SharedString::from(self.target_directory.clone()));
-        let values: ModelHandle<SharedString> = window.global::<SieveMethodValues>().get_values();
-        window.set_sieve_method(enum_to_model(&values, &self.sieve_method));
+        let methods: ModelHandle<SharedString> = window.global::<SieveComboValues>().get_methods();
+        window.set_sieve_method(enum_to_model(&methods, &self.sieve_method));
         window.set_use_timestamps(self.use_timestamps);
         window.set_timestamp_difference(SharedString::from(self.timestamp_max_diff.to_string()));
         window.set_use_similarity(self.use_hash);

@@ -3,11 +3,11 @@ import { ListView, Button, LineEdit, TabWidget, GroupBox, VerticalBox, Horizonta
 
 import { SortView } from "sort.60";
 import { EventsView } from "events.60";
-import { SieveView, SieveMethodValues } from "sieve.60";
+import { SieveView, SieveComboValues } from "sieve.60";
 import { SettingsView } from "settings.60";
 import { HelpView } from "help.60";
 
-export { SieveMethodValues }
+export { SieveComboValues }
 
 ImageSieve := Window {
     min-width: 1600px;
@@ -45,6 +45,7 @@ ImageSieve := Window {
     property sieve-result-model <=> sieve-view.sieve-result-model;
     property target-directory <=> sieve-view.target-directory;
     property sieve-method <=> sieve-view.sieve-method;
+    property sieve-directory-name <=> sieve-view.sieve-directory-name;
     property sieve-running <=> sieve-view.sieve-running;
     callback sieve <=> sieve-view.sieve;
     callback browse-target <=> sieve-view.browse-target;

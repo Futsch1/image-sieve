@@ -573,11 +573,11 @@ pub fn sieve(
 ) {
     let item_list_copy = item_list.to_owned();
     let target_path = window_weak.unwrap().get_target_directory().to_string();
-    let values: ModelHandle<SharedString> = window_weak
+    let methods: ModelHandle<SharedString> = window_weak
         .unwrap()
-        .global::<SieveMethodValues>()
-        .get_values();
-    let sieve_method = model_to_enum(&values, &window_weak.unwrap().get_sieve_method());
+        .global::<SieveComboValues>()
+        .get_methods();
+    let sieve_method = model_to_enum(&methods, &window_weak.unwrap().get_sieve_method());
     for _ in 0..sieve_result_model.row_count() {
         sieve_result_model.remove(0);
     }

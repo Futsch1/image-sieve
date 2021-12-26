@@ -1,10 +1,15 @@
 import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox, ScrollView } from "sixtyfps_widgets.60";
 
-export global SieveMethodValues := {
-    property <[string]> values: ["Copy to target directory", 
-                                "Move to target directory", 
-                                "Move to target directory and delete in source directory",
-                                "Delete in source directory"];
+export global SieveComboValues := {
+    property <[string]> methods: ["Copy to target directory", 
+                                  "Move to target directory", 
+                                  "Move to target directory and delete in source directory",
+                                  "Delete in source directory"];
+
+    property <[string]> directory_names: ["Year and month (2021-12)", 
+                                          "Year (2021)", 
+                                          "Year, month and day (2021-12-27)", 
+                                          "Year and quarter (2021-Q4)"];
 }
 
 struct SieveResult := {
@@ -16,6 +21,7 @@ export SieveView := HorizontalBox {
     property <[SieveResult]> sieve-result-model;
     property target-directory <=> target-directory-edit.text;
     property <string> sieve-method;
+    property <string> sieve-directory-name;
 
     // sieve
     property <bool> sieve-running: false;
@@ -33,23 +39,37 @@ export SieveView := HorizontalBox {
     VerticalBox { 
         alignment: start;
 
-            GroupBox { 
+        GroupBox { 
             title: "Target directory";
             enabled: sieve-method-combo-box.current-index != 3;
-            
-            HorizontalBox { 
-                spacing: 5px;
-                target-directory-edit := LineEdit { 
-                    width: 400px;
-                    enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
-                    placeholder-text: "Select target directory";
+            VerticalBox { 
+                HorizontalBox { 
+                    spacing: 5px;
+                    target-directory-edit := LineEdit { 
+                        width: 400px;
+                        enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                        placeholder-text: "Select target directory";
+                    }
+                    Button {
+                        text: "\u{1F4C2} Browse...";
+                        width: 200px;
+                        enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                        clicked => { 
+                            browse-target();
+                        }
+                    }
                 }
-                Button {
-                    text: "\u{1F4C2} Browse...";
-                    width: 200px;
-                    enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
-                    clicked => { 
-                        browse-target();
+
+                HorizontalBox { 
+                    spacing: 5px;
+                    Text {
+                        text: "Directory names";
+                    }
+                    ComboBox {
+                        enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                        width: 400px;
+                        model: SieveComboValues.directory_names;
+                        current-value <=> sieve-directory-name;
                     }
                 }
             }
@@ -61,7 +81,7 @@ export SieveView := HorizontalBox {
                 sieve-method-combo-box := ComboBox {
                     enabled: !sieve-running;
                     width: 400px;
-                    model: SieveMethodValues.values;
+                    model: SieveComboValues.methods;
                     current-value <=> sieve-method;
                 }
             }
