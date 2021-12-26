@@ -90,7 +90,7 @@ export SieveView := HorizontalBox {
         Button {
             text: "\u{2705} Start";
             width: 300px;
-            enabled: !sieve-running;
+            enabled: !sieve-running && target-directory-edit.text != "";
             clicked => {
                 if (sieve-method-combo-box.current-index == 2 || sieve-method-combo-box.current-index == 3) {
                     show-warning = true;
