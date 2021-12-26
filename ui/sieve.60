@@ -21,7 +21,7 @@ export SieveView := HorizontalBox {
     property <[SieveResult]> sieve-result-model;
     property target-directory <=> target-directory-edit.text;
     property <string> sieve-method;
-    property <string> sieve-directory-name;
+    property <string> sieve-directory-names;
 
     // sieve
     property <bool> sieve-running: false;
@@ -69,7 +69,7 @@ export SieveView := HorizontalBox {
                         enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
                         width: 400px;
                         model: SieveComboValues.directory_names;
-                        current-value <=> sieve-directory-name;
+                        current-value <=> sieve-directory-names;
                     }
                 }
             }

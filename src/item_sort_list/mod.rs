@@ -9,6 +9,7 @@ pub use event::parse_date;
 pub use event::Event;
 pub use event::EVENT_DATE_FORMAT;
 pub use file_item::FileItem;
+pub use item_list::DirectoryNames;
 pub use item_list::ItemList;
 pub use item_list::SieveMethod;
 pub use item_traits::Orientation;

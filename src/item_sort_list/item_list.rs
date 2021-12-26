@@ -26,6 +26,19 @@ pub enum SieveMethod {
     Delete,
 }
 
+#[derive(PartialEq, Eq, FromPrimitive, ToPrimitive, Clone, Debug, Serialize, Deserialize)]
+#[repr(i32)]
+pub enum DirectoryNames {
+    /// Directories are named by year and month
+    YearAndMonth = 0,
+    /// Directories are named by year
+    Year,
+    /// Directories are named by year, month and day
+    YearMonthAndDay,
+    /// Directories are named by year and quarter
+    YearAndQuarter,
+}
+
 /// Item list containing all file items and all events
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ItemList {

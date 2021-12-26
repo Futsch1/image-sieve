@@ -1,4 +1,4 @@
-use crate::item_sort_list::SieveMethod;
+use crate::item_sort_list::{DirectoryNames, SieveMethod};
 use crate::main_window::{ImageSieve, SieveComboValues};
 use serde::{Deserialize, Serialize};
 use sixtyfps::{ComponentHandle, ModelHandle, SharedString};
@@ -14,6 +14,7 @@ pub struct Settings {
     pub timestamp_max_diff: i64,
     pub use_hash: bool,
     pub hash_max_diff: u32,
+    pub sieve_directory_names: DirectoryNames,
 }
 
 impl Settings {
@@ -26,12 +27,15 @@ impl Settings {
             timestamp_max_diff: 5,
             use_hash: false,
             hash_max_diff: 8,
+            sieve_directory_names: DirectoryNames::YearAndMonth,
         }
     }
 
     pub fn from_window(window: &ImageSieve) -> Self {
         //TODO: Also save last selected image and restart there
         let methods: ModelHandle<SharedString> = window.global::<SieveComboValues>().get_methods();
+        let directory_names: ModelHandle<SharedString> =
+            window.global::<SieveComboValues>().get_directory_names();
         Settings {
             source_directory: window.get_source_directory().to_string(),
             target_directory: window.get_target_directory().to_string(),
@@ -44,6 +48,10 @@ impl Settings {
             use_hash: window.get_use_similarity(),
             hash_max_diff: convert_sensitivity_to_u32(
                 &window.get_similarity_sensitivity().to_string(),
+            ),
+            sieve_directory_names: model_to_enum(
+                &directory_names,
+                &window.get_sieve_directory_names(),
             ),
         }
     }
@@ -59,6 +67,12 @@ impl Settings {
         window.set_similarity_sensitivity(SharedString::from(convert_u32_to_sensitivity(
             self.hash_max_diff,
         )));
+        let directory_names: ModelHandle<SharedString> =
+            window.global::<SieveComboValues>().get_directory_names();
+        window.set_sieve_directory_names(enum_to_model(
+            &directory_names,
+            &self.sieve_directory_names,
+        ));
     }
 }
 
