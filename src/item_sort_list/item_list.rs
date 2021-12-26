@@ -155,10 +155,18 @@ impl ItemList {
         &self,
         path: &Path,
         sieve_method: SieveMethod,
+        sieve_directory_names: DirectoryNames,
         progress_callback: impl Fn(String),
     ) {
         let sieve_io = sieve::FileSieveIO {};
-        sieve::sieve(self, path, sieve_method, &sieve_io, progress_callback);
+        sieve::sieve(
+            self,
+            path,
+            sieve_method,
+            sieve_directory_names,
+            &sieve_io,
+            progress_callback,
+        );
     }
 
     /// Gets the event which a file item belongs to

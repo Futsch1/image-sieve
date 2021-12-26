@@ -6,7 +6,7 @@ use std::{
 
 use chrono::NaiveDateTime;
 
-use super::{file_item, ItemList, SieveMethod};
+use super::{file_item, DirectoryNames, ItemList, SieveMethod};
 
 /// Trait to encapsulate sieve file IO operations
 pub trait SieveIO {
@@ -66,6 +66,7 @@ pub fn sieve<T>(
     item_list: &ItemList,
     path: &Path,
     sieve_method: SieveMethod,
+    sieve_directory_names: DirectoryNames,
     sieve_io: &T,
     progress_callback: impl Fn(String),
 ) where
@@ -76,7 +77,7 @@ pub fn sieve<T>(
 
         for item in &item_list.items {
             if item.get_take_over() {
-                let full_path = path.join(get_sub_path(item_list, item));
+                let full_path = path.join(get_sub_path(item_list, item, &sieve_directory_names));
                 prepare_path(&full_path, sieve_io);
                 let source = &item.path;
                 let target = full_path.join(source.file_name().unwrap());
@@ -120,17 +121,24 @@ pub fn sieve<T>(
 
 /// Gets the sub path of a file item taking the file item's timestamp and possible events into account.
 /// If a fileitem is part of an event, its sub path is the event's span and name.
-/// If it is not part of an event, its sub path is the file item's timestamp in year-month.
-fn get_sub_path(item_list: &ItemList, item: &file_item::FileItem) -> String {
+/// If it is not part of an event, its sub path is the file item's timestamp in the given format.
+fn get_sub_path(
+    item_list: &ItemList,
+    item: &file_item::FileItem,
+    directory_names: &DirectoryNames,
+) -> String {
     let event = item_list.get_event(item);
     if let Some(event) = event {
         if event.start_date != event.end_date {
-            return format!(
-                "{} - {} {}",
-                event.start_date.format("%Y-%m-%d"),
-                event.end_date.format("%Y-%m-%d"),
-                event.name
-            );
+            return match directory_names {
+                DirectoryNames::YearAndMonth => format!(
+                    "{} - {} {}",
+                    event.start_date.format("%Y-%m-%d"),
+                    event.end_date.format("%Y-%m-%d"),
+                    event.name
+                ),
+                _ => "".to_string(),
+            };
         } else {
             return format!("{} {}", event.start_date.format("%Y-%m-%d"), event.name);
         }
@@ -257,7 +265,8 @@ mod test {
                             .unwrap()
                             .timestamp(),
                         false
-                    )
+                    ),
+                    &DirectoryNames::YearAndMonth
                 ),
                 result
             );
@@ -280,6 +289,7 @@ mod test {
             &item_list,
             Path::new("target"),
             SieveMethod::Delete,
+            DirectoryNames::YearAndMonth,
             &sieve_io,
             |_: String| {},
         );
@@ -294,6 +304,7 @@ mod test {
             &item_list,
             Path::new("target"),
             SieveMethod::Copy,
+            DirectoryNames::YearAndMonth,
             &sieve_io,
             |_: String| {},
         );
@@ -319,6 +330,7 @@ mod test {
             &item_list,
             Path::new("target"),
             SieveMethod::Move,
+            DirectoryNames::YearAndMonth,
             &sieve_io,
             |_: String| {},
         );
@@ -344,6 +356,7 @@ mod test {
             &item_list,
             Path::new("target"),
             SieveMethod::MoveAndDelete,
+            DirectoryNames::YearAndMonth,
             &sieve_io,
             |_: String| {},
         );

@@ -578,13 +578,21 @@ pub fn sieve(
         .global::<SieveComboValues>()
         .get_methods();
     let sieve_method = model_to_enum(&methods, &window_weak.unwrap().get_sieve_method());
+    let directory_names: ModelHandle<SharedString> = window_weak
+        .unwrap()
+        .global::<SieveComboValues>()
+        .get_directory_names();
+    let sieve_directory_names = model_to_enum(
+        &directory_names,
+        &window_weak.unwrap().get_sieve_directory_names(),
+    );
     for _ in 0..sieve_result_model.row_count() {
         sieve_result_model.remove(0);
     }
     sieve_result_model.push(SieveResult {
         result: SharedString::from(format!(
-            "Sieving using {:?} method to {}",
-            sieve_method, target_path
+            "Sieving using {:?} method to {} with directories {:?}",
+            sieve_method, target_path, sieve_directory_names
         )),
         color: SharedString::from("black"),
     });
@@ -615,6 +623,11 @@ pub fn sieve(
                 sieve_result_model.push(sieve_result);
             });
         };
-        item_list_copy.sieve(Path::new(&target_path), sieve_method, progress_callback);
+        item_list_copy.sieve(
+            Path::new(&target_path),
+            sieve_method,
+            sieve_directory_names,
+            progress_callback,
+        );
     });
 }
