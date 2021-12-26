@@ -14,7 +14,7 @@ pub struct Settings {
     pub timestamp_max_diff: i64,
     pub use_hash: bool,
     pub hash_max_diff: u32,
-    pub sieve_directory_names: DirectoryNames,
+    pub sieve_directory_names: Option<DirectoryNames>,
 }
 
 impl Settings {
@@ -27,7 +27,7 @@ impl Settings {
             timestamp_max_diff: 5,
             use_hash: false,
             hash_max_diff: 8,
-            sieve_directory_names: DirectoryNames::YearAndMonth,
+            sieve_directory_names: Some(DirectoryNames::YearAndMonth),
         }
     }
 
@@ -49,10 +49,10 @@ impl Settings {
             hash_max_diff: convert_sensitivity_to_u32(
                 &window.get_similarity_sensitivity().to_string(),
             ),
-            sieve_directory_names: model_to_enum(
+            sieve_directory_names: Some(model_to_enum(
                 &directory_names,
                 &window.get_sieve_directory_names(),
-            ),
+            )),
         }
     }
 
@@ -69,10 +69,11 @@ impl Settings {
         )));
         let directory_names: ModelHandle<SharedString> =
             window.global::<SieveComboValues>().get_directory_names();
-        window.set_sieve_directory_names(enum_to_model(
-            &directory_names,
-            &self.sieve_directory_names,
-        ));
+        let directory_name = self
+            .sieve_directory_names
+            .as_ref()
+            .unwrap_or(&DirectoryNames::YearAndMonth);
+        window.set_sieve_directory_names(enum_to_model(&directory_names, directory_name));
     }
 }
 
