@@ -185,20 +185,26 @@ impl ItemList {
 mod tests {
     use super::*;
     use crate::item_sort_list::item_traits::PropertyResolver;
+    use std::cell::RefCell;
+    use std::rc::Rc;
     extern crate base64;
 
-    static mut CALL_COUNT: usize = 0;
+    struct MockResolver {
+        call_count: Rc<RefCell<usize>>,
+    }
 
-    struct MockResolver {}
+    impl MockResolver {
+        pub fn new(call_count: Rc<RefCell<usize>>) -> Self {
+            MockResolver { call_count }
+        }
+    }
 
     impl PropertyResolver for MockResolver {
         fn get_timestamp(&self) -> i64 {
             let return_values: [i64; 6] = [1, 4, 8, 14, 64, 65];
-            #[allow(unsafe_code)]
-            unsafe {
-                CALL_COUNT += 1;
-                return_values[CALL_COUNT - 1]
-            }
+            let call_count = *self.call_count.borrow_mut();
+            self.call_count.replace(call_count + 1);
+            return_values[call_count]
         }
 
         fn get_orientation(&self) -> Option<crate::item_sort_list::Orientation> {
@@ -206,21 +212,15 @@ mod tests {
         }
     }
 
-    fn reset_call_count() {
-        #[allow(unsafe_code)]
-        unsafe {
-            CALL_COUNT = 0;
-        }
-    }
-
     #[test]
     fn find_similar() {
-        reset_call_count();
+        let call_count = Rc::new(RefCell::new(0));
+
         let mut items: Vec<file_item::FileItem> = vec![];
         for _ in 0..6 {
             items.push(file_item::FileItem::new(
                 PathBuf::from(""),
-                Box::new(MockResolver {}),
+                Box::new(MockResolver::new(call_count.clone())),
                 true,
                 "",
             ));
@@ -243,14 +243,15 @@ mod tests {
 
     #[test]
     fn find_similar_hashes() {
-        reset_call_count();
+        let call_count = Rc::new(RefCell::new(0));
+
         let mut items: Vec<file_item::FileItem> = vec![];
         let hashes = ["a", "b", "c", "h", "i", "j"];
         for hash in hashes {
             let encoded = base64::encode(hash).unwrap();
             items.push(file_item::FileItem::new(
                 PathBuf::from(""),
-                Box::new(MockResolver {}),
+                Box::new(MockResolver::new(call_count.clone())),
                 true,
                 &encoded,
             ));
