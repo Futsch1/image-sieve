@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - 
+ - Layout of commit result list improved
 
 ## [0.3.3] - 2021-12-29
 
