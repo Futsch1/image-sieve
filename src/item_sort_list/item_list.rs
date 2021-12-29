@@ -248,7 +248,7 @@ mod tests {
         let mut items: Vec<file_item::FileItem> = vec![];
         let hashes = ["a", "b", "c", "h", "i", "j"];
         for hash in hashes {
-            let encoded = base64::encode(hash).unwrap();
+            let encoded = base64::encode(hash);
             items.push(file_item::FileItem::new(
                 PathBuf::from(""),
                 Box::new(MockResolver::new(call_count.clone())),

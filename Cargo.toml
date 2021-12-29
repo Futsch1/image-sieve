@@ -27,7 +27,7 @@ home = "^0.5"
 walkdir = "2"
 
 [dev-dependencies]
-base64 = "^0.1"
+base64 = "^0.13"
 
 [build-dependencies]
 sixtyfps-build = "0.1.5"
