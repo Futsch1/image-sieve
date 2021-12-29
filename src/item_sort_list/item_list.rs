@@ -50,7 +50,22 @@ pub struct ItemList {
     pub path: PathBuf,
 }
 
+impl Default for ItemList {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ItemList {
+    pub fn new() -> Self {
+        resolvers::init_resolvers();
+        ItemList {
+            items: vec![],
+            events: vec![],
+            path: PathBuf::new(),
+        }
+    }
+
     /// Remove all missing files from the item list
     pub fn drain_missing(&mut self) {
         self.items = self.items.drain(..).filter(|i| i.path.exists()).collect();

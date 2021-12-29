@@ -1,5 +1,6 @@
 extern crate chrono;
 extern crate exif;
+extern crate ffmpeg_next as ffmpeg;
 
 use self::chrono::NaiveDateTime;
 use self::exif::{In, Tag};
@@ -15,11 +16,16 @@ pub fn get_resolver(path: &Path) -> Box<dyn PropertyResolver> {
             let extension_str = extension.to_str().unwrap();
             match extension_str {
                 "jpg" => Box::new(ExifResolver::new(path)),
+                "mp4" | "avi" | "mts" => Box::new(FFMpegResolver::new(path)),
                 _ => Box::new(FileResolver::new(path)),
             }
         }
         None => Box::new(FileResolver::new(path)),
     }
+}
+
+pub fn init_resolvers() {
+    FFMpegResolver::init();
 }
 
 pub struct FileResolver {
@@ -125,6 +131,42 @@ impl PropertyResolver for ExifResolver {
     }
 }
 
+struct FFMpegResolver {
+    path: PathBuf,
+}
+
+impl FFMpegResolver {
+    pub fn new(path: &Path) -> Self {
+        Self {
+            path: PathBuf::from(path),
+        }
+    }
+
+    pub fn init() {
+        ffmpeg::init().ok();
+    }
+}
+
+impl PropertyResolver for FFMpegResolver {
+    fn get_timestamp(&self) -> i64 {
+        let file_resolver = FileResolver::new(&self.path);
+        if let Ok(context) = ffmpeg::format::input(&self.path) {
+            for (k, v) in context.metadata().iter() {
+                if k == "creation_time" {
+                    if let Ok(date_time) = NaiveDateTime::parse_from_str(v, "%+") {
+                        return date_time.timestamp();
+                    }
+                }
+            }
+        }
+        file_resolver.get_timestamp()
+    }
+
+    fn get_orientation(&self) -> Option<Orientation> {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -139,6 +181,8 @@ mod tests {
 
     #[test]
     fn resolvers() {
+        init_resolvers();
+
         assert_eq!(1631461311, get_timestamp_from("tests/test.jpg"));
         assert_eq!(
             get_file_timestamp("tests/test_no_date.jpg"),
@@ -149,8 +193,9 @@ mod tests {
             get_timestamp_from("tests/test_no_exif.jpg")
         );
         assert_eq!(
-            get_file_timestamp("tests/test"),
-            get_timestamp_from("tests/test")
+            get_file_timestamp("tests/test.mp4"),
+            get_timestamp_from("tests/test.mp4")
         );
+        assert_eq!(1640790497, get_timestamp_from("tests/test2.mp4"));
     }
 }

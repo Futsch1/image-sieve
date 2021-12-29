@@ -9,7 +9,7 @@ use rfd::FileDialog;
 use sixtyfps::{Model, ModelHandle, SharedString};
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::rc::Rc;
 use std::sync::Mutex;
 use std::thread;
@@ -74,11 +74,7 @@ impl MainWindow {
         let settings: Settings =
             JsonPersistence::load(&get_settings_filename()).unwrap_or_else(Settings::new);
 
-        let item_list = ItemList {
-            items: vec![],
-            events: vec![],
-            path: PathBuf::new(),
-        };
+        let item_list = ItemList::new();
 
         let item_list = Arc::new(Mutex::new(item_list));
 
