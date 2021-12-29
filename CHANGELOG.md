@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+ - 
+
+### Added
+
+ - 
+
+### Fixed
+
+ - 
+
+## [0.3.3] - 2021-12-29
+
+### Changed
+
  - C runtime is now linked statically for Windows
 
 ### Added
