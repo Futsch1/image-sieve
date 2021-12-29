@@ -133,7 +133,8 @@ export SieveView := HorizontalBox {
     ScrollView {
         visible: sieve-done;
 
-        VerticalBox { 
+        VerticalLayout { 
+            alignment: start;
         for item[i] in sieve-result-model:
             Text {
                 text: item.result;               
