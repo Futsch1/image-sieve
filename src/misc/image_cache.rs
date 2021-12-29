@@ -38,8 +38,6 @@ pub enum Purpose {
 pub struct ImageCache {
     /// Map with the images
     images: Arc<ImagesMapMutex>,
-    /// Buffered image showing a video camera to be used when the file is not an image
-    video_image: Image,
     /// Buffered image to be displayed while waiting for an image to load
     waiting_image: Image,
     /// Maximum width of the images to load
@@ -76,7 +74,6 @@ impl ImageCache {
 
         Self {
             images: mutex,
-            video_image: ImageCache::get_video(),
             waiting_image: ImageCache::get_hourglass(),
             max_width: 0,
             max_height: 0,
@@ -96,15 +93,6 @@ impl ImageCache {
         )
     }
 
-    /// Gets the video image to indicate that the file is not an image
-    /// The image is compiled into the binary
-    fn get_video() -> Image {
-        let bytes = include_bytes!("video.png");
-        crate::misc::images::get_sixtyfps_image(
-            &crate::misc::images::image_from_buffer(bytes).unwrap(),
-        )
-    }
-
     /// Sets the maximum width and height of the images to load
     pub fn restrict_size(&mut self, max_width: u32, max_height: u32) {
         if max_width > self.max_width || max_height > self.max_height {
@@ -116,14 +104,10 @@ impl ImageCache {
 
     /// Gets an image from the cache
     pub fn get(&self, item: &FileItem) -> Option<Image> {
-        if item.is_image() {
-            let item_path = item.path.to_str().unwrap();
-            let mut map = self.images.lock().unwrap();
-            map.get(String::from(item_path))
-                .map(|image| crate::misc::images::get_sixtyfps_image(image))
-        } else {
-            Some(self.video_image.clone())
-        }
+        let item_path = item.path.to_str().unwrap();
+        let mut map = self.images.lock().unwrap();
+        map.get(String::from(item_path))
+            .map(|image| crate::misc::images::get_sixtyfps_image(image))
     }
 
     /// Gets the waiting image
@@ -178,8 +162,11 @@ fn load_image_thread(
         };
         // If it is not in the cache, load it from the file and put it into the cache
         if !contains_key {
-            let image_buffer =
-                crate::misc::images::get_image_buffer(&prefetch_item, max_width, max_height);
+            let image_buffer = if prefetch_item.is_image() {
+                crate::misc::images::get_image_buffer(&prefetch_item, max_width, max_height)
+            } else {
+                crate::misc::video_to_image::get_image_buffer(&prefetch_item, max_width, max_height)
+            };
             let mut map = cache.lock().unwrap();
             map.put(String::from(item_path), image_buffer.clone());
         }
