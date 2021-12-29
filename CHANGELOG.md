@@ -5,15 +5,15 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - 
+ - C runtime is now linked statically for Windows
 
 ### Added
 
- - 
+ - Setting to select the target directory name pattern
 
 ### Fixed
 
- - 
+ - Only able to commit when the target directory is set
 
 ## [0.3.2] - 2021-12-23
 
