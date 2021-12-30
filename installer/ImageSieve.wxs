@@ -32,6 +32,7 @@
       </Component>
       <Component Id="avcodec_58.dll">
         <File Id="avcodec_58.dll" Source="ffmpeg\bin\avcodec-58.dll" Checksum="yes" KeyPath="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\ImageSieveAvcodec" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
 
