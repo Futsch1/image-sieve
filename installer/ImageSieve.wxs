@@ -58,6 +58,10 @@
         <File Id="swscale_5.dll" Source="ffmpeg\bin\swscale-5.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\SwResample" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
+      <Component Id="postproc_55.dll" Guid="d8113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="postproc_55.dll" Source="ffmpeg\bin\postproc-55.dll" Checksum="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\ImageSieve\SwResample" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="ApplicationProgramsFolder">
@@ -81,6 +85,7 @@
       <ComponentRef Id="avdevice_58.dll" />
       <ComponentRef Id="avfilter_7.dll" />
       <ComponentRef Id="swscale_5.dll" />
+      <ComponentRef Id="postproc_55.dll" />
       <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 
