@@ -25,7 +25,7 @@ pub fn get_image_buffer(item: &FileItem, _: u32, _: u32) -> ImageBuffer {
         .video()
         .unwrap();
     for (s, packet) in input_context.packets() {
-        if stream_index == s.index() {
+        if stream_index == s.index() && packet.is_key() {
             decoder.send_packet(&packet).ok();
             decoder.receive_frame(&mut *frame).ok();
             break;
