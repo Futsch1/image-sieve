@@ -46,6 +46,18 @@
         <File Id="swresample_3.dll" Source="ffmpeg\bin\swresample-3.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\SwResample" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
+      <Component Id="avdevice_58.dll" Guid="a8113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="avdevice_58.dll" Source="ffmpeg\bin\avdevice-58.dll" Checksum="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avformat" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="avfilter_7.dll" Guid="b8113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="avfilter_7.dll" Source="ffmpeg\bin\avfilter-7.dll" Checksum="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avformat" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="swscale_5.dll" Guid="c8113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="swscale_5.dll" Source="ffmpeg\bin\swscale-5.dll" Checksum="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\ImageSieve\SwResample" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="ApplicationProgramsFolder">
@@ -66,6 +78,9 @@
       <ComponentRef Id="avutil_56.dll" />
       <ComponentRef Id="avformat_58.dll" />
       <ComponentRef Id="swresample_3.dll" />
+      <ComponentRef Id="avdevice_58.dll" />
+      <ComponentRef Id="avfilter_7.dll" />
+      <ComponentRef Id="swscale_5.dll" />
       <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 
