@@ -49,6 +49,7 @@
 
     <Feature Id="MainApplication" Title="Main Application" Level="1">
       <ComponentRef Id="image_sieve.exe" />
+      <ComponentRef Id="avcodec_58.dll" />
       <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 

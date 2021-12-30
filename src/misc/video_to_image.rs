@@ -27,8 +27,11 @@ pub fn get_image_buffer(item: &FileItem, _: u32, _: u32) -> ImageBuffer {
     for (s, packet) in input_context.packets() {
         if stream_index == s.index() && packet.is_key() {
             decoder.send_packet(&packet).ok();
-            decoder.receive_frame(&mut *frame).ok();
-            break;
+            while decoder.receive_frame(&mut *frame).is_ok() {
+                if frame.width() > 0 && frame.height() > 0 {
+                    break;
+                }
+            }
         }
     }
 
