@@ -30,8 +30,8 @@
         <RegistryValue Root="HKCU" Key="Software\ImageSieve" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
         <RemoveFolder Id="APPLICATIONROOTDIRECTORY" On="uninstall"/>
       </Component>
-      <Component Id="avcodec_58.dll">
-        <File Id="avcodec_58.dll" Source="ffmpeg\bin\avcodec-58.dll" Checksum="yes" KeyPath="yes"/>
+      <Component Id="avcodec_58.dll" Guid="68113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="avcodec_58.dll" Source="ffmpeg\bin\avcodec-58.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieveAvcodec" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
