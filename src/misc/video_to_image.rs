@@ -28,6 +28,7 @@ pub fn get_image_buffer(item: &FileItem, _: u32, _: u32) -> ImageBuffer {
         if stream_index == s.index() {
             decoder.send_packet(&packet).ok();
             decoder.receive_frame(&mut *frame).ok();
+            break;
         }
     }
 
@@ -37,5 +38,10 @@ pub fn get_image_buffer(item: &FileItem, _: u32, _: u32) -> ImageBuffer {
         .unwrap();
     converter.run(&frame, &mut output_frame).ok();
 
-    ImageBuffer::from_raw(frame.width(), frame.height(), output_frame.data(0).to_vec()).unwrap()
+    ImageBuffer::from_raw(
+        output_frame.width(),
+        output_frame.height(),
+        output_frame.data(0).to_vec(),
+    )
+    .unwrap()
 }
