@@ -19,6 +19,8 @@ pub type DoneCallback = Box<dyn Fn(ImageBuffer) + Send + 'static>;
 /// The command sent to the load thread for a new image
 pub type LoadImageCommand = (FileItem, u32, u32, Option<DoneCallback>);
 
+const HOURGLASS_PNG: &[u8; 5533] = include_bytes!("hourglass.png");
+
 /// Purpose of the image to load from the cache
 pub enum Purpose {
     /// The image is the currently selected image and needs to be loaded as soon as possible
@@ -87,9 +89,8 @@ impl ImageCache {
     /// Gets the hourglass image to indicate waiting
     /// The image is compiled into the binary
     fn get_hourglass() -> Image {
-        let bytes = include_bytes!("hourglass.png");
         crate::misc::images::get_sixtyfps_image(
-            &crate::misc::images::image_from_buffer(bytes).unwrap(),
+            &crate::misc::images::image_from_buffer(HOURGLASS_PNG).unwrap(),
         )
     }
 
