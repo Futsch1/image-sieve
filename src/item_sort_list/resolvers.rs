@@ -163,6 +163,22 @@ impl PropertyResolver for FFMpegResolver {
     }
 
     fn get_orientation(&self) -> Option<Orientation> {
+        if let Ok(context) = ffmpeg::format::input(&self.path) {
+            if let Some(video_stream) = context.streams().best(ffmpeg::media::Type::Video) {
+                for (k, v) in video_stream.metadata().iter() {
+                    if k == "rotate" {
+                        let orientation = match v {
+                            "0" => Orientation::Landscape,
+                            "90" => Orientation::Portrait90,
+                            "270" => Orientation::Portrait270,
+                            "180" => Orientation::Landscape180,
+                            _ => Orientation::Landscape,
+                        };
+                        return Some(orientation);
+                    }
+                }
+            }
+        }
         None
     }
 }
