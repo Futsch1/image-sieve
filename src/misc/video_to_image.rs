@@ -134,3 +134,26 @@ fn frame_to_buffer(
     .unwrap();
     imageops::overlay(buffer, &frame_buffer, position.0, position.1);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_video_to_image() {
+        let file_item = FileItem::dummy("tests/test.mp4", 0, false);
+        let image_buffer = get_image_buffer(&file_item, 0, 0);
+        assert_eq!(image_buffer.width(), 3 * 320);
+        assert_eq!(image_buffer.height(), 3 * 240);
+
+        let file_item = FileItem::dummy("tests/test2.mp4", 0, false);
+        let image_buffer = get_image_buffer(&file_item, 0, 0);
+        assert_eq!(image_buffer.width(), 3 * 1920);
+        assert_eq!(image_buffer.height(), 3 * 1080);
+
+        let file_item = FileItem::dummy("tests/test_invalid.mp4", 0, false);
+        let image_buffer = get_image_buffer(&file_item, 0, 0);
+        assert_eq!(image_buffer.width(), 256);
+        assert_eq!(image_buffer.height(), 256);
+    }
+}

@@ -219,9 +219,17 @@ mod tests {
             get_timestamp_from("tests/test_no_exif.jpg")
         );
         assert_eq!(
+            get_file_timestamp("tests/test_invalid.jpg"),
+            get_timestamp_from("tests/test_invalid.jpg")
+        );
+        assert_eq!(
             get_file_timestamp("tests/test.mp4"),
             get_timestamp_from("tests/test.mp4")
         );
         assert_eq!(1640790497, get_timestamp_from("tests/test2.mp4"));
+        assert_eq!(
+            get_file_timestamp("tests/test_invalid.mp4"),
+            get_timestamp_from("tests/test_invalid.mp4")
+        );
     }
 }
