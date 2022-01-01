@@ -22,12 +22,12 @@ fn get_position(orientation: Option<&Orientation>, i: u32, width: u32, height: u
     if let Some(orientation) = orientation {
         match orientation {
             crate::item_sort_list::Orientation::Landscape => (i % 3 * width, i / 3 * height),
-            crate::item_sort_list::Orientation::Portrait90 => (i / 3 * width, (2 - i) % 3 * height),
+            crate::item_sort_list::Orientation::Portrait90 => (i / 3 * width, (2 - i % 3) * height),
             crate::item_sort_list::Orientation::Landscape180 => {
-                ((2 - i) % 3 * width, (2 - i) / 3 * height)
+                ((2 - i % 3) * width, (2 - i / 3) * height)
             }
             crate::item_sort_list::Orientation::Portrait270 => {
-                ((2 - i) / 3 * width, i % 3 * height)
+                ((2 - i / 3) * width, i % 3 * height)
             }
         }
     } else {
@@ -37,41 +37,47 @@ fn get_position(orientation: Option<&Orientation>, i: u32, width: u32, height: u
 
 /// Create the 3x3 frames image from a video
 fn create_image_from_video(item: &FileItem) -> Result<ImageBuffer, ffmpeg::Error> {
-    let mut output_frame = ffmpeg::util::frame::Video::empty();
-
     let mut input_context = ffmpeg::format::input(&item.path)?;
     if let Some(video_stream) = input_context.streams().best(ffmpeg::media::Type::Video) {
         let stream_index = video_stream.index();
         let mut decoder = video_stream.codec().decoder().video()?;
         let mut buffer = ImageBuffer::new(decoder.width() * 3, decoder.height() * 3);
         let orientation = item.get_orientation();
+        let seek_step_us = input_context.duration() / 9;
 
         let mut i: u32 = 0;
-        for (s, packet) in input_context.packets() {
-            if stream_index == s.index() && packet.is_key() {
-                if let Some(frame) = get_frame(packet, &mut decoder) {
-                    let mut converter = frame
-                        .converter(ffmpeg::util::format::pixel::Pixel::RGBA)
-                        .ok()
-                        .unwrap();
-                    converter.run(&frame, &mut output_frame).ok();
-                    let frame_buffer = ImageBuffer::from_raw(
-                        output_frame.width(),
-                        output_frame.height(),
-                        output_frame.data(0).to_vec(),
-                    )
-                    .unwrap();
-                    let (x, y) =
-                        get_position(orientation, i, output_frame.width(), output_frame.height());
-                    imageops::overlay(&mut buffer, &frame_buffer, x, y);
-                    i += 1;
-                    if i == 9 {
+        let mut last_packet_position: isize = isize::MIN;
+
+        // Make nine steps in the video file
+        for step in 0..9 {
+            let seek_ts = step * seek_step_us;
+
+            if input_context.seek(seek_ts, seek_ts..).is_err() {
+                break;
+            }
+            for (s, packet) in input_context.packets() {
+                // Read packets until a key frame was found
+                if stream_index == s.index() && packet.is_key() {
+                    // Only decode the packet if it is not the same as the last one
+                    if packet.position() > last_packet_position {
+                        last_packet_position = packet.position();
+                        // Try to decode the packet to a frame
+                        if let Some(frame) = get_frame(packet, &mut decoder) {
+                            let (x, y) =
+                                get_position(orientation, i, frame.width(), frame.height());
+                            // And finally put the frame into the output buffer
+                            frame_to_buffer(&frame, &mut buffer, (x, y));
+                            i += 1;
+                            break;
+                        }
+                    } else {
                         break;
                     }
                 }
             }
         }
 
+        // Rotate the image if necessary
         if let Some(orientation) = orientation {
             match orientation {
                 crate::item_sort_list::Orientation::Landscape => {}
@@ -106,4 +112,25 @@ fn get_frame(
         }
     }
     None
+}
+
+/// Put a frame into the 3x3 matrix image buffer
+fn frame_to_buffer(
+    frame: &ffmpeg::util::frame::Video,
+    buffer: &mut ImageBuffer,
+    position: (u32, u32),
+) {
+    let mut output_frame = ffmpeg::util::frame::Video::empty();
+    let mut converter = frame
+        .converter(ffmpeg::util::format::pixel::Pixel::RGBA)
+        .ok()
+        .unwrap();
+    converter.run(frame, &mut output_frame).ok();
+    let frame_buffer = ImageBuffer::from_raw(
+        output_frame.width(),
+        output_frame.height(),
+        output_frame.data(0).to_vec(),
+    )
+    .unwrap();
+    imageops::overlay(buffer, &frame_buffer, position.0, position.1);
 }
