@@ -1,21 +1,25 @@
 use std::path::Path;
 
 pub fn is_image(path: &Path) -> bool {
-    matches!(
-        path.extension()
-            .unwrap()
-            .to_ascii_lowercase()
-            .to_str()
-            .unwrap(),
-        "jpg" | "png" | "tif"
-    )
+    if let Some(extension) = path.extension() {
+        matches!(
+            extension.to_ascii_lowercase().to_str().unwrap(),
+            "jpg" | "png" | "tif"
+        )
+    } else {
+        false
+    }
 }
 
 pub fn is_video(path: &Path) -> bool {
-    matches!(
-        path.extension().unwrap().to_str().unwrap(),
-        "mp4" | "avi" | "mts" | "mov"
-    )
+    if let Some(extension) = path.extension() {
+        matches!(
+            extension.to_ascii_lowercase().to_str().unwrap(),
+            "mp4" | "avi" | "mts" | "mov"
+        )
+    } else {
+        false
+    }
 }
 
 /// Get a list of allowed extensions

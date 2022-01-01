@@ -5,24 +5,18 @@ extern crate ffmpeg_next as ffmpeg;
 use self::chrono::NaiveDateTime;
 use self::exif::{In, Tag};
 
+use super::file_types::is_video;
 use super::item_traits::{Orientation, PropertyResolver};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 pub fn get_resolver(path: &Path) -> Box<dyn PropertyResolver> {
-    match path.extension() {
-        Some(extension) => {
-            let extension = extension.to_ascii_lowercase();
-            let extension_str = extension.to_str().unwrap();
-            if ExifResolver::get_extensions().contains(&extension_str) {
-                Box::new(ExifResolver::new(path))
-            } else if FFmpegResolver::get_extensions().contains(&extension_str) {
-                Box::new(FFmpegResolver::new(path))
-            } else {
-                Box::new(FileResolver::new(path))
-            }
-        }
-        None => Box::new(FileResolver::new(path)),
+    if ExifResolver::supports(path) {
+        Box::new(ExifResolver::new(path))
+    } else if FFmpegResolver::supports(path) {
+        Box::new(FFmpegResolver::new(path))
+    } else {
+        Box::new(FileResolver::new(path))
     }
 }
 
@@ -55,7 +49,7 @@ impl PropertyResolver for FileResolver {
                     .as_secs() as i64
                     + chrono::Local::now().offset().local_minus_utc() as i64
             }
-            Err(_) => 0,
+            Err(_) => -1,
         }
     }
 
@@ -86,8 +80,12 @@ impl ExifResolver {
         }
     }
 
-    pub fn get_extensions() -> [&'static str; 1] {
-        ["jpg"]
+    pub fn supports(path: &Path) -> bool {
+        if let Some(extension) = path.extension() {
+            extension.to_ascii_lowercase().to_str().unwrap() == "jpg"
+        } else {
+            false
+        }
     }
 }
 
@@ -152,8 +150,8 @@ impl FFmpegResolver {
         ffmpeg::init().ok();
     }
 
-    pub fn get_extensions() -> [&'static str; 4] {
-        ["mp4", "avi", "mts", "mov"]
+    pub fn supports(path: &Path) -> bool {
+        is_video(path)
     }
 }
 
@@ -210,6 +208,7 @@ mod tests {
         init_resolvers();
 
         assert_eq!(1631461311, get_timestamp_from("tests/test.jpg"));
+        assert_eq!(1631461311, get_timestamp_from("tests/test2.JPG"));
         assert_eq!(
             get_file_timestamp("tests/test_no_date.jpg"),
             get_timestamp_from("tests/test_no_date.jpg")
@@ -231,5 +230,8 @@ mod tests {
             get_file_timestamp("tests/test_invalid.mp4"),
             get_timestamp_from("tests/test_invalid.mp4")
         );
+
+        assert_eq!(-1, get_timestamp_from("not_there"));
+        assert_eq!(get_file_timestamp("LICENSE"), get_timestamp_from("LICENSE"));
     }
 }
