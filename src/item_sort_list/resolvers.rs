@@ -14,10 +14,12 @@ pub fn get_resolver(path: &Path) -> Box<dyn PropertyResolver> {
         Some(extension) => {
             let extension = extension.to_ascii_lowercase();
             let extension_str = extension.to_str().unwrap();
-            match extension_str {
-                "jpg" => Box::new(ExifResolver::new(path)),
-                "mp4" | "avi" | "mts" => Box::new(FFMpegResolver::new(path)),
-                _ => Box::new(FileResolver::new(path)),
+            if ExifResolver::get_extensions().contains(&extension_str) {
+                Box::new(ExifResolver::new(path))
+            } else if FFmpegResolver::get_extensions().contains(&extension_str) {
+                Box::new(FFmpegResolver::new(path))
+            } else {
+                Box::new(FileResolver::new(path))
             }
         }
         None => Box::new(FileResolver::new(path)),
@@ -25,7 +27,7 @@ pub fn get_resolver(path: &Path) -> Box<dyn PropertyResolver> {
 }
 
 pub fn init_resolvers() {
-    FFMpegResolver::init();
+    FFmpegResolver::init();
 }
 
 pub struct FileResolver {
@@ -83,6 +85,10 @@ impl ExifResolver {
             path: PathBuf::from(path),
         }
     }
+
+    pub fn get_extensions() -> [&'static str; 1] {
+        ["jpg"]
+    }
 }
 
 impl PropertyResolver for ExifResolver {
@@ -131,11 +137,11 @@ impl PropertyResolver for ExifResolver {
     }
 }
 
-struct FFMpegResolver {
+struct FFmpegResolver {
     path: PathBuf,
 }
 
-impl FFMpegResolver {
+impl FFmpegResolver {
     pub fn new(path: &Path) -> Self {
         Self {
             path: PathBuf::from(path),
@@ -145,9 +151,13 @@ impl FFMpegResolver {
     pub fn init() {
         ffmpeg::init().ok();
     }
+
+    pub fn get_extensions() -> [&'static str; 4] {
+        ["mp4", "avi", "mts", "mov"]
+    }
 }
 
-impl PropertyResolver for FFMpegResolver {
+impl PropertyResolver for FFmpegResolver {
     fn get_timestamp(&self) -> i64 {
         let file_resolver = FileResolver::new(&self.path);
         if let Ok(context) = ffmpeg::format::input(&self.path) {

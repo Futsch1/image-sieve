@@ -11,6 +11,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde::Serializer;
 
+use super::file_types::is_image;
+use super::file_types::is_video;
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
 
@@ -187,28 +189,12 @@ impl FileItem {
 
     /// Check if the item is an image
     pub fn is_image(&self) -> bool {
-        matches!(
-            self.path
-                .extension()
-                .unwrap()
-                .to_ascii_lowercase()
-                .to_str()
-                .unwrap(),
-            "jpg" | "png" | "tif"
-        )
+        is_image(&self.path)
     }
 
     /// Check if the item is a video
     pub fn is_video(&self) -> bool {
-        matches!(
-            self.path.extension().unwrap().to_str().unwrap(),
-            "mp4" | "avi" | "mts"
-        )
-    }
-
-    /// Get a list of allowed extensions
-    pub fn get_extensions() -> [&'static str; 6] {
-        ["jpg", "png", "tif", "mp4", "avi", "mts"]
+        is_video(&self.path)
     }
 
     /// Get the unicode icon for the extension

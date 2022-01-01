@@ -9,6 +9,7 @@ use std::path::PathBuf;
 
 use super::event;
 use super::file_item;
+use super::file_types::get_extensions;
 use super::resolvers;
 use super::sieve;
 
@@ -75,7 +76,7 @@ impl ItemList {
     pub fn check_and_add(&mut self, path: &Path) -> bool {
         if let Some(extension) = path.extension() {
             if let Some(extension) = extension.to_ascii_lowercase().to_str() {
-                if file_item::FileItem::get_extensions().contains(&extension)
+                if get_extensions().contains(&extension)
                     && !self.items.iter().any(|i| i.path == path)
                 {
                     let item = Self::create_item(path.to_path_buf(), true, "");

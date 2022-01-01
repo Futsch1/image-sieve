@@ -1,5 +1,6 @@
 mod event;
 mod file_item;
+mod file_types;
 mod item_list;
 mod item_traits;
 mod resolvers;
