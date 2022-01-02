@@ -1,10 +1,11 @@
 extern crate ffmpeg_next as ffmpeg;
 
+use super::images::ImageBuffer;
+use crate::item_sort_list::{FileItem, Orientation};
 use image::imageops;
 
-use crate::item_sort_list::{FileItem, Orientation};
-
-use super::images::ImageBuffer;
+const SCREENSHOTS_X: u32 = 3;
+const SCREENSHOTS_Y: u32 = 3;
 const VIDEO_PNG: &[u8; 2900] = include_bytes!("video.png");
 
 /// Construct an image for a video by combining 9 frames from the video.
@@ -21,17 +22,24 @@ fn get_alternative_image() -> ImageBuffer {
 fn get_position(orientation: Option<&Orientation>, i: u32, width: u32, height: u32) -> (u32, u32) {
     if let Some(orientation) = orientation {
         match orientation {
-            crate::item_sort_list::Orientation::Landscape => (i % 3 * width, i / 3 * height),
-            crate::item_sort_list::Orientation::Portrait90 => (i / 3 * width, (2 - i % 3) * height),
-            crate::item_sort_list::Orientation::Landscape180 => {
-                ((2 - i % 3) * width, (2 - i / 3) * height)
+            crate::item_sort_list::Orientation::Landscape => {
+                (i % SCREENSHOTS_X * width, i / SCREENSHOTS_Y * height)
             }
-            crate::item_sort_list::Orientation::Portrait270 => {
-                ((2 - i / 3) * width, i % 3 * height)
-            }
+            crate::item_sort_list::Orientation::Portrait90 => (
+                i / SCREENSHOTS_X * width,
+                ((SCREENSHOTS_Y - 1) - i % SCREENSHOTS_Y) * height,
+            ),
+            crate::item_sort_list::Orientation::Landscape180 => (
+                ((SCREENSHOTS_X - 1) - i % SCREENSHOTS_X) * width,
+                ((SCREENSHOTS_Y - 1) - i / SCREENSHOTS_Y) * height,
+            ),
+            crate::item_sort_list::Orientation::Portrait270 => (
+                ((SCREENSHOTS_X - 1) - i / SCREENSHOTS_X) * width,
+                i % SCREENSHOTS_Y * height,
+            ),
         }
     } else {
-        (i % 3 * width, i / 3 * height)
+        (i % SCREENSHOTS_X * width, i / SCREENSHOTS_Y * height)
     }
 }
 
@@ -41,16 +49,19 @@ fn create_image_from_video(item: &FileItem) -> Result<ImageBuffer, ffmpeg::Error
     if let Some(video_stream) = input_context.streams().best(ffmpeg::media::Type::Video) {
         let stream_index = video_stream.index();
         let mut decoder = video_stream.codec().decoder().video()?;
-        let mut buffer = ImageBuffer::new(decoder.width() * 3, decoder.height() * 3);
+        let mut buffer = ImageBuffer::new(
+            decoder.width() * SCREENSHOTS_X,
+            decoder.height() * SCREENSHOTS_Y,
+        );
         let orientation = item.get_orientation();
-        let seek_step_us = input_context.duration() / 9;
+        let seek_step_us = input_context.duration() / (SCREENSHOTS_X * SCREENSHOTS_Y) as i64;
 
         let mut i: u32 = 0;
         let mut last_packet_position: isize = isize::MIN;
 
         // Make nine steps in the video file
-        for step in 0..9 {
-            let seek_ts = step * seek_step_us;
+        for step in 0..SCREENSHOTS_X * SCREENSHOTS_Y {
+            let seek_ts = step as i64 * seek_step_us;
 
             if input_context.seek(seek_ts, seek_ts..).is_err() {
                 break;
@@ -143,13 +154,13 @@ mod tests {
     fn test_video_to_image() {
         let file_item = FileItem::dummy("tests/test.mp4", 0, false);
         let image_buffer = get_image_buffer(&file_item, 0, 0);
-        assert_eq!(image_buffer.width(), 3 * 320);
-        assert_eq!(image_buffer.height(), 3 * 240);
+        assert_eq!(image_buffer.width(), SCREENSHOTS_X * 320);
+        assert_eq!(image_buffer.height(), SCREENSHOTS_Y * 240);
 
         let file_item = FileItem::dummy("tests/test2.mp4", 0, false);
         let image_buffer = get_image_buffer(&file_item, 0, 0);
-        assert_eq!(image_buffer.width(), 3 * 1920);
-        assert_eq!(image_buffer.height(), 3 * 1080);
+        assert_eq!(image_buffer.width(), SCREENSHOTS_X * 1920);
+        assert_eq!(image_buffer.height(), SCREENSHOTS_Y * 1080);
 
         let file_item = FileItem::dummy("tests/test_invalid.mp4", 0, false);
         let image_buffer = get_image_buffer(&file_item, 0, 0);
