@@ -48,6 +48,7 @@ parts:
       - libavutil-dev 
       - libswscale-dev
       - clang
+      - libpangomm-1.4-1v5
 
   deps:
     plugin: nil
