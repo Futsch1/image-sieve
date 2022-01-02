@@ -202,6 +202,7 @@ fn update_item_list(item_list: Arc<Mutex<ItemList>>, image_sieve: &sixtyfps::Wea
             // Update the selection variables
             let num_items = { item_list.items.len() as i32 };
             if num_items > 0 {
+                h.set_current_list_item(0);
                 h.invoke_item_selected(0);
             } else {
                 let empty_image = SortImage {
