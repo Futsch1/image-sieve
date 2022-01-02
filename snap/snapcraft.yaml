@@ -7,7 +7,7 @@ description: |
   people with several devices and collect the images worth keeping in a folder structure 
   suitable for achiving or to eliminate potential duplicates or irrelevant images from a 
   folder structure. 
-adopt-info: image-sieve
+# adopt-info: image-sieve
 # source-code: https://github.com/Futsch1/image-sieve.git
 license: GPL-3.0+
 
@@ -47,13 +47,15 @@ parts:
       - libavformat-dev 
       - libavutil-dev 
       - libswscale-dev
+      - libclang-dev
 
 
   deps:
     plugin: nil
     stage-packages:
       - libxcb-shape0
-      - libavcodec
-      - libavformat
-      - libavutil
-      - libswscale
+      - libavcodec58
+      - libavformat58
+      - libavutil56
+      - libswscale5
+      - libpango-1.0-0
