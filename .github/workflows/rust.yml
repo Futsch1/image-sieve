@@ -27,7 +27,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/v')
       run: cargo publish --token ${{ secrets.CRATES_IO_API_TOKEN }}
     - name: Build snap
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'pull_request'
       uses: snapcore/action-build@v1
       id: snapcraft
     - name: Snap publish
@@ -93,6 +93,7 @@ jobs:
         $env:Path += ";$sdkToolsPath"
         & makeappx.exe pack /m installer\appmanifest_$version.xml /f installer\mapping.txt /p ImageSieve.msix
     - name: Archive msix package
+      if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'pull_request'
       uses: actions/upload-artifact@v2
       with:
         name: windows-msix
@@ -108,8 +109,8 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
-    - name: Upload windows artifact
-      if: startsWith(github.ref, 'refs/tags/v')
+    - name: Archive MSI intaller
+      if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'pull_request'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
