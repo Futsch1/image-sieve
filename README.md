@@ -43,7 +43,7 @@ The following icons are used (exact rendering depends on platform/font):
 To select a file, click it and it will be shown in the image area. Below the image, some details about the file are listed. In order to discard an image, just click it and it will be displayed in a translucent way. As an alternative, you can hit the space bar to toggle between discarded and kept state. To navigate between images, you can use the "&#x2B05; Previous" and "Next &#x27A1;"  buttons or hit the left and right key on your keyboard.
 If you want to open an image or a video with the default application in your OS, click the "Open" button.
 If an image belongs to a group of similar images, all these similar images are displayed below the current image. The currently selected one is highlighted in blue.
-Note that video files are also displayed in the list of images and previewed as a 3x3 matrix of screenshots.
+Note that video files are also displayed in the list of images and previewed as a 3x3 matrix of screenshots. Similiarities are not calculated for video files.
 
 ### &#x1F4C5; Events
 Per default, the images will be sorted in folders corresponding to the months they were taken, like "09-2021", "10-2021" etc. To be able to find images more quickly in an archive, ImageSieve supports grouping pictures with the help of events in the "Events" tab. Events are named date spans that will provide a target folder name during the sieve process, like "2021-10-07 - 2021-10-10 Cool trip". All images taken in the given period of time will be put into that folder. You can specify an arbitrary number of events, but be aware that in case of overlapping dates, an image is put into the folder of the first matching event.
