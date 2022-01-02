@@ -47,6 +47,7 @@ parts:
       - libavformat-dev 
       - libavutil-dev 
       - libswscale-dev
+      - libclang-dev
 
   deps:
     plugin: nil
