@@ -3,7 +3,7 @@ name: Tests
 on: 
   push:
     paths-ignore:
-      *.md
+      - "*.md"
 
 env:
   CARGO_TERM_COLOR: always
