@@ -13,6 +13,9 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  strategy:
+    max-parallel: 1
+
   prepare-ubuntu:
     uses: Futsch1/image-sieve/.github/workflows/prepare_ubuntu.yml@main
 
