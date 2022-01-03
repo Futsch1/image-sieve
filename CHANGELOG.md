@@ -15,11 +15,11 @@ All notable changes to this project will be documented in this file.
 
  - 
 
-## Unreleased
+## [0.4.0] - 2022-01-03
 
 ### Changed
 
- - 
+ - Layout of commit result list improved
 
 ### Added
 
@@ -29,7 +29,6 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - Layout of commit result list improved
  - Fixed selected image after changing folder
 
 ## [0.3.3] - 2021-12-29
