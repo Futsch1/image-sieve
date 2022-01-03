@@ -2,6 +2,14 @@
 "installer\ImageSieve_150x150.png"      "ImageSieve_150x150.png"
 "installer\ImageSieve_44x44.png"        "ImageSieve_44x44.png"
 "target\release\image_sieve.exe"        "ImageSieve.exe"
+"ffmpeg\bin\avcodec-58.dll"             "avcodec-58.dll"
+"ffmpeg\bin\avutil-56.dll"              "avutil-56.dll"
+"ffmpeg\bin\avformat-58.dll"            "avformat-58.dll"
+"ffmpeg\bin\avdevice-58.dll"            "avdevice-58.dll"
+"ffmpeg\bin\avfilter-7.dll"             "avfilter-7.dll"
+"ffmpeg\bin\swresample-3.dll"           "swresample-3.dll"
+"ffmpeg\bin\swscale-5.dll"              "swscale-5.dll"
+"ffmpeg\bin\postproc-55.dll"            "postproc-55.dll"
 
 [ResourceMetadata]
 "ResourceDimensions"                    "language-en-us"

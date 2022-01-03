@@ -1,25 +1,27 @@
 extern crate chrono;
 extern crate exif;
+extern crate ffmpeg_next as ffmpeg;
 
 use self::chrono::NaiveDateTime;
 use self::exif::{In, Tag};
 
+use super::file_types::is_video;
 use super::item_traits::{Orientation, PropertyResolver};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 pub fn get_resolver(path: &Path) -> Box<dyn PropertyResolver> {
-    match path.extension() {
-        Some(extension) => {
-            let extension = extension.to_ascii_lowercase();
-            let extension_str = extension.to_str().unwrap();
-            match extension_str {
-                "jpg" => Box::new(ExifResolver::new(path)),
-                _ => Box::new(FileResolver::new(path)),
-            }
-        }
-        None => Box::new(FileResolver::new(path)),
+    if ExifResolver::supports(path) {
+        Box::new(ExifResolver::new(path))
+    } else if FFmpegResolver::supports(path) {
+        Box::new(FFmpegResolver::new(path))
+    } else {
+        Box::new(FileResolver::new(path))
     }
+}
+
+pub fn init_resolvers() {
+    FFmpegResolver::init();
 }
 
 pub struct FileResolver {
@@ -47,7 +49,7 @@ impl PropertyResolver for FileResolver {
                     .as_secs() as i64
                     + chrono::Local::now().offset().local_minus_utc() as i64
             }
-            Err(_) => 0,
+            Err(_) => -1,
         }
     }
 
@@ -75,6 +77,14 @@ impl ExifResolver {
         Self {
             exif: result,
             path: PathBuf::from(path),
+        }
+    }
+
+    pub fn supports(path: &Path) -> bool {
+        if let Some(extension) = path.extension() {
+            extension.to_ascii_lowercase().to_str().unwrap() == "jpg"
+        } else {
+            false
         }
     }
 }
@@ -125,6 +135,62 @@ impl PropertyResolver for ExifResolver {
     }
 }
 
+struct FFmpegResolver {
+    path: PathBuf,
+}
+
+impl FFmpegResolver {
+    pub fn new(path: &Path) -> Self {
+        Self {
+            path: PathBuf::from(path),
+        }
+    }
+
+    pub fn init() {
+        ffmpeg::init().ok();
+    }
+
+    pub fn supports(path: &Path) -> bool {
+        is_video(path)
+    }
+}
+
+impl PropertyResolver for FFmpegResolver {
+    fn get_timestamp(&self) -> i64 {
+        let file_resolver = FileResolver::new(&self.path);
+        if let Ok(context) = ffmpeg::format::input(&self.path) {
+            for (k, v) in context.metadata().iter() {
+                if k == "creation_time" {
+                    if let Ok(date_time) = NaiveDateTime::parse_from_str(v, "%+") {
+                        return date_time.timestamp();
+                    }
+                }
+            }
+        }
+        file_resolver.get_timestamp()
+    }
+
+    fn get_orientation(&self) -> Option<Orientation> {
+        if let Ok(context) = ffmpeg::format::input(&self.path) {
+            if let Some(video_stream) = context.streams().best(ffmpeg::media::Type::Video) {
+                for (k, v) in video_stream.metadata().iter() {
+                    if k == "rotate" {
+                        let orientation = match v {
+                            "0" => Orientation::Landscape,
+                            "90" => Orientation::Portrait90,
+                            "270" => Orientation::Portrait270,
+                            "180" => Orientation::Landscape180,
+                            _ => Orientation::Landscape,
+                        };
+                        return Some(orientation);
+                    }
+                }
+            }
+        }
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -139,7 +205,10 @@ mod tests {
 
     #[test]
     fn resolvers() {
+        init_resolvers();
+
         assert_eq!(1631461311, get_timestamp_from("tests/test.jpg"));
+        assert_eq!(1631461311, get_timestamp_from("tests/test2.JPG"));
         assert_eq!(
             get_file_timestamp("tests/test_no_date.jpg"),
             get_timestamp_from("tests/test_no_date.jpg")
@@ -149,8 +218,20 @@ mod tests {
             get_timestamp_from("tests/test_no_exif.jpg")
         );
         assert_eq!(
-            get_file_timestamp("tests/test"),
-            get_timestamp_from("tests/test")
+            get_file_timestamp("tests/test_invalid.jpg"),
+            get_timestamp_from("tests/test_invalid.jpg")
         );
+        assert_eq!(
+            get_file_timestamp("tests/test.mp4"),
+            get_timestamp_from("tests/test.mp4")
+        );
+        assert_eq!(1640790497, get_timestamp_from("tests/test2.mp4"));
+        assert_eq!(
+            get_file_timestamp("tests/test_invalid.mp4"),
+            get_timestamp_from("tests/test_invalid.mp4")
+        );
+
+        assert_eq!(-1, get_timestamp_from("not_there"));
+        assert_eq!(get_file_timestamp("LICENSE"), get_timestamp_from("LICENSE"));
     }
 }

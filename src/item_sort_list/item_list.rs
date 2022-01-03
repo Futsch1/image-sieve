@@ -9,6 +9,7 @@ use std::path::PathBuf;
 
 use super::event;
 use super::file_item;
+use super::file_types::get_extensions;
 use super::resolvers;
 use super::sieve;
 
@@ -50,7 +51,22 @@ pub struct ItemList {
     pub path: PathBuf,
 }
 
+impl Default for ItemList {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ItemList {
+    pub fn new() -> Self {
+        resolvers::init_resolvers();
+        ItemList {
+            items: vec![],
+            events: vec![],
+            path: PathBuf::new(),
+        }
+    }
+
     /// Remove all missing files from the item list
     pub fn drain_missing(&mut self) {
         self.items = self.items.drain(..).filter(|i| i.path.exists()).collect();
@@ -60,7 +76,7 @@ impl ItemList {
     pub fn check_and_add(&mut self, path: &Path) -> bool {
         if let Some(extension) = path.extension() {
             if let Some(extension) = extension.to_ascii_lowercase().to_str() {
-                if file_item::FileItem::get_extensions().contains(&extension)
+                if get_extensions().contains(&extension)
                     && !self.items.iter().any(|i| i.path == path)
                 {
                     let item = Self::create_item(path.to_path_buf(), true, "");

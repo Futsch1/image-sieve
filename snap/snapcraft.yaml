@@ -8,17 +8,16 @@ description: |
   suitable for achiving or to eliminate potential duplicates or irrelevant images from a 
   folder structure. 
 adopt-info: image-sieve
-# source-code: https://github.com/Futsch1/image-sieve.git
+source-code: https://github.com/Futsch1/image-sieve.git
 license: GPL-3.0+
 
-grade: stable # must be 'stable' to release into candidate/stable channels
+grade: stable
 confinement: strict
 icon: snap/gui/ImageSieve.png
 
 apps:
   image-sieve:
     command: bin/image_sieve
-    extensions: [gnome-3-38]
     plugs:
       - home
 
@@ -39,13 +38,21 @@ parts:
       - git
       - libxcb-shape0-dev 
       - libxcb-xfixes0-dev 
-      - libxkbcommon-dev 
-      - libpango1.0-dev 
-      - libatk1.0-dev 
+      - libxkbcommon-dev
       - libgtk-3-dev
-
+      - libavcodec-dev 
+      - libavformat-dev 
+      - libavutil-dev
+      - libswscale-dev
+      - libclang-dev
 
   deps:
     plugin: nil
     stage-packages:
       - libxcb-shape0
+      - libxcb-xfixes0
+      - libgtk-3-0
+      - libavcodec58
+      - libavformat58
+      - libavutil56
+      - libswscale5

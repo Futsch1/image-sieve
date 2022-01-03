@@ -1,11 +1,13 @@
 name: Build
 
 on: 
-  push:
   workflow_dispatch:
   pull_request:
     branches:
       - main
+  push:
+    tags:
+      - '*'
 
 env:
   CARGO_TERM_COLOR: always
@@ -20,14 +22,14 @@ jobs:
     - name: Update apt
       run: sudo apt-get update
     - name: Install deps
-      run: sudo apt-get install libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libpango1.0-dev libatk1.0-dev libgtk-3-dev
+      run: sudo apt-get install libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libpango1.0-dev libatk1.0-dev libgtk-3-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
     - name: Run tests
       run: cargo test
     - name: Cargo publish
       if: startsWith(github.ref, 'refs/tags/v')
       run: cargo publish --token ${{ secrets.CRATES_IO_API_TOKEN }}
     - name: Build snap
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'pull_request'
       uses: snapcore/action-build@v1
       id: snapcraft
     - name: Snap publish
@@ -45,6 +47,16 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
+    - name: Install FFMpeg
+      run: |
+          $VCINSTALLDIR = $(& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath)
+          Add-Content $env:GITHUB_ENV "LIBCLANG_PATH=${VCINSTALLDIR}\VC\Tools\LLVM\x64\bin`n"
+          Invoke-WebRequest "https://github.com/Futsch1/FFmpeg-Builds/releases/download/latest/ffmpeg-n4.4-latest-win64-gpl-shared-4.4.zip" -OutFile ffmpeg-release-full-shared.zip
+          7z x ffmpeg-release-full-shared.zip
+          mkdir ffmpeg
+          mv ffmpeg-*/* ffmpeg/
+          Add-Content $env:GITHUB_ENV "FFMPEG_DIR=${pwd}\ffmpeg`n"
+          Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
     - name: Build release
       run: cargo build --release
     - name: Create install package
@@ -63,6 +75,7 @@ jobs:
         $env:Path += ";$sdkToolsPath"
         SignTool.exe sign /tr http://timestamp.digicert.com /fd SHA256 /a /f "$certificatePath" /p ${{ secrets.PFX_PRIVATE_KEY }} ImageSieve.msi
     - name: Archive install package
+      if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'pull_request'
       uses: actions/upload-artifact@v2
       with:
         name: windows-installer
@@ -83,6 +96,7 @@ jobs:
         $env:Path += ";$sdkToolsPath"
         & makeappx.exe pack /m installer\appmanifest_$version.xml /f installer\mapping.txt /p ImageSieve.msix
     - name: Archive msix package
+      if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'pull_request'
       uses: actions/upload-artifact@v2
       with:
         name: windows-msix
@@ -98,7 +112,7 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
-    - name: Upload windows artifact
+    - name: Upload release assets
       if: startsWith(github.ref, 'refs/tags/v')
       uses: actions/upload-release-asset@v1
       env:
