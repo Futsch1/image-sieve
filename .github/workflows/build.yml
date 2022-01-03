@@ -22,14 +22,11 @@ jobs:
     - name: Update apt
       run: sudo apt-get update
     - name: Install deps
-      run: sudo apt-get install libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libpango1.0-dev libatk1.0-dev libgtk-3-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
-    - name: Run tests
-      run: cargo test
+      run: sudo apt-get install libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libgtk-3-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
     - name: Cargo publish
       if: startsWith(github.ref, 'refs/tags/v')
       run: cargo publish --token ${{ secrets.CRATES_IO_API_TOKEN }}
     - name: Build snap
-      if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'pull_request'
       uses: snapcore/action-build@v1
       id: snapcraft
     - name: Snap publish
@@ -64,22 +61,6 @@ jobs:
         $env:PATH += ";$env:WIX\bin"
         candle.exe installer\ImageSieve.wxs
         light.exe ImageSieve.wixobj -ext WixUIExtension -cultures:en-us
-    - name: Signing install package
-      shell: pwsh
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}")
-        $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath "MyCertificate.pfx"
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-        $sdkToolsPath = Join-Path -Path 'C:\Program Files (x86)\Windows Kits\10\bin' -ChildPath 10.0.19041.0 -AdditionalChildPath x86
-        $env:Path += ";$sdkToolsPath"
-        SignTool.exe sign /tr http://timestamp.digicert.com /fd SHA256 /a /f "$certificatePath" /p ${{ secrets.PFX_PRIVATE_KEY }} ImageSieve.msi
-    - name: Archive install package
-      if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'pull_request'
-      uses: actions/upload-artifact@v2
-      with:
-        name: windows-installer
-        path: ImageSieve.msi
     - name: Create msix package
       shell: pwsh
       run : |
@@ -95,8 +76,23 @@ jobs:
         $sdkToolsPath = Join-Path -Path 'C:\Program Files (x86)\Windows Kits\10\bin' -ChildPath 10.0.19041.0 -AdditionalChildPath x86
         $env:Path += ";$sdkToolsPath"
         & makeappx.exe pack /m installer\appmanifest_$version.xml /f installer\mapping.txt /p ImageSieve.msix
+    - name: Signing packages
+      shell: pwsh
+      run: |
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}")
+        $currentDirectory = Get-Location
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath "MyCertificate.pfx"
+        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+        $sdkToolsPath = Join-Path -Path 'C:\Program Files (x86)\Windows Kits\10\bin' -ChildPath 10.0.19041.0 -AdditionalChildPath x86
+        $env:Path += ";$sdkToolsPath"
+        SignTool.exe sign /tr http://timestamp.digicert.com /fd SHA256 /a /f "$certificatePath" /p ${{ secrets.PFX_PRIVATE_KEY }} ImageSieve.msi
+        SignTool.exe sign /tr http://timestamp.digicert.com /fd SHA256 /a /f "$certificatePath" /p ${{ secrets.PFX_PRIVATE_KEY }} ImageSieve.msix
+    - name: Archive install package
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-installer
+        path: ImageSieve.msi
     - name: Archive msix package
-      if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'pull_request'
       uses: actions/upload-artifact@v2
       with:
         name: windows-msix

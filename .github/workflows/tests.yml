@@ -1,0 +1,19 @@
+name: Tests
+
+on: 
+  push:
+    paths-ignore:
+      *.md
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-ubuntu:
+
+    runs-on: ubuntu-latest
+
+    steps:    
+    - uses: actions/checkout@v2
+    - name: Run tests
+      run: cargo test
