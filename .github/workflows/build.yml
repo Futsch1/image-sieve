@@ -13,13 +13,12 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-ubuntu:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
+  prepare-ubuntu:
     - uses: ./.github/workflows/prepare_ubuntu.yml
+
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:    
     - name: Cargo publish
       if: startsWith(github.ref, 'refs/tags/v')
       run: cargo publish --token ${{ secrets.CRATES_IO_API_TOKEN }}
