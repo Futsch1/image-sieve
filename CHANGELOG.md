@@ -9,6 +9,20 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+ - 
+
+### Fixed
+
+ - 
+
+## Unreleased
+
+### Changed
+
+ - 
+
+### Added
+
  - Preview for video files
  - Get taken date from video files metadata
  - Showing also mov files now
