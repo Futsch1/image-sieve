@@ -16,7 +16,7 @@ jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: Futsch1/image-sieve/.github/workflows/actions/prepare_ubuntu@main
+    - uses: ./.github/workflows/actions/prepare_ubuntu
     - name: Cargo publish
       if: startsWith(github.ref, 'refs/tags/v')
       run: cargo publish --token ${{ secrets.CRATES_IO_API_TOKEN }}

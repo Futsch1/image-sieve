@@ -13,6 +13,6 @@ jobs:
   tests-ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: Futsch1/image-sieve/.github/workflows/actions/prepare_ubuntu@main
+    - uses: ./.github/workflows/actions/prepare_ubuntu
     - name: Run tests
       run: cargo test
