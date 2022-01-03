@@ -2,10 +2,9 @@
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-extern crate rfd;
+extern crate nfd;
 extern crate sixtyfps;
 
-use rfd::FileDialog;
 use sixtyfps::{Model, ModelHandle, SharedString};
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -232,8 +231,13 @@ impl MainWindow {
             let synchronizer = self.synchronizer.clone();
 
             move || {
-                let file_dialog = FileDialog::new();
-                if let Some(folder) = file_dialog.pick_folder() {
+                if let Ok(nfd::Response::Okay(folder)) = nfd::open_pick_folder(Some(
+                    window_weak
+                        .unwrap()
+                        .get_source_directory()
+                        .to_string()
+                        .as_str(),
+                )) {
                     {
                         // Save current item list
                         let item_list = item_list.lock().unwrap();
@@ -250,12 +254,14 @@ impl MainWindow {
 
                     // Synchronize in a background thread
                     window_weak.unwrap().set_loading(true);
-                    synchronizer
-                        .synchronize(Some(&folder), Settings::from_window(&window_weak.unwrap()));
+                    synchronizer.synchronize(
+                        Some(Path::new(&folder)),
+                        Settings::from_window(&window_weak.unwrap()),
+                    );
 
                     window_weak
                         .unwrap()
-                        .set_source_directory(SharedString::from(folder.to_str().unwrap()));
+                        .set_source_directory(SharedString::from(folder));
                 }
             }
         });
@@ -265,13 +271,16 @@ impl MainWindow {
             let window_weak = self.window.as_weak();
 
             move || {
-                let file_dialog = FileDialog::new();
-                if let Some(folder) = file_dialog.pick_folder() {
-                    let target_path = &String::from(folder.to_str().unwrap());
-
+                if let Ok(nfd::Response::Okay(folder)) = nfd::open_pick_folder(Some(
                     window_weak
                         .unwrap()
-                        .set_target_directory(SharedString::from(target_path));
+                        .get_target_directory()
+                        .to_string()
+                        .as_str(),
+                )) {
+                    window_weak
+                        .unwrap()
+                        .set_target_directory(SharedString::from(folder));
                 }
             }
         });
