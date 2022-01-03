@@ -9,12 +9,10 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:    
-  prepare-ubuntu:
-    uses: Futsch1/image-sieve/.github/workflows/prepare_ubuntu.yml@main
 
   tests-ubuntu:
     runs-on: ubuntu-latest
-    needs: prepare-ubuntu
     steps:
+    - uses: Futsch1/image-sieve/.github/workflows/actions/prepare_ubuntu@main
     - name: Run tests
       run: cargo test
