@@ -10,7 +10,7 @@ env:
 
 jobs:
   prepare-ubuntu:
-    - uses: futsch1/image-sieve/.github/workflows/prepare_ubuntu.yml@main
+    - uses: Futsch1/image-sieve/.github/workflows/prepare_ubuntu.yml@main
 
   tests-ubuntu:
     runs-on: ubuntu-latest
