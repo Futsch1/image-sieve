@@ -9,12 +9,11 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  tests-ubuntu:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
+  prepare-ubuntu:
     - uses: ./.github/workflows/prepare_ubuntu.yml
+
+  tests-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
     - name: Run tests
       run: cargo test

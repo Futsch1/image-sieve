@@ -5,6 +5,7 @@ jobs:
   prepare_ubuntu:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Update apt
         run: sudo apt-get update
       - name: Install deps
