@@ -13,6 +13,7 @@ jobs:
   tests-ubuntu:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - uses: ./.github/workflows/actions/prepare_ubuntu
     - name: Run tests
       run: cargo test

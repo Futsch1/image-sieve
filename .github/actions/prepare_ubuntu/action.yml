@@ -4,7 +4,6 @@ description: Prepare Ubuntu runner by checking out and installing dependencies
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v2
     - name: Update apt
       run: sudo apt-get update
     - name: Install deps
