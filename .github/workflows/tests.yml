@@ -15,6 +15,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: ./.github/actions/prepare_ubuntu
+    - uses: ./.github/workflows/prepare_ubuntu.yml
     - name: Run tests
       run: cargo test
