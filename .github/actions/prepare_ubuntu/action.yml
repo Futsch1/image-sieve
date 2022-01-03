@@ -1,0 +1,12 @@
+name: Prepare Ubuntu
+description: Prepare Ubuntu runner by checking out and installing dependencies
+
+runs:
+  using: "composite"
+  steps:
+    - name: Update apt
+      shell: bash
+      run: sudo apt-get update
+    - name: Install deps
+      shell: bash
+      run: sudo apt-get install libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libgtk-3-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
