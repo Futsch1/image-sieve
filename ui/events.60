@@ -8,13 +8,12 @@ struct Event := {
 }
 
 EventsView := ScrollView { 
-    property <[Event]> events-model : [{name: "Test", start-date: "", end-date: ""},{name: "Test2", start-date: "", end-date: ""}];
+    property <[Event]> events-model;
     callback add-event(string, string, string);
     callback check-event(string, string, bool) -> string;
     callback date-valid(string) -> bool;
     callback remove-event(int);
     callback update-event(int);
-
      
     VerticalLayout { 
         alignment: start;
@@ -30,7 +29,6 @@ EventsView := ScrollView {
                 Text {
                     text: "Event name";
                     vertical-alignment: center;
-                    //horizontal-alignment: right;
                 }
                 event-name := LineEdit { 
                     text: item.name;
@@ -43,7 +41,6 @@ EventsView := ScrollView {
                     text: "\u{1F4C5} Start date";
                     row: 1;
                     vertical-alignment: center;
-                    //horizontal-alignment: right;
                 }
                 start-date := LineEdit { 
                     text: item.start-date;
@@ -63,7 +60,6 @@ EventsView := ScrollView {
                     text: "\u{1F4C5} End date";
                     row: 2;
                     vertical-alignment: center;
-                    //horizontal-alignment: right;
                 }
                 end-date := LineEdit { 
                     text: item.end-date;
@@ -90,7 +86,6 @@ EventsView := ScrollView {
             padding: 5px;
             title: "New event";
             VerticalBox { 
-                //padding: 5px;
                 alignment: start;
                 new-name := LineEdit { 
                     placeholder-text: "Event name";
