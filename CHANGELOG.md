@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - 
+ - Target directory input field is now always disabled
 
 ### Added
 
@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - 
+ - Fixed layout in events view
 
 ## [0.4.0] - 2022-01-03
 
