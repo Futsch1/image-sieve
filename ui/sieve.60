@@ -47,7 +47,7 @@ export SieveView := HorizontalBox {
                     spacing: 5px;
                     target-directory-edit := LineEdit { 
                         width: 400px;
-                        enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                        enabled: false;
                         placeholder-text: "Select target directory";
                     }
                     Button {
