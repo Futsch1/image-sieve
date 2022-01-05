@@ -44,12 +44,14 @@ To select a file, click it and it will be shown in the image area. Below the ima
 If you want to open an image or a video with the default application in your OS, click the "Open" button.
 If an image belongs to a group of similar images, all these similar images are displayed below the current image. The currently selected one is highlighted in blue.
 Note that video files are also displayed in the list of images and previewed as a 3x3 matrix of screenshots. Similiarities are not calculated for video files.
+![Screenshot](doc/screenshot2.png?raw=true "ImageSieve")
 
 ### &#x1F4C5; Events
 Per default, the images will be sorted in folders corresponding to the months they were taken, like "09-2021", "10-2021" etc. To be able to find images more quickly in an archive, ImageSieve supports grouping pictures with the help of events in the "Events" tab. Events are named date spans that will provide a target folder name during the sieve process, like "2021-10-07 - 2021-10-10 Cool trip". All images taken in the given period of time will be put into that folder. You can specify an arbitrary number of events, but be aware that in case of overlapping dates, an image is put into the folder of the first matching event.
 To add an event, fill the start date, end date and name text box and click the "&#x2795; Add" button. Valid date formats are YYYY-MM-DD or DD.MM.YYYY. You can edit existing events by modifying their fields and pressing enter - the updated values will be visible in the event's caption. To remove an event, click the "&#x1F5D1; Remove" button.
 The time spans of events must not overlap.
 Be aware that the events are saved in the currently selected folder along with the selection of images.
+![Screenshot](doc/screenshot3.png?raw=true "ImageSieve")
 
 ### &#x1F4BE; Sieve
 When you are done sorting the images, the sieving process can be started. Go to the "&#x1F4BE;  Sieve" tab and select a sieving mode. The following modes are supported:
@@ -59,6 +61,7 @@ When you are done sorting the images, the sieving process can be started. Go to 
 - Delete in source directory: Deletes all discarded items in the source directory.
 
 Depending on the mode, you need to indicate a target directory that is used for the result of the sieving process. Once you are done, click the start button and the sieve process will start.
+![Screenshot](doc/screenshot4.png?raw=true "ImageSieve")
 
 ### &#x2699; Settings
 In the settings tab, you can specify the behavior of the similarity detection process. You can turn on and off both the use of the file/capture
