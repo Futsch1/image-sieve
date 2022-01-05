@@ -6,7 +6,11 @@ GUI based tool to sort out images based on similarity, categorize them according
 
 ![Screenshot](doc/screenshot.png?raw=true "ImageSieve")
 
-ImageSieve aims to help in the process of sorting through images and videos taken with several devices and collect the images worth keeping in a folder structure suitable for archiving or to eliminate potential duplicates or irrelevant images from a folder structure. The tool runs on Windows, Linux and macOS.
+ImageSieve aims to help in the process of sorting through images through images and videos taken with several devices and collect the images worth keeping in a folder structure suitable for archiving or to eliminate potential duplicates or irrelevant images from a folder structure.
+
+ImageSieve also includes a mechanism to sort images according to user defined events based on their taken dates. The sorting progress is stored on a per-folder basis, so that it can be resumed later. Images can be analyzed for similarity either depending on the taken date or an image similarity algorithm.
+
+The idea of working with ImageSieve is as follows: Copy all the images and videos taken in a period of time with various devices to a single folder or folder structure. Open this folder with ImageSieve and select which items to discard. Create events for the sorting period and finally move the selected items to your image archive folder.
 
 ## Features
 - Browse images in jpg, tiff or png format and videos in mp4, avi and mts format from a folder structure in the order of their creation
