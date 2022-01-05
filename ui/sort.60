@@ -1,4 +1,4 @@
-import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView } from "sixtyfps_widgets.60";
+import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView, CheckBox } from "sixtyfps_widgets.60";
 
 struct SortImage := {
     image: image,
@@ -25,6 +25,9 @@ export SortView := HorizontalBox {
 
     // Visibility of similarity calculation text
     property <bool> calculating-similarities: true;
+
+    // Visibility of filter setup
+    property <bool> filter-visible: false;
 
     callback next-clicked <=> next-button.clicked;
     callback prev-clicked <=> previous-button.clicked;
@@ -138,6 +141,17 @@ export SortView := HorizontalBox {
             clicked => { 
                 browse-source();
             }
+        }
+        Button {
+            text: "Filter";
+            clicked => {
+                filter-visible = !filter-visible;
+            }
+        }
+
+        CheckBox {
+            text: "Show sorted out";
+            visible: filter-visible;
         }
 
         image-list := ListView {
