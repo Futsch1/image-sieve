@@ -6,7 +6,11 @@ GUI based tool to sort out images based on similarity, categorize them according
 
 ![Screenshot](doc/screenshot.png?raw=true "ImageSieve")
 
-ImageSieve aims to help in the process of sorting through images taken by several people with several devices and collect the images worth keeping in a folder structure suitable for archiving or to eliminate potential duplicates or irrelevant images from a folder structure. The tool runs on Windows, Linux and macOS.
+ImageSieve aims to help in the process of sorting through images and videos taken with several devices and collect the images worth keeping in a folder structure suitable for archiving or to eliminate potential duplicates or irrelevant images from a folder structure.
+
+ImageSieve also includes a mechanism to sort images according to user defined events based on their taken dates. The sorting progress is stored on a per-folder basis, so that it can be resumed later. Images can be analyzed for similarity either depending on the taken date or an image similarity algorithm.
+
+The idea of working with ImageSieve is as follows: Copy all the images and videos taken in a period of time with various devices to a single folder or folder structure. Open this folder with ImageSieve and select which items to discard. Create events for the sorting period and finally move the selected items to your image archive folder.
 
 ## Features
 - Browse images in jpg, tiff or png format and videos in mp4, avi and mts format from a folder structure in the order of their creation
@@ -17,7 +21,7 @@ ImageSieve aims to help in the process of sorting through images taken by severa
 - Sieve the images by either deleting discarded ones, copying or moving kept images to a target folder
 
 ## Installation
-A Windows installer is available for every release for [download](https://github.com/Futsch1/image-sieve/releases). For Linux, ImageSieve is
+A Windows installer is available for every release for [download](https://github.com/Futsch1/image-sieve/releases) or the app can be installed via the [Microsoft Store](https://www.microsoft.com/en-us/p/imagesieve/9nwlt9phl39d). For Linux, ImageSieve is
 available on the [Snap Store](https://snapcraft.io/image-sieve).
 
 On Windows, Linux or macOS, it is also possible to install [Rust](https://rustup.rs/), clone the repository and run
@@ -44,12 +48,14 @@ To select a file, click it and it will be shown in the image area. Below the ima
 If you want to open an image or a video with the default application in your OS, click the "Open" button.
 If an image belongs to a group of similar images, all these similar images are displayed below the current image. The currently selected one is highlighted in blue.
 Note that video files are also displayed in the list of images and previewed as a 3x3 matrix of screenshots. Similiarities are not calculated for video files.
+![Screenshot](doc/screenshot2.png?raw=true "ImageSieve")
 
 ### &#x1F4C5; Events
 Per default, the images will be sorted in folders corresponding to the months they were taken, like "09-2021", "10-2021" etc. To be able to find images more quickly in an archive, ImageSieve supports grouping pictures with the help of events in the "Events" tab. Events are named date spans that will provide a target folder name during the sieve process, like "2021-10-07 - 2021-10-10 Cool trip". All images taken in the given period of time will be put into that folder. You can specify an arbitrary number of events, but be aware that in case of overlapping dates, an image is put into the folder of the first matching event.
 To add an event, fill the start date, end date and name text box and click the "&#x2795; Add" button. Valid date formats are YYYY-MM-DD or DD.MM.YYYY. You can edit existing events by modifying their fields and pressing enter - the updated values will be visible in the event's caption. To remove an event, click the "&#x1F5D1; Remove" button.
 The time spans of events must not overlap.
 Be aware that the events are saved in the currently selected folder along with the selection of images.
+![Screenshot](doc/screenshot3.png?raw=true "ImageSieve")
 
 ### &#x1F4BE; Sieve
 When you are done sorting the images, the sieving process can be started. Go to the "&#x1F4BE;  Sieve" tab and select a sieving mode. The following modes are supported:
@@ -59,6 +65,7 @@ When you are done sorting the images, the sieving process can be started. Go to 
 - Delete in source directory: Deletes all discarded items in the source directory.
 
 Depending on the mode, you need to indicate a target directory that is used for the result of the sieving process. Once you are done, click the start button and the sieve process will start.
+![Screenshot](doc/screenshot4.png?raw=true "ImageSieve")
 
 ### &#x2699; Settings
 In the settings tab, you can specify the behavior of the similarity detection process. You can turn on and off both the use of the file/capture
