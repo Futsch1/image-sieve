@@ -472,10 +472,8 @@ fn synchronize_images_model(
 ) {
     let similars = item_list.items[selected_item_index].get_similars();
 
-    // Clear images model and the model map
-    for _ in 0..similar_items_model.row_count() {
-        similar_items_model.remove(0);
-    }
+    // Clear images model
+    empty_model(similar_items_model.clone());
 
     let mut model_index: usize = 0;
 
@@ -642,9 +640,5 @@ fn local_index_from_item_list_model(
             return count;
         }
     }
-    assert!(
-        true,
-        "local_index_from_item_list_model: local_index not found"
-    );
-    0
+    panic!("local_index_from_item_list_model: local_index not found");
 }
