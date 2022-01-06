@@ -94,6 +94,12 @@ impl ImageCache {
         )
     }
 
+    /// Purge all running commands
+    pub fn purge(&self) {
+        self.primary_queue.lock().unwrap().clear();
+        self.secondary_queue.lock().unwrap().clear();
+    }
+
     /// Sets the maximum width and height of the images to load
     pub fn restrict_size(&mut self, max_width: u32, max_height: u32) {
         if max_width > self.max_width || max_height > self.max_height {
@@ -130,7 +136,7 @@ impl ImageCache {
             }
             Purpose::SimilarImage => {
                 let mut queue = self.secondary_queue.lock().unwrap();
-                queue.push_front(command);
+                queue.push_back(command);
                 self.secondary_sender.send(()).ok();
             }
             Purpose::Prefetch => {
