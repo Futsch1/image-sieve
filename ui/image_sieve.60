@@ -1,13 +1,13 @@
 import { ListView, Button, LineEdit, TabWidget, GroupBox, VerticalBox, HorizontalBox, ScrollView, ComboBox } from "sixtyfps_widgets.60";
 
 
-import { SortView, Filters } from "sort.60";
+import { SortView, Filters, SortItem, ListItem } from "sort.60";
 import { EventsView } from "events.60";
 import { SieveView, SieveComboValues } from "sieve.60";
 import { SettingsView } from "settings.60";
 import { HelpView } from "help.60";
 
-export { SieveComboValues, Filters }
+export { SieveComboValues, Filters, SortItem, ListItem }
 
 ImageSieve := Window {
     min-width: 1600px;
@@ -21,16 +21,15 @@ ImageSieve := Window {
     callback cancel-loading;
 
     // Map properties of SortView
-    property images-list-model <=> sort-view.images-list-model;
+    property list-model <=> sort-view.list-model;
     property current-list-item <=> sort-view.current-list-item;
-    property images-model <=> sort-view.images-model;
+    property similar-images-model <=> sort-view.similar-images-model;
     property current-image <=> sort-view.current-image;
-    property current-image-index <=> sort-view.current-image-index;
     property source-directory <=> sort-view.source-directory;
     property calculating-similarities <=> sort-view.calculating-similarities;
     callback item-selected <=> sort-view.item-selected;
     callback browse-source <=> sort-view.browse-source;
-    callback take-over-toggle <=> sort-view.take-over-toggle;
+    callback set-take-over <=> sort-view.set-take-over;
     callback open <=> sort-view.open;
     callback filter <=> sort-view.filter;
 
@@ -68,7 +67,7 @@ ImageSieve := Window {
                 }
             }
             if (event.text == "\u{000F}") {
-                if (images-list-model.length > 0 && current-list-item < images-list-model.length - 1) {
+                if (list-model.length > 0 && current-list-item < list-model.length - 1) {
                     sort-view.next-clicked();
                 }
             }

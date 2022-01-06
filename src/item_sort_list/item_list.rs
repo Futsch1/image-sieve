@@ -87,6 +87,11 @@ impl ItemList {
         false
     }
 
+    /// Returns the index of a file item
+    pub fn index_of_item(&self, item: &file_item::FileItem) -> Option<usize> {
+        self.items.iter().position(|i| i.path == item.path)
+    }
+
     /// Finish the synchronization progress
     pub fn finish_synchronizing(&mut self, base_path: &Path) {
         self.items.sort();

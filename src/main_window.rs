@@ -6,14 +6,15 @@ extern crate nfd;
 extern crate sixtyfps;
 
 use sixtyfps::{Model, ModelHandle, SharedString};
-use std::collections::HashMap;
 use std::fmt::Debug;
 use std::path::Path;
 use std::rc::Rc;
+use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
-use std::{cell::RefCell, sync::Arc};
 
+use crate::gui_items::list_item_from_file_item;
+use crate::gui_items::sort_item_from_file_item;
 use crate::item_sort_list::parse_date;
 use crate::item_sort_list::ItemList;
 use crate::misc::image_cache::{self, ImageCache, Purpose};
@@ -36,15 +37,12 @@ mod generated_code {
 }
 pub use generated_code::*;
 
-type ImagesModelMap = HashMap<usize, usize>;
-
 /// Main window container of the image sorter, contains the sixtyfps window, models and internal data structures
 pub struct MainWindow {
     window: ImageSieve,
     item_list: Arc<Mutex<ItemList>>,
-    item_list_model: Rc<sixtyfps::VecModel<SharedString>>,
-    similar_items_model: Rc<sixtyfps::VecModel<SortImage>>,
-    items_model_map: Rc<RefCell<ImagesModelMap>>,
+    list_model: Rc<sixtyfps::VecModel<ListItem>>,
+    similar_images_model: Rc<sixtyfps::VecModel<SortItem>>,
     events_model: Rc<sixtyfps::VecModel<Event>>,
     sieve_result_model: Rc<sixtyfps::VecModel<SieveResult>>,
     image_cache: Rc<ImageCache>,
@@ -78,7 +76,7 @@ impl MainWindow {
         let item_list = Arc::new(Mutex::new(item_list));
 
         let event_list_model = Rc::new(sixtyfps::VecModel::<Event>::default());
-        let item_list_model = Rc::new(sixtyfps::VecModel::<SharedString>::default());
+        let item_list_model = Rc::new(sixtyfps::VecModel::<ListItem>::default());
         let sieve_result_model = Rc::new(sixtyfps::VecModel::<SieveResult>::default());
 
         // Construct main window
@@ -98,9 +96,8 @@ impl MainWindow {
         let main_window = Self {
             window: image_sieve,
             item_list,
-            item_list_model,
-            similar_items_model: Rc::new(sixtyfps::VecModel::<SortImage>::default()),
-            items_model_map: Rc::new(RefCell::new(HashMap::new())),
+            list_model: item_list_model,
+            similar_images_model: Rc::new(sixtyfps::VecModel::<SortItem>::default()),
             events_model: event_list_model,
             sieve_result_model,
             image_cache: Rc::new(cache),
@@ -121,13 +118,11 @@ impl MainWindow {
         // Set model references
         main_window
             .window
-            .set_images_list_model(sixtyfps::ModelHandle::new(
-                main_window.item_list_model.clone(),
-            ));
+            .set_list_model(sixtyfps::ModelHandle::new(main_window.list_model.clone()));
         main_window
             .window
-            .set_images_model(sixtyfps::ModelHandle::new(
-                main_window.similar_items_model.clone(),
+            .set_similar_images_model(sixtyfps::ModelHandle::new(
+                main_window.similar_images_model.clone(),
             ));
         main_window
             .window
@@ -165,17 +160,17 @@ impl MainWindow {
         self.window.on_item_selected({
             // New item selected on the list of images or next/previous clicked
             let item_list = self.item_list.clone();
-            let similar_items_model = self.similar_items_model.clone();
-            let items_model_map = self.items_model_map.clone();
+            let item_list_model = self.list_model.clone();
+            let similar_items_model = self.similar_images_model.clone();
             let window_weak = self.window.as_weak();
             let image_cache = self.image_cache.clone();
 
             move |i: i32| {
+                let index = local_index_from_item_list_model(i, &item_list_model);
                 synchronize_images_model(
-                    i as usize,
+                    index,
                     &item_list.lock().unwrap(),
                     similar_items_model.clone(),
-                    &mut items_model_map.borrow_mut(),
                     window_weak.clone(),
                     &image_cache,
                 );
@@ -197,34 +192,38 @@ impl MainWindow {
             }
         });
 
-        self.window.on_take_over_toggle({
+        self.window.on_set_take_over({
             // Image was clicked, toggle take over state
-            let item_list_model = self.item_list_model.clone();
+            let item_list_model = self.list_model.clone();
+            let similar_items_model = self.similar_images_model.clone();
             let item_list = self.item_list.clone();
-            let items_model = self.similar_items_model.clone();
-            let items_model_map = self.items_model_map.clone();
 
-            move |i: i32| {
-                let model_index = i as usize;
+            move |i: i32, take_over: bool| {
                 // Change the state of the SortImage in the items_model
-                let mut sort_image = items_model.row_data(model_index);
-                sort_image.take_over = !sort_image.take_over;
 
-                let index = items_model_map.borrow_mut()[&model_index];
+                let index = i as usize;
                 {
                     // Change the item_list state
                     let mut item_list_mut = item_list.lock().unwrap();
-                    item_list_mut.items[index].set_take_over(sort_image.take_over);
+                    item_list_mut.items[index].set_take_over(take_over);
                 }
-                items_model.set_row_data(model_index, sort_image);
                 // Update item list model to reflect change in icons in list
                 synchronize_item_list_model(&item_list.lock().unwrap(), &item_list_model);
+                // And update the take over state in the similar items model
+                for count in 0..similar_items_model.row_count() {
+                    let mut item = similar_items_model.row_data(count);
+                    if item.local_index == i {
+                        item.take_over = take_over;
+                        similar_items_model.set_row_data(count, item);
+                        break;
+                    }
+                }
             }
         });
 
         self.window.on_browse_source({
             // Browse source was clicked, select new path
-            let item_list_model = self.item_list_model.clone();
+            let item_list_model = self.list_model.clone();
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
             let window_weak = self.window.as_weak();
@@ -317,7 +316,7 @@ impl MainWindow {
 
         self.window.on_add_event({
             // New event was added, return true if the dates are ok
-            let item_list_model = self.item_list_model.clone();
+            let item_list_model = self.list_model.clone();
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
 
@@ -343,7 +342,7 @@ impl MainWindow {
         });
 
         self.window.on_update_event({
-            let item_list_model = self.item_list_model.clone();
+            let item_list_model = self.list_model.clone();
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
 
@@ -365,7 +364,7 @@ impl MainWindow {
 
         self.window.on_remove_event({
             // Event was removed
-            let item_list_model = self.item_list_model.clone();
+            let item_list_model = self.list_model.clone();
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
 
@@ -429,18 +428,15 @@ fn empty_model<T: 'static + Clone>(item_list_model: Rc<sixtyfps::VecModel<T>>) {
 /// Synchronizes the list of found items from the internal data structure with the sixtyfps VecModel
 pub fn synchronize_item_list_model(
     item_list: &ItemList,
-    item_list_model: &sixtyfps::VecModel<SharedString>,
+    item_list_model: &sixtyfps::VecModel<ListItem>,
 ) {
     let empty_model = item_list_model.row_count() == 0;
     for (index, image) in item_list.items.iter().enumerate() {
-        let mut item_string = image.get_item_string(&item_list.path);
-        if item_list.get_event(image).is_some() {
-            item_string = String::from("\u{1F4C5}") + &item_string;
-        }
+        let list_item = list_item_from_file_item(image, item_list);
         if empty_model {
-            item_list_model.push(SharedString::from(item_string));
+            item_list_model.push(list_item);
         } else {
-            item_list_model.set_row_data(index, SharedString::from(item_string));
+            item_list_model.set_row_data(index, list_item);
         }
     }
 }
@@ -470,8 +466,7 @@ pub fn synchronize_event_list_model(
 fn synchronize_images_model(
     selected_item_index: usize,
     item_list: &ItemList,
-    similar_items_model: Rc<sixtyfps::VecModel<SortImage>>,
-    item_model_map: &mut ImagesModelMap,
+    similar_items_model: Rc<sixtyfps::VecModel<SortItem>>,
     window: sixtyfps::Weak<ImageSieve>,
     image_cache: &ImageCache,
 ) {
@@ -481,7 +476,6 @@ fn synchronize_images_model(
     for _ in 0..similar_items_model.row_count() {
         similar_items_model.remove(0);
     }
-    item_model_map.drain();
 
     let mut model_index: usize = 0;
 
@@ -497,11 +491,13 @@ fn synchronize_images_model(
                 let f: image_cache::DoneCallback = Box::new(move |image_buffer| {
                     window_weak.clone().upgrade_in_event_loop(move |handle| {
                         if handle.get_current_list_item() == selected_item_index as i32 {
-                            let mut row_data = handle.get_images_model().row_data(model_index);
-                            let is_current_image = handle.get_current_image().text == row_data.text;
+                            let mut row_data =
+                                handle.get_similar_images_model().row_data(model_index);
+                            let is_current_image =
+                                handle.get_current_image().local_index == row_data.local_index;
                             row_data.image = crate::misc::images::get_sixtyfps_image(&image_buffer);
                             handle
-                                .get_images_model()
+                                .get_similar_images_model()
                                 .set_row_data(model_index, row_data);
                             if is_current_image {
                                 let mut current_image = handle.get_current_image();
@@ -525,13 +521,8 @@ fn synchronize_images_model(
             }
         };
 
-        let sort_image_struct = SortImage {
-            image,
-            take_over: item.get_take_over(),
-            text: get_item_text(*item_index, item_list),
-        };
-        similar_items_model.push(sort_image_struct);
-        item_model_map.insert(model_index, *item_index);
+        let sort_image = sort_item_from_file_item(item, item_list, image);
+        similar_items_model.push(sort_image);
         model_index += 1;
     };
 
@@ -561,7 +552,6 @@ fn synchronize_images_model(
     window
         .unwrap()
         .set_current_image(similar_items_model.row_data(0));
-    window.unwrap().set_current_image_index(0);
 }
 
 /// Gets the text of a an item at a given index as a SharedString
@@ -641,4 +631,20 @@ pub fn sieve(
             progress_callback,
         );
     });
+}
+
+fn local_index_from_item_list_model(
+    i: i32,
+    item_list_model: &sixtyfps::VecModel<ListItem>,
+) -> usize {
+    for count in 0..item_list_model.row_count() {
+        if item_list_model.row_data(count).local_index == i {
+            return count;
+        }
+    }
+    assert!(
+        true,
+        "local_index_from_item_list_model: local_index not found"
+    );
+    0
 }

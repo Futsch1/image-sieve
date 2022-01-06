@@ -12,7 +12,8 @@ use sixtyfps::VecModel;
 use walkdir::WalkDir;
 
 use crate::main_window::{
-    synchronize_event_list_model, synchronize_item_list_model, Event, ImageSieve, SortImage,
+    synchronize_event_list_model, synchronize_item_list_model, Event, ImageSieve, ListItem,
+    SortItem,
 };
 use crate::misc::images::get_empty_image;
 use crate::persistence::json::get_project_filename;
@@ -126,9 +127,9 @@ fn synchronize_run(
             move |h| {
                 synchronize_item_list_model(
                     &item_list,
-                    h.get_images_list_model()
+                    h.get_list_model()
                         .as_any()
-                        .downcast_ref::<VecModel<SharedString>>()
+                        .downcast_ref::<VecModel<ListItem>>()
                         .unwrap(),
                 );
                 h.set_calculating_similarities(false);
@@ -186,9 +187,9 @@ fn update_item_list(item_list: Arc<Mutex<ItemList>>, image_sieve: &sixtyfps::Wea
         move |h| {
             synchronize_item_list_model(
                 &item_list,
-                h.get_images_list_model()
+                h.get_list_model()
                     .as_any()
-                    .downcast_ref::<VecModel<SharedString>>()
+                    .downcast_ref::<VecModel<ListItem>>()
                     .unwrap(),
             );
             synchronize_event_list_model(
@@ -205,17 +206,17 @@ fn update_item_list(item_list: Arc<Mutex<ItemList>>, image_sieve: &sixtyfps::Wea
                 h.set_current_list_item(0);
                 h.invoke_item_selected(0);
             } else {
-                let empty_image = SortImage {
+                let empty_image = SortItem {
                     image: get_empty_image(),
                     take_over: true,
                     text: SharedString::from("No images found"),
+                    local_index: 0,
                 };
                 h.set_current_image(empty_image);
-                h.set_current_image_index(0);
-                let model_handle = h.get_images_model();
+                let model_handle = h.get_similar_images_model();
                 let images_list_model = model_handle
                     .as_any()
-                    .downcast_ref::<VecModel<SortImage>>()
+                    .downcast_ref::<VecModel<SortItem>>()
                     .unwrap();
                 for _ in 0..images_list_model.row_count() {
                     images_list_model.remove(0);
@@ -263,9 +264,9 @@ fn calculate_similar_timestamps(
         move |h| {
             synchronize_item_list_model(
                 &item_list,
-                h.get_images_list_model()
+                h.get_list_model()
                     .as_any()
-                    .downcast_ref::<VecModel<SharedString>>()
+                    .downcast_ref::<VecModel<ListItem>>()
                     .unwrap(),
             );
             h.set_calculating_similarities(use_hash);
