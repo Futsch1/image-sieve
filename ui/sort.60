@@ -164,7 +164,7 @@ export SortView := HorizontalBox {
             }
         }
         Button {
-            text: "Filter " + (filter-visible ? "<<" : ">>");
+            text: "Filters " + (filter-visible ? "<<" : ">>");
             clicked => {
                 filter-visible = !filter-visible;
             }
@@ -196,7 +196,7 @@ export SortView := HorizontalBox {
                 padding: 2px;
                 height: 20px;
                 width: parent.width;
-                background: i == parent.current-item ? grey : white;
+                background: item.local-index == current-image.local-index ? grey : white;
                 HorizontalLayout { 
                     Text { 
                         text: item.text;

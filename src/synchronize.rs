@@ -1,4 +1,5 @@
 use crate::item_sort_list::ItemList;
+use crate::main_window::update_item_list_model_texts;
 use crate::persistence::settings::Settings;
 use image::GenericImageView;
 use img_hash::HashAlg;
@@ -12,8 +13,7 @@ use sixtyfps::VecModel;
 use walkdir::WalkDir;
 
 use crate::main_window::{
-    synchronize_event_list_model, synchronize_item_list_model, Event, ImageSieve, ListItem,
-    SortItem,
+    populate_item_list_model, synchronize_event_list_model, Event, ImageSieve, ListItem, SortItem,
 };
 use crate::misc::images::get_empty_image;
 use crate::persistence::json::get_project_filename;
@@ -125,7 +125,7 @@ fn synchronize_run(
         image_sieve.clone().upgrade_in_event_loop({
             let item_list = item_list.lock().unwrap().to_owned();
             move |h| {
-                synchronize_item_list_model(
+                update_item_list_model_texts(
                     &item_list,
                     h.get_list_model()
                         .as_any()
@@ -185,12 +185,14 @@ fn update_item_list(item_list: Arc<Mutex<ItemList>>, image_sieve: &sixtyfps::Wea
         let item_list = item_list.lock().unwrap().to_owned();
         let flag = flag.clone();
         move |h| {
-            synchronize_item_list_model(
+            let filters = h.get_filters();
+            populate_item_list_model(
                 &item_list,
                 h.get_list_model()
                     .as_any()
                     .downcast_ref::<VecModel<ListItem>>()
                     .unwrap(),
+                &filters,
             );
             synchronize_event_list_model(
                 &item_list,
@@ -262,7 +264,7 @@ fn calculate_similar_timestamps(
         let item_list = item_list.lock().unwrap().to_owned();
         let use_hash = settings.use_hash;
         move |h| {
-            synchronize_item_list_model(
+            update_item_list_model_texts(
                 &item_list,
                 h.get_list_model()
                     .as_any()

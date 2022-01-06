@@ -14,8 +14,10 @@ use std::sync::Mutex;
 use std::thread;
 
 use crate::gui_items::list_item_from_file_item;
+use crate::gui_items::list_item_title;
 use crate::gui_items::sort_item_from_file_item;
 use crate::item_sort_list::parse_date;
+use crate::item_sort_list::FileItem;
 use crate::item_sort_list::ItemList;
 use crate::misc::image_cache::{self, ImageCache, Purpose};
 use crate::persistence::json::JsonPersistence;
@@ -160,13 +162,13 @@ impl MainWindow {
         self.window.on_item_selected({
             // New item selected on the list of images or next/previous clicked
             let item_list = self.item_list.clone();
-            let item_list_model = self.list_model.clone();
+            let list_model = self.list_model.clone();
             let similar_items_model = self.similar_images_model.clone();
             let window_weak = self.window.as_weak();
             let image_cache = self.image_cache.clone();
 
             move |i: i32| {
-                let index = local_index_from_item_list_model(i, &item_list_model);
+                let index = list_model.row_data(i as usize).local_index as usize;
                 synchronize_images_model(
                     index,
                     &item_list.lock().unwrap(),
@@ -194,7 +196,7 @@ impl MainWindow {
 
         self.window.on_set_take_over({
             // Image was clicked, toggle take over state
-            let item_list_model = self.list_model.clone();
+            let list_model = self.list_model.clone();
             let similar_items_model = self.similar_images_model.clone();
             let item_list = self.item_list.clone();
 
@@ -208,10 +210,10 @@ impl MainWindow {
                     item_list_mut.items[index].set_take_over(take_over);
                 }
                 // Update item list model to reflect change in icons in list
-                synchronize_item_list_model(&item_list.lock().unwrap(), &item_list_model);
+                update_item_list_model_texts(&item_list.lock().unwrap(), &list_model);
                 // And update the take over state in the similar items model
                 for count in 0..similar_items_model.row_count() {
-                    let mut item = similar_items_model.row_data(count);
+                    let mut item: SortItem = similar_items_model.row_data(count);
                     if item.local_index == i {
                         item.take_over = take_over;
                         similar_items_model.set_row_data(count, item);
@@ -333,7 +335,7 @@ impl MainWindow {
                 item_list.events.sort_unstable();
                 synchronize_event_list_model(&item_list, &events_model);
                 // Synchronize the item list to update the icons of the entries
-                synchronize_item_list_model(&item_list, &item_list_model.clone());
+                update_item_list_model_texts(&item_list, &item_list_model.clone());
             }
         });
 
@@ -357,7 +359,7 @@ impl MainWindow {
                 ) {
                     item_list.events.sort_unstable();
                     synchronize_event_list_model(&item_list, &events_model);
-                    synchronize_item_list_model(&item_list, &item_list_model.clone());
+                    update_item_list_model_texts(&item_list, &item_list_model.clone());
                 }
             }
         });
@@ -373,7 +375,7 @@ impl MainWindow {
                 let mut item_list = item_list.lock().unwrap();
                 item_list.events.remove(index as usize);
                 // Synchronize the item list to update the icons of the entries
-                synchronize_item_list_model(&item_list, &item_list_model.clone());
+                update_item_list_model_texts(&item_list, &item_list_model.clone());
             }
         });
 
@@ -412,8 +414,19 @@ impl MainWindow {
         });
 
         self.window.on_filter({
-            move |filters: Filters| {
-                println!("{:?}", filters);
+            let item_list_model = self.list_model.clone();
+            let item_list = self.item_list.clone();
+            let window_weak = self.window.as_weak();
+
+            move |filters| {
+                let item_list = item_list.lock().unwrap();
+                empty_model(item_list_model.clone());
+                populate_item_list_model(&item_list, &item_list_model, &filters);
+                let rows = item_list_model.row_count() as i32;
+
+                if rows >= window_weak.unwrap().get_current_list_item() {
+                    window_weak.unwrap().set_current_list_item(rows - 1);
+                }
             }
         });
     }
@@ -426,18 +439,32 @@ fn empty_model<T: 'static + Clone>(item_list_model: Rc<sixtyfps::VecModel<T>>) {
 }
 
 /// Synchronizes the list of found items from the internal data structure with the sixtyfps VecModel
-pub fn synchronize_item_list_model(
+pub fn populate_item_list_model(
+    item_list: &ItemList,
+    item_list_model: &sixtyfps::VecModel<ListItem>,
+    filters: &Filters,
+) {
+    for image in item_list
+        .items
+        .iter()
+        .filter(|item| filter_file_item(item, filters))
+    {
+        let list_item = list_item_from_file_item(image, item_list);
+        item_list_model.push(list_item);
+    }
+}
+
+/// Update the texts for all entries in the list model
+/// Should be called when the underlying data (i.e. the item list) has changed
+pub fn update_item_list_model_texts(
     item_list: &ItemList,
     item_list_model: &sixtyfps::VecModel<ListItem>,
 ) {
-    let empty_model = item_list_model.row_count() == 0;
-    for (index, image) in item_list.items.iter().enumerate() {
-        let list_item = list_item_from_file_item(image, item_list);
-        if empty_model {
-            item_list_model.push(list_item);
-        } else {
-            item_list_model.set_row_data(index, list_item);
-        }
+    for count in 0..item_list_model.row_count() {
+        let mut list_item = item_list_model.row_data(count);
+        let file_item = &item_list.items[list_item.local_index as usize];
+        list_item.text = list_item_title(file_item, item_list);
+        item_list_model.set_row_data(count, list_item);
     }
 }
 
@@ -631,14 +658,16 @@ pub fn sieve(
     });
 }
 
-fn local_index_from_item_list_model(
-    i: i32,
-    item_list_model: &sixtyfps::VecModel<ListItem>,
-) -> usize {
-    for count in 0..item_list_model.row_count() {
-        if item_list_model.row_data(count).local_index == i {
-            return count;
-        }
+fn filter_file_item(file_item: &FileItem, filters: &Filters) -> bool {
+    let mut visible = true;
+    if !filters.images && file_item.is_image() {
+        visible = false;
     }
-    panic!("local_index_from_item_list_model: local_index not found");
+    if !filters.videos && file_item.is_video() {
+        visible = false;
+    }
+    if !filters.sorted_out && !file_item.get_take_over() {
+        visible = false;
+    }
+    visible
 }
