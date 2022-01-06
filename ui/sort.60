@@ -125,7 +125,11 @@ export SortView := HorizontalBox {
                 text: "\u{2B05} Previous";
                 enabled: current-list-item > 0;
                 clicked => { 
-                    current-list-item -= 1;
+                    if (current-list-item >= list-model.length) {
+                        current-list-item = 0;
+                    } else {
+                        current-list-item -= 1;
+                    }
                     item-selected(current-list-item);
                 }
             }
@@ -140,7 +144,11 @@ export SortView := HorizontalBox {
                 text: "Next \u{27A1}";
                 enabled: list-model.length > 0 && current-list-item < list-model.length - 1;
                 clicked => { 
-                    current-list-item += 1;
+                    if (current-list-item >= list-model.length) {
+                        current-list-item = list-model.length - 1;
+                    } else {
+                        current-list-item += 1;
+                    }
                     item-selected(current-list-item);
                 }
             }
@@ -196,7 +204,7 @@ export SortView := HorizontalBox {
                 padding: 2px;
                 height: 20px;
                 width: parent.width;
-                background: item.local-index == current-image.local-index ? grey : white;
+                background: i == parent.current-item ? grey : white;
                 HorizontalLayout { 
                     Text { 
                         text: item.text;
