@@ -1,13 +1,13 @@
 import { ListView, Button, LineEdit, TabWidget, GroupBox, VerticalBox, HorizontalBox, ScrollView, ComboBox } from "sixtyfps_widgets.60";
 
 
-import { SortView } from "sort.60";
+import { SortView, Filters } from "sort.60";
 import { EventsView } from "events.60";
 import { SieveView, SieveComboValues } from "sieve.60";
 import { SettingsView } from "settings.60";
 import { HelpView } from "help.60";
 
-export { SieveComboValues }
+export { SieveComboValues, Filters }
 
 ImageSieve := Window {
     min-width: 1600px;
@@ -32,6 +32,7 @@ ImageSieve := Window {
     callback browse-source <=> sort-view.browse-source;
     callback take-over-toggle <=> sort-view.take-over-toggle;
     callback open <=> sort-view.open;
+    callback filter <=> sort-view.filter;
 
     // Map properties of EventsView
     property events-model <=> events-view.events-model;

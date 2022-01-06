@@ -411,6 +411,12 @@ impl MainWindow {
                 synchronizer.stop();
             }
         });
+
+        self.window.on_filter({
+            move |filters: Filters| {
+                println!("{:?}", filters);
+            }
+        });
     }
 }
 

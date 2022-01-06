@@ -6,6 +6,12 @@ struct SortImage := {
     text: string
 }
 
+export struct Filters := {
+    sorted-out: bool,
+    images: bool,
+    videos: bool
+}
+
 export SortView := HorizontalBox {
 
     // List of image file names
@@ -29,6 +35,13 @@ export SortView := HorizontalBox {
     // Visibility of filter setup
     property <bool> filter-visible: false;
 
+    // Filters
+    property <Filters> filters : {
+        sorted-out: true,
+        images: true,
+        videos: true
+    };
+
     callback next-clicked <=> next-button.clicked;
     callback prev-clicked <=> previous-button.clicked;
     callback selected-clicked <=> selected-image-touch.clicked;
@@ -41,6 +54,8 @@ export SortView := HorizontalBox {
     callback browse-source;
     // Called when the open button was pressed
     callback open(int);
+    // Called when a filter setting was changed
+    callback filter(Filters);
 
     spacing: 5px;
 
@@ -144,17 +159,31 @@ export SortView := HorizontalBox {
             }
         }
         Button {
-            text: "Filter";
+            text: "Filter " + (filter-visible ? "<<" : ">>");
             clicked => {
                 filter-visible = !filter-visible;
             }
         }
-
-        CheckBox {
-            text: "Show sorted out";
-            visible: filter-visible;
-        }
-
+        if filter-visible :
+            VerticalBox {
+                alignment: start;
+                filter-sorted-out := CheckBox {
+                    text: "Show sorted out";
+                    checked: filters.sorted-out;
+                    toggled => { filters.sorted-out = self.checked; filter(filters) }
+                }
+                filter-videos := CheckBox {
+                    text: "Show videos";
+                    checked: filters.videos;
+                    toggled => { filters.videos = self.checked; filter(filters) }
+                }
+                filter-images := CheckBox {
+                    text: "Show images";
+                    checked: filters.images;
+                    toggled => { filters.images = self.checked; filter(filters) }
+                }
+            }
+        
         image-list := ListView {
             property<int> current-item: 0;
 
