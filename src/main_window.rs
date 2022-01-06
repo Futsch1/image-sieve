@@ -169,13 +169,15 @@ impl MainWindow {
 
             move |i: i32| {
                 let index = list_model.row_data(i as usize).local_index as usize;
+                let item_list = &item_list.lock().unwrap();
                 synchronize_images_model(
                     index,
-                    &item_list.lock().unwrap(),
+                    item_list,
                     similar_items_model.clone(),
                     window_weak.clone(),
                     &image_cache,
                 );
+                prefetch(i, item_list, &list_model, &image_cache);
             }
         });
 
@@ -432,13 +434,14 @@ impl MainWindow {
     }
 }
 
+/// Removes all items from a model
 fn empty_model<T: 'static + Clone>(item_list_model: Rc<sixtyfps::VecModel<T>>) {
     for _ in 0..item_list_model.row_count() {
         item_list_model.remove(0);
     }
 }
 
-/// Synchronizes the list of found items from the internal data structure with the sixtyfps VecModel
+/// Fills the list of found items from the internal data structure to the sixtyfps VecModel
 pub fn populate_item_list_model(
     item_list: &ItemList,
     item_list_model: &sixtyfps::VecModel<ListItem>,
@@ -447,7 +450,7 @@ pub fn populate_item_list_model(
     for image in item_list
         .items
         .iter()
-        .filter(|item| filter_file_item(item, filters))
+        .filter(|item| filter_file_items(item, filters))
     {
         let list_item = list_item_from_file_item(image, item_list);
         item_list_model.push(list_item);
@@ -559,25 +562,29 @@ fn synchronize_images_model(
         add_item(image_index, false, window.clone());
     }
 
-    // Prefetch next two images
-    let mut prefetch_index = selected_item_index + 1;
-    let mut prefetches = 2;
-    while prefetches > 0 && prefetch_index < item_list.items.len() {
-        if !similars.contains(&prefetch_index) {
-            if let Some(file_item) = item_list.items.get(prefetch_index) {
-                if file_item.is_image() {
-                    image_cache.load(file_item, Purpose::Prefetch, None);
-                    prefetches -= 1;
-                }
-            }
-        }
-        prefetch_index += 1;
-    }
-
     // Set properties
     window
         .unwrap()
         .set_current_image(similar_items_model.row_data(0));
+}
+
+/// Prefetch the next imagesin the model list
+fn prefetch(
+    model_index: i32,
+    item_list: &ItemList,
+    list_model: &sixtyfps::VecModel<ListItem>,
+    image_cache: &ImageCache,
+) {
+    // Prefetch next two images
+    for i in model_index + 1..model_index + 3 {
+        if i < list_model.row_count() as i32 {
+            let list_item = &list_model.row_data(i as usize);
+            let file_item = &item_list.items[list_item.local_index as usize];
+            if file_item.is_image() {
+                image_cache.load(file_item, Purpose::Prefetch, None);
+            }
+        }
+    }
 }
 
 /// Gets the text of a an item at a given index as a SharedString
@@ -659,7 +666,8 @@ pub fn sieve(
     });
 }
 
-fn filter_file_item(file_item: &FileItem, filters: &Filters) -> bool {
+/// Filter file items to display in the item list
+fn filter_file_items(file_item: &FileItem, filters: &Filters) -> bool {
     let mut visible = true;
     if !filters.images && file_item.is_image() {
         visible = false;
