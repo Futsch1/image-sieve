@@ -5,7 +5,7 @@ extern crate ffmpeg_next as ffmpeg;
 use self::chrono::NaiveDateTime;
 use self::exif::{In, Tag};
 
-use super::file_types::is_video;
+use super::file_types::{is_image, is_video};
 use super::item_traits::{Orientation, PropertyResolver};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -81,11 +81,7 @@ impl ExifResolver {
     }
 
     pub fn supports(path: &Path) -> bool {
-        if let Some(extension) = path.extension() {
-            extension.to_ascii_lowercase().to_str().unwrap() == "jpg"
-        } else {
-            false
-        }
+        is_image(path)
     }
 }
 
@@ -118,14 +114,13 @@ impl PropertyResolver for ExifResolver {
 
                 if let Some(orientation_value) = orientation_field {
                     let orientation_value = orientation_value.value.get_uint(0).unwrap();
-                    let orientation = match orientation_value {
+                    Some(match orientation_value {
                         1 => Orientation::Landscape,
                         6 => Orientation::Portrait90,
                         8 => Orientation::Portrait270,
                         3 => Orientation::Landscape180,
                         _ => Orientation::Landscape,
-                    };
-                    Some(orientation)
+                    })
                 } else {
                     None
                 }
@@ -175,14 +170,13 @@ impl PropertyResolver for FFmpegResolver {
             if let Some(video_stream) = context.streams().best(ffmpeg::media::Type::Video) {
                 for (k, v) in video_stream.metadata().iter() {
                     if k == "rotate" {
-                        let orientation = match v {
+                        return Some(match v {
                             "0" => Orientation::Landscape,
                             "90" => Orientation::Portrait90,
                             "270" => Orientation::Portrait270,
                             "180" => Orientation::Landscape180,
                             _ => Orientation::Landscape,
-                        };
-                        return Some(orientation);
+                        });
                     }
                 }
             }
@@ -199,6 +193,10 @@ mod tests {
         get_resolver(Path::new(path)).get_timestamp()
     }
 
+    fn get_orientation_from(path: &str) -> Option<Orientation> {
+        get_resolver(Path::new(path)).get_orientation()
+    }
+
     fn get_file_timestamp(path: &str) -> i64 {
         FileResolver::new(Path::new(path)).get_timestamp()
     }
@@ -208,7 +206,13 @@ mod tests {
         init_resolvers();
 
         assert_eq!(1631461311, get_timestamp_from("tests/test.jpg"));
+        assert_eq!(
+            Some(Orientation::Portrait90),
+            get_orientation_from("tests/test.jpg")
+        );
+
         assert_eq!(1631461311, get_timestamp_from("tests/test2.JPG"));
+        assert_eq!(None, get_orientation_from("tests/test2.JPG"));
         assert_eq!(
             get_file_timestamp("tests/test_no_date.jpg"),
             get_timestamp_from("tests/test_no_date.jpg")
@@ -221,11 +225,23 @@ mod tests {
             get_file_timestamp("tests/test_invalid.jpg"),
             get_timestamp_from("tests/test_invalid.jpg")
         );
+
+        assert_eq!(0, get_timestamp_from("tests/test.png"));
+        assert_eq!(
+            Some(Orientation::Landscape180),
+            get_orientation_from("tests/test.png")
+        );
+
         assert_eq!(
             get_file_timestamp("tests/test.mp4"),
             get_timestamp_from("tests/test.mp4")
         );
-        assert_eq!(1640790497, get_timestamp_from("tests/test2.mp4"));
+        assert_eq!(None, get_orientation_from("tests/test.mp4"));
+        assert_eq!(1640790497, get_timestamp_from("tests/test2.MP4"));
+        assert_eq!(
+            Some(Orientation::Landscape180),
+            get_orientation_from("tests/test2.MP4")
+        );
         assert_eq!(
             get_file_timestamp("tests/test_invalid.mp4"),
             get_timestamp_from("tests/test_invalid.mp4")

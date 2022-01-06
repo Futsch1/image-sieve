@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - 
+ - Now reading EXIF files for all image formats, not only for JPEGs
 
 ### Added
 
