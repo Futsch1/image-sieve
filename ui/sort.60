@@ -181,7 +181,7 @@ export SortView := HorizontalBox {
             VerticalBox {
                 alignment: start;
                 filter-sorted-out := CheckBox {
-                    text: "Show sorted out";
+                    text: "Show discarded";
                     checked: filters.sorted-out;
                     toggled => { filters.sorted-out = self.checked; filter(filters) }
                 }
