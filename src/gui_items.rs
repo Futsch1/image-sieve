@@ -11,7 +11,7 @@ pub fn sort_item_from_file_item(
 ) -> SortItem {
     let mut description = format!("{}", file_item);
     if let Some(event) = item_list.get_event(file_item) {
-        description = description + " \u{1F4C5} " + &event.name;
+        description = description + ", \u{1F4C5} " + &event.name;
     }
     SortItem {
         text: sixtyfps::SharedString::from(description),
