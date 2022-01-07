@@ -1,7 +1,4 @@
 use crate::item_sort_list::ItemList;
-use crate::models::events_model::synchronize_event_model;
-use crate::models::list_model::populate_list_model;
-use crate::models::list_model::update_list_model;
 use crate::persistence::settings::Settings;
 use image::GenericImageView;
 use img_hash::HashAlg;
@@ -9,30 +6,23 @@ use img_hash::Hasher;
 use img_hash::HasherConfig;
 use img_hash::ImageHash;
 use sixtyfps::ComponentHandle;
-use sixtyfps::Model;
 use sixtyfps::SharedString;
-use sixtyfps::VecModel;
 use walkdir::WalkDir;
 
-use crate::main_window::{Event, ImageSieve, ListItem, SortItem};
-use crate::misc::images::get_empty_image;
+use crate::main_window::ImageSieve;
 use crate::persistence::json::get_project_filename;
 use crate::persistence::json::JsonPersistence;
 use std::collections::HashMap;
 use std::path::Path;
 use std::path::PathBuf;
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 use std::sync::Mutex;
-use std::thread::sleep;
-use std::time::Duration;
 
 /// Combined path and settings used to send changes to the synchronize thread.
 enum Command {
     Stop,
-    Scan(PathBuf, Settings),
+    Scan(PathBuf),
     Similarities(Settings),
 }
 
@@ -55,15 +45,15 @@ impl Synchronizer {
         Self { channel }
     }
 
-    /// Perform synchronization of the item list with a given path in a background thread. If the path is
-    /// a zero length string, only check for similarities
-    pub fn synchronize(&self, path: Option<&Path>, settings: Settings) {
-        if let Some(path) = path {
-            let path = path.to_path_buf();
-            self.channel.send(Command::Scan(path, settings)).ok();
-        } else {
-            self.channel.send(Command::Similarities(settings)).ok();
-        }
+    /// Perform synchronization of the item list with a given path in a background thread.
+    pub fn scan_path(&self, path: &Path) {
+        let path = path.to_path_buf();
+        self.channel.send(Command::Scan(path)).ok();
+    }
+
+    /// Calculate similarities in a background thread.
+    pub fn calculate_similarities(&self, settings: Settings) {
+        self.channel.send(Command::Similarities(settings)).ok();
     }
 
     /// Stop the current synchronization process
@@ -98,44 +88,45 @@ fn synchronize_run(
             }
         }
 
-        let settings = match command {
+        match command {
             Command::Stop => break,
-            Command::Scan(path, settings) => {
+            Command::Scan(path) => {
                 if scan_files(&path, item_list.clone(), &image_sieve, receiver).is_err() {
                     let mut item_list_loc = item_list.lock().unwrap();
                     item_list_loc.items.clear();
                 }
-                update_item_list(item_list.clone(), &image_sieve);
-                settings
+                image_sieve.clone().upgrade_in_event_loop({
+                    move |h| {
+                        h.invoke_synchronization_finished();
+                    }
+                });
             }
-            Command::Similarities(settings) => settings,
+            Command::Similarities(settings) => {
+                // First, find similars based on times, this is usually quick
+                if settings.use_timestamps {
+                    calculate_similar_timestamps(item_list.clone(), &settings);
+                }
+                // Tell the GUI that this is done
+                similarities_calculated(&image_sieve, !settings.use_hash);
+
+                // Then, if enabled, find similars based on hashes. This takes some time.
+                if settings.use_hash {
+                    calculate_similar_hashes(item_list.clone(), &settings);
+                    // Finally, update the GUI again with the new found similarities
+                    similarities_calculated(&image_sieve, true);
+                }
+            }
         };
-
-        // First, find similars based on times, this is usually quick
-        if settings.use_timestamps {
-            calculate_similar_timestamps(item_list.clone(), &image_sieve, &settings);
-        }
-
-        // Then, if enabled, find similars based on hashes. This takes some time.
-        if settings.use_hash {
-            calculate_similar_hashes(item_list.clone(), &settings);
-        }
-
-        // Finally, update the GUI again with the new found similarities
-        image_sieve.clone().upgrade_in_event_loop({
-            let item_list = item_list.lock().unwrap().to_owned();
-            move |h| {
-                update_list_model(
-                    &item_list,
-                    h.get_list_model()
-                        .as_any()
-                        .downcast_ref::<VecModel<ListItem>>()
-                        .unwrap(),
-                );
-                h.set_calculating_similarities(false);
-            }
-        });
     }
+}
+
+/// Tell the GUI that the similarities have been calculated
+fn similarities_calculated(image_sieve: &sixtyfps::Weak<ImageSieve>, finished: bool) {
+    image_sieve.clone().upgrade_in_event_loop({
+        move |h| {
+            h.invoke_similarities_calculated(finished);
+        }
+    });
 }
 
 /// Scan files in a path, update the item list with those found files and update the GUI models with the new data
@@ -178,67 +169,6 @@ fn scan_files(
     Ok(())
 }
 
-/// Update the item list to the main window
-fn update_item_list(item_list: Arc<Mutex<ItemList>>, image_sieve: &sixtyfps::Weak<ImageSieve>) {
-    let flag = Arc::new(AtomicBool::new(false));
-    image_sieve.clone().upgrade_in_event_loop({
-        let item_list = item_list.lock().unwrap().to_owned();
-        let flag = flag.clone();
-        move |h| {
-            let filters = h.get_filters();
-            populate_list_model(
-                &item_list,
-                h.get_list_model()
-                    .as_any()
-                    .downcast_ref::<VecModel<ListItem>>()
-                    .unwrap(),
-                &filters,
-            );
-            synchronize_event_model(
-                &item_list,
-                h.get_events_model()
-                    .as_any()
-                    .downcast_ref::<VecModel<Event>>()
-                    .unwrap(),
-            );
-
-            // Update the selection variables
-            let num_items = { item_list.items.len() as i32 };
-            if num_items > 0 {
-                h.set_current_list_item(0);
-                h.invoke_item_selected(0);
-            } else {
-                let empty_image = SortItem {
-                    image: get_empty_image(),
-                    take_over: true,
-                    text: SharedString::from("No images found"),
-                    local_index: 0,
-                };
-                h.set_current_image(empty_image);
-                let model_handle = h.get_similar_images_model();
-                let images_list_model = model_handle
-                    .as_any()
-                    .downcast_ref::<VecModel<SortItem>>()
-                    .unwrap();
-                for _ in 0..images_list_model.row_count() {
-                    images_list_model.remove(0);
-                }
-            }
-
-            // And finally enable the GUI by setting the loading flag to false
-            h.set_loading(false);
-
-            flag.store(true, Ordering::Relaxed);
-        }
-    });
-
-    // Since the closure needs to lock the item list, it needs to be finished first before we continue working on the item list
-    // Busy waiting is a hacky solution here, but creating another synchronization channel seems overkill
-    while !flag.load(Ordering::Relaxed) {
-        sleep(Duration::from_millis(1));
-    }
-}
-
 /// Check if an abort command was received
 fn check_abort(receiver: &Receiver<Command>) -> Result<(), ()> {
     let command = receiver.try_recv();
@@ -251,29 +181,11 @@ fn check_abort(receiver: &Receiver<Command>) -> Result<(), ()> {
 
 /// Extract the timestamp from all items in the item list and find similar items based on a maximum difference.
 /// Afterwards, the GUI is updated with the new found similarities.
-fn calculate_similar_timestamps(
-    item_list: Arc<Mutex<ItemList>>,
-    image_sieve: &sixtyfps::Weak<ImageSieve>,
-    settings: &Settings,
-) {
+fn calculate_similar_timestamps(item_list: Arc<Mutex<ItemList>>, settings: &Settings) {
     {
         let mut item_list_loc = item_list.lock().unwrap();
         item_list_loc.find_similar(settings.timestamp_max_diff);
     }
-    image_sieve.clone().upgrade_in_event_loop({
-        let item_list = item_list.lock().unwrap().to_owned();
-        let use_hash = settings.use_hash;
-        move |h| {
-            update_list_model(
-                &item_list,
-                h.get_list_model()
-                    .as_any()
-                    .downcast_ref::<VecModel<ListItem>>()
-                    .unwrap(),
-            );
-            h.set_calculating_similarities(use_hash);
-        }
-    });
 }
 
 /// Calculate the similarity hashes of images in the item list and check for hashes with a given maximum distance. Does not update the GUI

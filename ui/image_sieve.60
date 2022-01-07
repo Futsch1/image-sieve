@@ -19,6 +19,10 @@ ImageSieve := Window {
     property <bool> loading: true;    
     property <string> loading-progress <=> loading-progress.text;
     callback cancel-loading;
+    // Callback required to signal that the synchronization process has finished
+    callback synchronization-finished;
+    // Callback required to signal that the item list shall be updated
+    callback similarities-calculated(bool);
 
     // Map properties of SortView
     property list-model <=> sort-view.list-model;
