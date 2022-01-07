@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
- - Added filters for the item list
+ - Added filters and sort options to the item list
 
 ### Fixed
 
