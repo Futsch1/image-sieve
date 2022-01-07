@@ -3,6 +3,7 @@ use sixtyfps::Image;
 use crate::item_sort_list::{FileItem, ItemList};
 use crate::main_window::{ListItem, SortItem};
 
+/// Create a sort item for the GUI from a file item
 pub fn sort_item_from_file_item(
     file_item: &FileItem,
     item_list: &ItemList,
@@ -20,6 +21,7 @@ pub fn sort_item_from_file_item(
     }
 }
 
+/// Get the list item title for the GUI from a file item
 pub fn list_item_title(file_item: &FileItem, item_list: &ItemList) -> sixtyfps::SharedString {
     let mut title = file_item.get_item_string(&item_list.path);
     if item_list.get_event(file_item).is_some() {
@@ -28,6 +30,7 @@ pub fn list_item_title(file_item: &FileItem, item_list: &ItemList) -> sixtyfps::
     sixtyfps::SharedString::from(title)
 }
 
+/// Create a list item for the GUI from a file item
 pub fn list_item_from_file_item(file_item: &FileItem, item_list: &ItemList) -> ListItem {
     ListItem {
         text: list_item_title(file_item, item_list),
