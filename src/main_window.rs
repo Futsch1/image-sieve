@@ -13,13 +13,12 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 
-use crate::gui_items::list_item_from_file_item;
-use crate::gui_items::list_item_title;
-use crate::gui_items::sort_item_from_file_item;
-use crate::item_sort_list::parse_date;
-use crate::item_sort_list::FileItem;
 use crate::item_sort_list::ItemList;
 use crate::misc::image_cache::{self, ImageCache, Purpose};
+use crate::models::events_model;
+use crate::models::gui_items::sort_item_from_file_item;
+use crate::models::list_model::populate_list_model;
+use crate::models::list_model::update_list_model;
 use crate::persistence::json::JsonPersistence;
 use crate::persistence::json::{get_project_filename, get_settings_filename};
 use crate::persistence::model_to_enum::model_to_enum;
@@ -212,7 +211,7 @@ impl MainWindow {
                     item_list_mut.items[index].set_take_over(take_over);
                 }
                 // Update item list model to reflect change in icons in list
-                update_list_model_texts(&item_list.lock().unwrap(), &list_model);
+                update_list_model(&item_list.lock().unwrap(), &list_model);
                 // And update the take over state in the similar items model
                 for count in 0..similar_items_model.row_count() {
                     let mut item: SortItem = similar_items_model.row_data(count);
@@ -296,25 +295,8 @@ impl MainWindow {
                   end_date: SharedString,
                   new_event: bool|
                   -> SharedString {
-                let start_date = parse_date(&start_date).unwrap();
-                let end_date = parse_date(&end_date).unwrap();
-                if start_date > end_date {
-                    return SharedString::from("Start date must be before end date");
-                }
                 let item_list = item_list.lock().unwrap();
-                let allowed_overlaps = if new_event { 0 } else { 1 };
-                let mut overlaps = 0;
-                for event in item_list.events.iter() {
-                    if event.contains(&start_date) || event.contains(&end_date) {
-                        overlaps += 1;
-                        if overlaps > allowed_overlaps {
-                            return SharedString::from(
-                                String::from("Event overlaps with ") + &event.name,
-                            );
-                        }
-                    }
-                }
-                SharedString::from("")
+                events_model::check_event(&start_date, &end_date, new_event, &item_list)
             }
         });
 
@@ -324,20 +306,17 @@ impl MainWindow {
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
 
-            move |name, start_date: SharedString, end_date: SharedString| {
-                let name_s = name.to_string();
-                let event = crate::item_sort_list::Event::new(
-                    name_s,
-                    start_date.as_str(),
-                    end_date.as_str(),
-                )
-                .unwrap();
+            move |name: SharedString, start_date: SharedString, end_date: SharedString| {
                 let mut item_list = item_list.lock().unwrap();
-                item_list.events.push(event);
-                item_list.events.sort_unstable();
-                synchronize_event_model(&item_list, &events_model);
-                // Synchronize the item list to update the icons of the entries
-                update_list_model_texts(&item_list, &list_model.clone());
+                if events_model::add_event(
+                    &name,
+                    &start_date,
+                    &end_date,
+                    &mut item_list,
+                    &events_model,
+                ) {
+                    update_list_model(&item_list, &list_model.clone());
+                }
             }
         });
 
@@ -351,17 +330,9 @@ impl MainWindow {
             let item_list = self.item_list.clone();
 
             move |index| {
-                let index = index as usize;
-                let event = events_model.row_data(index);
                 let mut item_list = item_list.lock().unwrap();
-                if item_list.events[index].update(
-                    event.name.to_string(),
-                    event.start_date.as_str(),
-                    event.end_date.as_str(),
-                ) {
-                    item_list.events.sort_unstable();
-                    synchronize_event_model(&item_list, &events_model);
-                    update_list_model_texts(&item_list, &list_model.clone());
+                if events_model::update_event(index, &mut item_list, &events_model) {
+                    update_list_model(&item_list, &list_model);
                 }
             }
         });
@@ -373,11 +344,9 @@ impl MainWindow {
             let item_list = self.item_list.clone();
 
             move |index| {
-                events_model.remove(index as usize);
                 let mut item_list = item_list.lock().unwrap();
-                item_list.events.remove(index as usize);
-                // Synchronize the item list to update the icons of the entries
-                update_list_model_texts(&item_list, &list_model.clone());
+                events_model::remove_event(index, &mut item_list, &events_model);
+                update_list_model(&item_list, &list_model);
             }
         });
 
@@ -438,56 +407,6 @@ impl MainWindow {
 fn empty_model<T: 'static + Clone>(vec_model: Rc<sixtyfps::VecModel<T>>) {
     for _ in 0..vec_model.row_count() {
         vec_model.remove(0);
-    }
-}
-
-/// Fills the list of found items from the internal data structure to the sixtyfps VecModel
-pub fn populate_list_model(
-    item_list: &ItemList,
-    list_model: &sixtyfps::VecModel<ListItem>,
-    filters: &Filters,
-) {
-    let mut filtered_list: Vec<&FileItem> = item_list
-        .items
-        .iter()
-        .filter(|item| filter_file_items(item, filters))
-        .collect();
-    filtered_list.sort_unstable_by(|a, b| compare_file_items(a, b, filters));
-    if filters.direction == "Desc" {
-        filtered_list.reverse();
-    }
-    for image in filtered_list {
-        let list_item = list_item_from_file_item(image, item_list);
-        list_model.push(list_item);
-    }
-}
-
-/// Update the texts for all entries in the list model
-/// Should be called when the underlying data (i.e. the item list) has changed
-pub fn update_list_model_texts(item_list: &ItemList, list_model: &sixtyfps::VecModel<ListItem>) {
-    for count in 0..list_model.row_count() {
-        let mut list_item = list_model.row_data(count);
-        let file_item = &item_list.items[list_item.local_index as usize];
-        list_item.text = list_item_title(file_item, item_list);
-        list_model.set_row_data(count, list_item);
-    }
-}
-
-/// Synchronize the event list with the GUI model
-pub fn synchronize_event_model(item_list: &ItemList, event_model: &sixtyfps::VecModel<Event>) {
-    let model_count = event_model.row_count();
-    // Event model
-    for (index, event) in item_list.events.iter().enumerate() {
-        let _event = Event {
-            name: SharedString::from(event.name.clone()),
-            start_date: SharedString::from(event.start_date_as_string()),
-            end_date: SharedString::from(event.end_date_as_string()),
-        };
-        if index >= model_count {
-            event_model.push(_event);
-        } else {
-            event_model.set_row_data(index, _event);
-        }
     }
 }
 
@@ -661,38 +580,4 @@ pub fn sieve(
             progress_callback,
         );
     });
-}
-
-/// Filter file items to display in the item list
-fn filter_file_items(file_item: &FileItem, filters: &Filters) -> bool {
-    let mut visible = true;
-    if !filters.images && file_item.is_image() {
-        visible = false;
-    }
-    if !filters.videos && file_item.is_video() {
-        visible = false;
-    }
-    if !filters.sorted_out && !file_item.get_take_over() {
-        visible = false;
-    }
-    visible
-}
-
-/// Compare two file items taking the current sort settings into account
-fn compare_file_items(a: &FileItem, b: &FileItem, filters: &Filters) -> std::cmp::Ordering {
-    match filters.sort_by.as_str() {
-        "Date" => a.cmp(b),
-        "Name" => a.path.cmp(&b.path),
-        "Type" => {
-            if a.is_image() && b.is_image() {
-                a.cmp(b)
-            } else if a.is_image() && b.is_video() {
-                std::cmp::Ordering::Less
-            } else {
-                std::cmp::Ordering::Greater
-            }
-        }
-        "Size" => a.get_size().cmp(&b.get_size()),
-        _ => std::cmp::Ordering::Less,
-    }
 }

@@ -1,5 +1,7 @@
 use crate::item_sort_list::ItemList;
-use crate::main_window::update_list_model_texts;
+use crate::models::events_model::synchronize_event_model;
+use crate::models::list_model::populate_list_model;
+use crate::models::list_model::update_list_model;
 use crate::persistence::settings::Settings;
 use image::GenericImageView;
 use img_hash::HashAlg;
@@ -12,9 +14,7 @@ use sixtyfps::SharedString;
 use sixtyfps::VecModel;
 use walkdir::WalkDir;
 
-use crate::main_window::{
-    populate_list_model, synchronize_event_model, Event, ImageSieve, ListItem, SortItem,
-};
+use crate::main_window::{Event, ImageSieve, ListItem, SortItem};
 use crate::misc::images::get_empty_image;
 use crate::persistence::json::get_project_filename;
 use crate::persistence::json::JsonPersistence;
@@ -125,7 +125,7 @@ fn synchronize_run(
         image_sieve.clone().upgrade_in_event_loop({
             let item_list = item_list.lock().unwrap().to_owned();
             move |h| {
-                update_list_model_texts(
+                update_list_model(
                     &item_list,
                     h.get_list_model()
                         .as_any()
@@ -264,7 +264,7 @@ fn calculate_similar_timestamps(
         let item_list = item_list.lock().unwrap().to_owned();
         let use_hash = settings.use_hash;
         move |h| {
-            update_list_model_texts(
+            update_list_model(
                 &item_list,
                 h.get_list_model()
                     .as_any()
