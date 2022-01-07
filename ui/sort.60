@@ -1,24 +1,42 @@
-import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView } from "sixtyfps_widgets.60";
+import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView, CheckBox, ComboBox } from "sixtyfps_widgets.60";
 
-struct SortImage := {
+export struct SortItem := {
     image: image,
     take-over: bool,
-    text: string
+    text: string,
+    local-index: int
+}
+
+export struct ListItem := {
+    text: string,
+    local-index: int
+}
+
+export struct Filters := {
+    sorted-out: bool,
+    images: bool,
+    videos: bool,
+    sort_by: string,
+    direction: string
+}
+
+export global FilterComboValues := {
+    property <[string]> sort_by: ["Date", "Name", "Size", "Type"];
+    property <[string]> direction: ["Asc", "Desc"];
 }
 
 export SortView := HorizontalBox {
 
     // List of image file names
-    property <[string]> images-list-model;
+    property <[ListItem]> list-model;
     // Index in image list
     property current-list-item <=> image-list.current-item;
 
     // Model of similar images selected
-    property <[SortImage]> images-model;
+    property <[SortItem]> similar-images-model;
 
     // Currently displayed large image
-    property <SortImage> current-image;
-    property <int> current-image-index;
+    property <SortItem> current-image;
 
     // Current source directory
     property source-directory <=> source-directory-edit.text;
@@ -26,18 +44,32 @@ export SortView := HorizontalBox {
     // Visibility of similarity calculation text
     property <bool> calculating-similarities: true;
 
+    // Visibility of filter setup
+    property <bool> filter-visible: false;
+
+    // Filters
+    property <Filters> filters : {
+        sorted-out: true,
+        images: true,
+        videos: true,
+        sort_by: "Date",
+        direction: "Asc"
+    };
+
     callback next-clicked <=> next-button.clicked;
     callback prev-clicked <=> previous-button.clicked;
     callback selected-clicked <=> selected-image-touch.clicked;
 
-    // Called when an item from the list of image files has been selected or next/previous have been pressed
+    // Called when an item from the list of image files has been selected or next/previous have been pressed (parameter is index in images-list-model)
     callback item-selected(int);
-    // Called when the current image was pressed
-    callback take-over-toggle(int);
+    // Called when the current image was pressed (parameter is local-index and take over state)
+    callback set-take-over(int, bool);
     // Called when browse button was pressed
     callback browse-source;
     // Called when the open button was pressed
     callback open(int);
+    // Called when a filter setting was changed
+    callback filter(Filters);
 
     spacing: 5px;
 
@@ -51,9 +83,9 @@ export SortView := HorizontalBox {
             image-fit: contain;
             selected-image-touch := TouchArea { 
                 clicked => {
-                    if (images-list-model.length > 0) {
+                    if (list-model.length > 0) {
                         current-image.take-over = !current-image.take-over;
-                        take-over-toggle(current-image-index);
+                        set-take-over(current-image.local-index, current-image.take-over);
                     }
                 }
             }                        
@@ -70,12 +102,12 @@ export SortView := HorizontalBox {
         ScrollView {
             padding: 0px;
             viewport-height: 125px;
-            height: images-model.length > 1 ? 125px : 0px;
-            visible: images-model.length > 1;
+            height: similar-images-model.length > 1 ? 125px : 0px;
+            visible: similar-images-model.length > 1;
 
             HorizontalBox { 
                 alignment: start;
-            for item[i] in images-model:
+            for item[i] in similar-images-model:
                 Image {
                     source: item.image;
                     opacity: item.take-over ? 1.0 : 0.2;
@@ -87,10 +119,10 @@ export SortView := HorizontalBox {
                             current-image.image = item.image;
                             current-image.take-over = item.take-over;
                             current-image.text = item.text;
-                            current-image-index = i;
+                            current-image.local-index = item.local-index;
                         }
                     }
-                    if (i == current-image-index) : Rectangle { opacity: 0.4; background: blue;}
+                    if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: blue;}
                 }
             }
         }                
@@ -102,22 +134,30 @@ export SortView := HorizontalBox {
                 text: "\u{2B05} Previous";
                 enabled: current-list-item > 0;
                 clicked => { 
-                    current-list-item -= 1;
+                    if (current-list-item >= list-model.length) {
+                        current-list-item = 0;
+                    } else {
+                        current-list-item -= 1;
+                    }
                     item-selected(current-list-item);
                 }
             }
             open-button := Button {
                 text: "\u{1F4C2} Open";
-                enabled: images-list-model.length > 0;
+                enabled: list-model.length > 0;
                 clicked => { 
-                    open(current-list-item);
+                    open(current-image.local-index);
                 }
             }
             next-button := Button {
                 text: "Next \u{27A1}";
-                enabled: images-list-model.length > 0 && current-list-item < images-list-model.length - 1;
+                enabled: list-model.length > 0 && current-list-item < list-model.length - 1;
                 clicked => { 
-                    current-list-item += 1;
+                    if (current-list-item >= list-model.length) {
+                        current-list-item = list-model.length - 1;
+                    } else {
+                        current-list-item += 1;
+                    }
                     item-selected(current-list-item);
                 }
             }
@@ -140,18 +180,62 @@ export SortView := HorizontalBox {
                 browse-source();
             }
         }
-
+        Button {
+            text: "Filters " + (filter-visible ? "<<" : ">>");
+            clicked => {
+                filter-visible = !filter-visible;
+            }
+        }
+        if filter-visible :
+            VerticalBox {
+                alignment: start;
+                CheckBox {
+                    text: "Show discarded";
+                    checked: filters.sorted-out;
+                    toggled => { filters.sorted-out = self.checked; filter(filters) }
+                }
+                CheckBox {
+                    text: "Show videos";
+                    checked: filters.videos;
+                    toggled => { filters.videos = self.checked; filter(filters) }
+                }
+                CheckBox {
+                    text: "Show images";
+                    checked: filters.images;
+                    toggled => { filters.images = self.checked; filter(filters) }
+                }
+                HorizontalBox { 
+                    alignment: start;
+                    Text {
+                        vertical-alignment: center;
+                        text: "Sort by";
+                    }
+                    ComboBox {
+                        current-value: "Date";
+                        model: FilterComboValues.sort_by;
+                        width: 100px;
+                        selected => { filters.sort_by = self.current-value; filter(filters) }
+                    }
+                    ComboBox {
+                        current-value: "Asc";
+                        model: FilterComboValues.direction;
+                        width: 80px;
+                        selected => { filters.direction = self.current-value; filter(filters) }
+                    }
+                }
+            }
+        
         image-list := ListView {
             property<int> current-item: 0;
 
-            for item[i] in images-list-model: Rectangle {
+            for item[i] in list-model: Rectangle {
                 padding: 2px;
                 height: 20px;
                 width: parent.width;
                 background: i == parent.current-item ? grey : white;
                 HorizontalLayout { 
                     Text { 
-                        text: item;
+                        text: item.text;
                     }
                 }
                 TouchArea { 

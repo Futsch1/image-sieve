@@ -14,21 +14,32 @@ use sixtyfps::Image;
 type ImagesMapMutex = Mutex<LruMap<ImageBuffer, String, 64>>;
 /// The queue with images to load protected by a mutex.
 type LoadQueue = Mutex<VecDeque<LoadImageCommand>>;
-/// The callback which is executed when an image was loade
+/// The callback which is executed when an image was loaded (is no sixtyfps::Image because that is not "Send")
 pub type DoneCallback = Box<dyn Fn(ImageBuffer) + Send + 'static>;
-/// The command sent to the load thread for a new image
-pub type LoadImageCommand = (FileItem, u32, u32, Option<DoneCallback>);
 
 const HOURGLASS_PNG: &[u8; 5533] = include_bytes!("hourglass.png");
 
 /// Purpose of the image to load from the cache
 pub enum Purpose {
     /// The image is the currently selected image and needs to be loaded as soon as possible
-    SelectedImage,
+    CurrentImage,
     /// This image is an image in the similar list and needs to be loaded soon, but not immediately
     SimilarImage,
     /// The image is one of the next in the list and should be loaded to increase the perceived speed, but it is not urgent
     Prefetch,
+}
+
+struct LoadImageCommand {
+    pub file_item: FileItem,
+    pub width: u32,
+    pub height: u32,
+    pub callback: Option<DoneCallback>,
+}
+
+impl PartialEq for LoadImageCommand {
+    fn eq(&self, other: &Self) -> bool {
+        self.file_item == other.file_item
+    }
 }
 
 /// An image cache that provides some priorization on the images to load. The cache loads images in the background and executes
@@ -94,6 +105,12 @@ impl ImageCache {
         )
     }
 
+    /// Purge all running commands
+    pub fn purge(&self) {
+        self.primary_queue.lock().unwrap().clear();
+        self.secondary_queue.lock().unwrap().clear();
+    }
+
     /// Sets the maximum width and height of the images to load
     pub fn restrict_size(&mut self, max_width: u32, max_height: u32) {
         if max_width > self.max_width || max_height > self.max_height {
@@ -120,9 +137,14 @@ impl ImageCache {
     /// The purpose of the image needs to be indicated to determine the loading priority. When the image was loaded,
     /// the done callback is executed.
     pub fn load(&self, item: &FileItem, purpose: Purpose, done_callback: Option<DoneCallback>) {
-        let command = (item.clone(), self.max_width, self.max_width, done_callback);
+        let command = LoadImageCommand {
+            file_item: item.clone(),
+            width: self.max_width,
+            height: self.max_height,
+            callback: done_callback,
+        };
         match purpose {
-            Purpose::SelectedImage => {
+            Purpose::CurrentImage => {
                 let mut queue = self.primary_queue.lock().unwrap();
                 queue.clear();
                 queue.push_front(command);
@@ -130,12 +152,14 @@ impl ImageCache {
             }
             Purpose::SimilarImage => {
                 let mut queue = self.secondary_queue.lock().unwrap();
-                queue.push_front(command);
+                queue.push_back(command);
                 self.secondary_sender.send(()).ok();
             }
             Purpose::Prefetch => {
                 let mut queue = self.secondary_queue.lock().unwrap();
-                queue.push_back(command);
+                if !queue.contains(&command) {
+                    queue.push_back(command);
+                }
                 self.secondary_sender.send(()).ok();
             }
         }
@@ -154,8 +178,8 @@ fn load_image_thread(
         if next_item.is_none() {
             continue;
         }
-        let (prefetch_item, max_width, max_height, callback) = next_item.unwrap();
-        let item_path = prefetch_item.path.to_str().unwrap();
+        let command = next_item.unwrap();
+        let item_path = command.file_item.path.to_str().unwrap();
         // First try to get the image from the cache
         let contains_key = {
             let map = cache.lock().unwrap();
@@ -163,17 +187,25 @@ fn load_image_thread(
         };
         // If it is not in the cache, load it from the file and put it into the cache
         if !contains_key {
-            let image_buffer = if prefetch_item.is_image() {
-                crate::misc::images::get_image_buffer(&prefetch_item, max_width, max_height)
+            let image_buffer = if command.file_item.is_image() {
+                crate::misc::images::get_image_buffer(
+                    &command.file_item,
+                    command.width,
+                    command.height,
+                )
             } else {
-                crate::misc::video_to_image::get_image_buffer(&prefetch_item, max_width, max_height)
+                crate::misc::video_to_image::get_image_buffer(
+                    &command.file_item,
+                    command.width,
+                    command.height,
+                )
             };
             let mut map = cache.lock().unwrap();
             map.put(String::from(item_path), image_buffer.clone());
         }
 
         // If a callback was indicated, execute it passing a clone of the image
-        if let Some(callback) = callback {
+        if let Some(callback) = command.callback {
             let image = {
                 let mut map = cache.lock().unwrap();
                 map.get(String::from(item_path)).cloned()

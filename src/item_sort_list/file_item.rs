@@ -19,7 +19,7 @@ use super::item_traits::PropertyResolver;
 pub type HashType = ImageHash<Vec<u8>>;
 
 /// A single file item with all properties required by image_sieve
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Eq, Debug, Clone, Serialize, Deserialize)]
 pub struct FileItem {
     /// Actual file path
     pub path: PathBuf,
@@ -140,8 +140,7 @@ impl FileItem {
         self.similar.extend(similars.clone().into_iter());
     }
 
-    /// Get the list of similar item indices. Needs a mut because the cleanup of the similar list is done
-    /// in a lazy fashion and might happen here.
+    /// Get the list of similar item indices.
     pub fn get_similars(&self) -> &Vec<usize> {
         &self.similar
     }
@@ -252,6 +251,13 @@ impl Display for FileItem {
         let item_size = self.get_size() / 1024;
         let item_date = self.get_date_str();
         write!(f, "{} - {}, {} KB", item_text, item_date, item_size)
+    }
+}
+
+impl PartialEq for FileItem {
+    /// Check if two file items are equal
+    fn eq(&self, other: &Self) -> bool {
+        self.path == other.path
     }
 }
 
