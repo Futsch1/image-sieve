@@ -14,7 +14,7 @@ use sixtyfps::Image;
 type ImagesMapMutex = Mutex<LruMap<ImageBuffer, String, 64>>;
 /// The queue with images to load protected by a mutex.
 type LoadQueue = Mutex<VecDeque<LoadImageCommand>>;
-/// The callback which is executed when an image was loade
+/// The callback which is executed when an image was loaded (is no sixtyfps::Image because that is not "Send")
 pub type DoneCallback = Box<dyn Fn(ImageBuffer) + Send + 'static>;
 
 const HOURGLASS_PNG: &[u8; 5533] = include_bytes!("hourglass.png");
@@ -22,7 +22,7 @@ const HOURGLASS_PNG: &[u8; 5533] = include_bytes!("hourglass.png");
 /// Purpose of the image to load from the cache
 pub enum Purpose {
     /// The image is the currently selected image and needs to be loaded as soon as possible
-    SelectedImage,
+    CurrentImage,
     /// This image is an image in the similar list and needs to be loaded soon, but not immediately
     SimilarImage,
     /// The image is one of the next in the list and should be loaded to increase the perceived speed, but it is not urgent
@@ -144,7 +144,7 @@ impl ImageCache {
             callback: done_callback,
         };
         match purpose {
-            Purpose::SelectedImage => {
+            Purpose::CurrentImage => {
                 let mut queue = self.primary_queue.lock().unwrap();
                 queue.clear();
                 queue.push_front(command);

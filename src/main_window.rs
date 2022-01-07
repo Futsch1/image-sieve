@@ -170,14 +170,14 @@ impl MainWindow {
             move |i: i32| {
                 let index = list_model.row_data(i as usize).local_index as usize;
                 let item_list = &item_list.lock().unwrap();
-                synchronize_images_model(
+                synchronize_similar_items_model(
                     index,
                     item_list,
                     similar_items_model.clone(),
                     window_weak.clone(),
                     &image_cache,
                 );
-                prefetch(i, item_list, &list_model, &image_cache);
+                prefetch_images(i, item_list, &list_model, &image_cache);
             }
         });
 
@@ -212,7 +212,7 @@ impl MainWindow {
                     item_list_mut.items[index].set_take_over(take_over);
                 }
                 // Update item list model to reflect change in icons in list
-                update_item_list_model_texts(&item_list.lock().unwrap(), &list_model);
+                update_list_model_texts(&item_list.lock().unwrap(), &list_model);
                 // And update the take over state in the similar items model
                 for count in 0..similar_items_model.row_count() {
                     let mut item: SortItem = similar_items_model.row_data(count);
@@ -227,7 +227,7 @@ impl MainWindow {
 
         self.window.on_browse_source({
             // Browse source was clicked, select new path
-            let item_list_model = self.list_model.clone();
+            let list_model = self.list_model.clone();
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
             let window_weak = self.window.as_weak();
@@ -252,7 +252,7 @@ impl MainWindow {
                         }
                     }
 
-                    empty_model(item_list_model.clone());
+                    empty_model(list_model.clone());
                     empty_model(events_model.clone());
 
                     // Synchronize in a background thread
@@ -320,7 +320,7 @@ impl MainWindow {
 
         self.window.on_add_event({
             // New event was added, return true if the dates are ok
-            let item_list_model = self.list_model.clone();
+            let list_model = self.list_model.clone();
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
 
@@ -335,9 +335,9 @@ impl MainWindow {
                 let mut item_list = item_list.lock().unwrap();
                 item_list.events.push(event);
                 item_list.events.sort_unstable();
-                synchronize_event_list_model(&item_list, &events_model);
+                synchronize_event_model(&item_list, &events_model);
                 // Synchronize the item list to update the icons of the entries
-                update_item_list_model_texts(&item_list, &item_list_model.clone());
+                update_list_model_texts(&item_list, &list_model.clone());
             }
         });
 
@@ -346,7 +346,7 @@ impl MainWindow {
         });
 
         self.window.on_update_event({
-            let item_list_model = self.list_model.clone();
+            let list_model = self.list_model.clone();
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
 
@@ -360,15 +360,15 @@ impl MainWindow {
                     event.end_date.as_str(),
                 ) {
                     item_list.events.sort_unstable();
-                    synchronize_event_list_model(&item_list, &events_model);
-                    update_item_list_model_texts(&item_list, &item_list_model.clone());
+                    synchronize_event_model(&item_list, &events_model);
+                    update_list_model_texts(&item_list, &list_model.clone());
                 }
             }
         });
 
         self.window.on_remove_event({
             // Event was removed
-            let item_list_model = self.list_model.clone();
+            let list_model = self.list_model.clone();
             let events_model = self.events_model.clone();
             let item_list = self.item_list.clone();
 
@@ -377,7 +377,7 @@ impl MainWindow {
                 let mut item_list = item_list.lock().unwrap();
                 item_list.events.remove(index as usize);
                 // Synchronize the item list to update the icons of the entries
-                update_item_list_model_texts(&item_list, &item_list_model.clone());
+                update_list_model_texts(&item_list, &list_model.clone());
             }
         });
 
@@ -416,15 +416,15 @@ impl MainWindow {
         });
 
         self.window.on_filter({
-            let item_list_model = self.list_model.clone();
+            let list_model = self.list_model.clone();
             let item_list = self.item_list.clone();
             let window_weak = self.window.as_weak();
 
             move |filters| {
                 let item_list = item_list.lock().unwrap();
-                empty_model(item_list_model.clone());
-                populate_item_list_model(&item_list, &item_list_model, &filters);
-                let rows = item_list_model.row_count() as i32;
+                empty_model(list_model.clone());
+                populate_list_model(&item_list, &list_model, &filters);
+                let rows = list_model.row_count() as i32;
 
                 if rows >= window_weak.unwrap().get_current_list_item() {
                     window_weak.unwrap().set_current_list_item(rows - 1);
@@ -435,16 +435,16 @@ impl MainWindow {
 }
 
 /// Removes all items from a model
-fn empty_model<T: 'static + Clone>(item_list_model: Rc<sixtyfps::VecModel<T>>) {
-    for _ in 0..item_list_model.row_count() {
-        item_list_model.remove(0);
+fn empty_model<T: 'static + Clone>(vec_model: Rc<sixtyfps::VecModel<T>>) {
+    for _ in 0..vec_model.row_count() {
+        vec_model.remove(0);
     }
 }
 
 /// Fills the list of found items from the internal data structure to the sixtyfps VecModel
-pub fn populate_item_list_model(
+pub fn populate_list_model(
     item_list: &ItemList,
-    item_list_model: &sixtyfps::VecModel<ListItem>,
+    list_model: &sixtyfps::VecModel<ListItem>,
     filters: &Filters,
 ) {
     let mut filtered_list: Vec<&FileItem> = item_list
@@ -458,30 +458,24 @@ pub fn populate_item_list_model(
     }
     for image in filtered_list {
         let list_item = list_item_from_file_item(image, item_list);
-        item_list_model.push(list_item);
+        list_model.push(list_item);
     }
 }
 
 /// Update the texts for all entries in the list model
 /// Should be called when the underlying data (i.e. the item list) has changed
-pub fn update_item_list_model_texts(
-    item_list: &ItemList,
-    item_list_model: &sixtyfps::VecModel<ListItem>,
-) {
-    for count in 0..item_list_model.row_count() {
-        let mut list_item = item_list_model.row_data(count);
+pub fn update_list_model_texts(item_list: &ItemList, list_model: &sixtyfps::VecModel<ListItem>) {
+    for count in 0..list_model.row_count() {
+        let mut list_item = list_model.row_data(count);
         let file_item = &item_list.items[list_item.local_index as usize];
         list_item.text = list_item_title(file_item, item_list);
-        item_list_model.set_row_data(count, list_item);
+        list_model.set_row_data(count, list_item);
     }
 }
 
 /// Synchronize the event list with the GUI model
-pub fn synchronize_event_list_model(
-    item_list: &ItemList,
-    event_list_model: &sixtyfps::VecModel<Event>,
-) {
-    let model_count = event_list_model.row_count();
+pub fn synchronize_event_model(item_list: &ItemList, event_model: &sixtyfps::VecModel<Event>) {
+    let model_count = event_model.row_count();
     // Event model
     for (index, event) in item_list.events.iter().enumerate() {
         let _event = Event {
@@ -490,22 +484,22 @@ pub fn synchronize_event_list_model(
             end_date: SharedString::from(event.end_date_as_string()),
         };
         if index >= model_count {
-            event_list_model.push(_event);
+            event_model.push(_event);
         } else {
-            event_list_model.set_row_data(index, _event);
+            event_model.set_row_data(index, _event);
         }
     }
 }
 
 /// Synchronizes the images to show at the same time from a selected image to the sixtyfps VecModel
-fn synchronize_images_model(
-    selected_item_index: usize,
+fn synchronize_similar_items_model(
+    current_item_local_index: usize,
     item_list: &ItemList,
     similar_items_model: Rc<sixtyfps::VecModel<SortItem>>,
     window: sixtyfps::Weak<ImageSieve>,
     image_cache: &ImageCache,
 ) {
-    let similars = item_list.items[selected_item_index].get_similars();
+    let similars = item_list.items[current_item_local_index].get_similars();
 
     // Clear images model
     empty_model(similar_items_model.clone());
@@ -513,7 +507,8 @@ fn synchronize_images_model(
     let mut model_index: usize = 0;
 
     let mut add_item = |item_index: &usize,
-                        selected_image: bool,
+                        current_image: bool,
+                        has_similars: bool,
                         window_weak: sixtyfps::Weak<ImageSieve>| {
         let item = &item_list.items[*item_index];
         let image = {
@@ -523,16 +518,20 @@ fn synchronize_images_model(
             } else {
                 let f: image_cache::DoneCallback = Box::new(move |image_buffer| {
                     window_weak.clone().upgrade_in_event_loop(move |handle| {
-                        if handle.get_current_list_item() == selected_item_index as i32 {
+                        // Check if still the image is visible that caused the image loads
+                        if handle.get_current_image().local_index == current_item_local_index as i32
+                        {
                             let mut row_data =
                                 handle.get_similar_images_model().row_data(model_index);
-                            let is_current_image =
-                                handle.get_current_image().local_index == row_data.local_index;
-                            row_data.image = crate::misc::images::get_sixtyfps_image(&image_buffer);
-                            handle
-                                .get_similar_images_model()
-                                .set_row_data(model_index, row_data);
-                            if is_current_image {
+                            if has_similars {
+                                row_data.image =
+                                    crate::misc::images::get_sixtyfps_image(&image_buffer);
+                                handle
+                                    .get_similar_images_model()
+                                    .set_row_data(model_index, row_data);
+                            }
+                            // If the image is the current image, then we need to also update the current image SortImage
+                            if current_image {
                                 let mut current_image = handle.get_current_image();
                                 current_image.image =
                                     crate::misc::images::get_sixtyfps_image(&image_buffer);
@@ -543,8 +542,8 @@ fn synchronize_images_model(
                 });
                 image_cache.load(
                     item,
-                    if selected_image {
-                        Purpose::SelectedImage
+                    if current_image {
+                        Purpose::CurrentImage
                     } else {
                         Purpose::SimilarImage
                     },
@@ -562,9 +561,14 @@ fn synchronize_images_model(
     // Clear pending commands in the image cache
     image_cache.purge();
 
-    add_item(&selected_item_index, true, window.clone());
+    add_item(
+        &current_item_local_index,
+        true,
+        !similars.is_empty(),
+        window.clone(),
+    );
     for image_index in similars {
-        add_item(image_index, false, window.clone());
+        add_item(image_index, false, !similars.is_empty(), window.clone());
     }
 
     // Set properties
@@ -573,8 +577,8 @@ fn synchronize_images_model(
         .set_current_image(similar_items_model.row_data(0));
 }
 
-/// Prefetch the next imagesin the model list
-fn prefetch(
+/// Prefetch the next images in the model list
+fn prefetch_images(
     model_index: i32,
     item_list: &ItemList,
     list_model: &sixtyfps::VecModel<ListItem>,
@@ -590,18 +594,6 @@ fn prefetch(
             }
         }
     }
-}
-
-/// Gets the text of a an item at a given index as a SharedString
-pub fn get_item_text(index: usize, item_list: &ItemList) -> SharedString {
-    let item = &item_list.items[index];
-    let event = item_list.get_event(item);
-    let event_str = if let Some(event) = event {
-        event.name.as_str()
-    } else {
-        ""
-    };
-    SharedString::from(item.to_string() + " " + event_str)
 }
 
 /// Sieves the item list in a background thread

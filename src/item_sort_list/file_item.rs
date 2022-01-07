@@ -140,8 +140,7 @@ impl FileItem {
         self.similar.extend(similars.clone().into_iter());
     }
 
-    /// Get the list of similar item indices. Needs a mut because the cleanup of the similar list is done
-    /// in a lazy fashion and might happen here.
+    /// Get the list of similar item indices.
     pub fn get_similars(&self) -> &Vec<usize> {
         &self.similar
     }
