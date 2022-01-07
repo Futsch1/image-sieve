@@ -447,11 +447,16 @@ pub fn populate_item_list_model(
     item_list_model: &sixtyfps::VecModel<ListItem>,
     filters: &Filters,
 ) {
-    for image in item_list
+    let mut filtered_list: Vec<&FileItem> = item_list
         .items
         .iter()
         .filter(|item| filter_file_items(item, filters))
-    {
+        .collect();
+    filtered_list.sort_unstable_by(|a, b| compare_file_items(a, b, filters));
+    if filters.direction == "Desc" {
+        filtered_list.reverse();
+    }
+    for image in filtered_list {
         let list_item = list_item_from_file_item(image, item_list);
         item_list_model.push(list_item);
     }
@@ -679,4 +684,23 @@ fn filter_file_items(file_item: &FileItem, filters: &Filters) -> bool {
         visible = false;
     }
     visible
+}
+
+/// Compare two file items taking the current sort settings into account
+fn compare_file_items(a: &FileItem, b: &FileItem, filters: &Filters) -> std::cmp::Ordering {
+    match filters.sort_by.as_str() {
+        "Date" => a.cmp(b),
+        "Name" => a.path.cmp(&b.path),
+        "Type" => {
+            if a.is_image() && b.is_image() {
+                a.cmp(b)
+            } else if a.is_image() && b.is_video() {
+                std::cmp::Ordering::Less
+            } else {
+                std::cmp::Ordering::Greater
+            }
+        }
+        "Size" => a.get_size().cmp(&b.get_size()),
+        _ => std::cmp::Ordering::Less,
+    }
 }

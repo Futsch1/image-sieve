@@ -1,4 +1,4 @@
-import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView, CheckBox } from "sixtyfps_widgets.60";
+import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView, CheckBox, ComboBox } from "sixtyfps_widgets.60";
 
 export struct SortItem := {
     image: image,
@@ -15,7 +15,14 @@ export struct ListItem := {
 export struct Filters := {
     sorted-out: bool,
     images: bool,
-    videos: bool
+    videos: bool,
+    sort_by: string,
+    direction: string
+}
+
+export global FilterComboValues := {
+    property <[string]> sort_by: ["Date", "Name", "Size", "Type"];
+    property <[string]> direction: ["Asc", "Desc"];
 }
 
 export SortView := HorizontalBox {
@@ -44,7 +51,9 @@ export SortView := HorizontalBox {
     property <Filters> filters : {
         sorted-out: true,
         images: true,
-        videos: true
+        videos: true,
+        sort_by: "Date",
+        direction: "Asc"
     };
 
     callback next-clicked <=> next-button.clicked;
@@ -180,20 +189,39 @@ export SortView := HorizontalBox {
         if filter-visible :
             VerticalBox {
                 alignment: start;
-                filter-sorted-out := CheckBox {
+                CheckBox {
                     text: "Show discarded";
                     checked: filters.sorted-out;
                     toggled => { filters.sorted-out = self.checked; filter(filters) }
                 }
-                filter-videos := CheckBox {
+                CheckBox {
                     text: "Show videos";
                     checked: filters.videos;
                     toggled => { filters.videos = self.checked; filter(filters) }
                 }
-                filter-images := CheckBox {
+                CheckBox {
                     text: "Show images";
                     checked: filters.images;
                     toggled => { filters.images = self.checked; filter(filters) }
+                }
+                HorizontalBox { 
+                    alignment: start;
+                    Text {
+                        vertical-alignment: center;
+                        text: "Sort by";
+                    }
+                    ComboBox {
+                        current-value: "Date";
+                        model: FilterComboValues.sort_by;
+                        width: 100px;
+                        selected => { filters.sort_by = self.current-value; filter(filters) }
+                    }
+                    ComboBox {
+                        current-value: "Asc";
+                        model: FilterComboValues.direction;
+                        width: 80px;
+                        selected => { filters.direction = self.current-value; filter(filters) }
+                    }
                 }
             }
         
