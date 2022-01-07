@@ -64,6 +64,7 @@ export SieveView := HorizontalBox {
                     spacing: 5px;
                     Text {
                         text: "Directory names";
+                        vertical-alignment: center;
                     }
                     ComboBox {
                         enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
