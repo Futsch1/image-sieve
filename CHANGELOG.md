@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
  - Now reading EXIF files for all image formats, not only for JPEGs
  - Optimized loading of similar images
+ - Events now have an update button to be able to move an event after or before another event
 
 ### Added
 

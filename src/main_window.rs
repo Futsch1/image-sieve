@@ -17,7 +17,7 @@ use crate::controller::events_controller::EventsController;
 use crate::controller::items_controller::ItemsController;
 use crate::item_sort_list::ItemList;
 use crate::misc::images::get_empty_image;
-use crate::persistence::json::{JsonPersistence, get_project_filename, get_settings_filename};
+use crate::persistence::json::{get_project_filename, get_settings_filename, JsonPersistence};
 use crate::persistence::model_to_enum::model_to_enum;
 use crate::persistence::settings::Settings;
 use crate::synchronize::Synchronizer;
@@ -308,45 +308,44 @@ impl MainWindow {
             }
         });
 
-        self.window.on_check_event({
-            let events_controller = self.events_controller.clone();
-            // Check event for overlapping dates
-            move |start_date: SharedString,
-                  end_date: SharedString,
-                  new_event: bool|
-                  -> SharedString {
-                events_controller
-                    .borrow()
-                    .check_event(&start_date, &end_date, new_event)
-            }
-        });
-
         self.window.on_add_event({
             // New event was added, return true if the dates are ok
             let events_controller = self.events_controller.clone();
             let items_controller = self.items_controller.clone();
 
-            move |name: SharedString, start_date: SharedString, end_date: SharedString| {
-                if events_controller
-                    .borrow_mut()
-                    .add_event(&name, &start_date, &end_date)
-                {
+            move |name: SharedString,
+                  start_date: SharedString,
+                  end_date: SharedString|
+                  -> SharedString {
+                let result =
+                    events_controller
+                        .borrow_mut()
+                        .add_event(&name, &start_date, &end_date);
+                if result.is_empty() {
                     items_controller.borrow_mut().update_list_model();
                 }
+                result
             }
-        });
-
-        self.window.on_date_valid(|date: SharedString| -> bool {
-            crate::item_sort_list::Event::is_date_valid(date.to_string().as_str())
         });
 
         self.window.on_update_event({
             let events_controller = self.events_controller.clone();
             let items_controller = self.items_controller.clone();
-            move |index| {
-                if events_controller.borrow_mut().update_event(index) {
+            move |index: i32,
+                  name: SharedString,
+                  start_date: SharedString,
+                  end_date: SharedString|
+                  -> SharedString {
+                let result = events_controller.borrow_mut().update_event(
+                    index,
+                    &name,
+                    &start_date,
+                    &end_date,
+                );
+                if result.is_empty() {
                     items_controller.borrow_mut().update_list_model();
                 }
+                result
             }
         });
 

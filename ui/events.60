@@ -9,11 +9,9 @@ struct Event := {
 
 EventsView := ScrollView { 
     property <[Event]> events-model;
-    callback add-event(string, string, string);
-    callback check-event(string, string, bool) -> string;
-    callback date-valid(string) -> bool;
+    callback add-event(string, string, string) -> string;
     callback remove-event(int);
-    callback update-event(int);
+    callback update-event(int, string, string, string) -> string;
      
     VerticalLayout { 
         alignment: start;
@@ -32,10 +30,6 @@ EventsView := ScrollView {
                 }
                 event-name := LineEdit { 
                     text: item.name;
-                    accepted => {
-                        item.name = event-name.text;
-                        update-event(i);
-                    }
                 }
                 Text {
                     text: "\u{1F4C5} Start date";
@@ -45,16 +39,6 @@ EventsView := ScrollView {
                 start-date := LineEdit { 
                     text: item.start-date;
                     min-width: 300px;
-                    accepted => {
-                        error-message.text = check-event(start-date.text, item.end-date, false);
-                        if (date-valid(start-date.text) && "" == error-message.text) {
-                            item.start-date = start-date.text;
-                            update-event(i);
-                        }
-                        else {
-                            start-date.text = item.start-date;
-                        }
-                    }
                 }
                 Text {
                     text: "\u{1F4C5} End date";
@@ -64,23 +48,24 @@ EventsView := ScrollView {
                 end-date := LineEdit { 
                     text: item.end-date;
                     min-width: 300px;
-                    accepted => {
-                        error-message.text = check-event(item.start-date, end-date.text, false);
-                        if (date-valid(end-date.text) && "" == error-message.text) {
-                            item.end-date = end-date.text;
-                            update-event(i);
-                        }
-                        else {
-                            end-date.text = item.end-date;
-                        }
-                    }
                 }
             }
-            Button {
-                width: 300px;
-                text: "\u{1F5D1} Remove";
-                clicked => { remove-event(i) }
+            HorizontalLayout { 
+                spacing: 5px;
+                Button {
+                    width: 150px;
+                    text: "\u{1F4BE} Update";
+                    clicked => { 
+                        error-message.text = update-event(i, event-name.text, start-date.text, end-date.text);
+                    }
+                }
+                Button {
+                    width: 150px;
+                    text: "\u{1F5D1} Remove";
+                    clicked => { remove-event(i) }
+                }
             }
+            
         }
         GroupBox { 
             padding: 5px;
@@ -103,24 +88,19 @@ EventsView := ScrollView {
                 text: "\u{2795} Add";
                 width: 300px;
                 clicked => { 
-                    if (date-valid(new-start-date.text) && date-valid(new-end-date.text)) {
-                        error-message.text = check-event(new-start-date.text, new-end-date.text, true);
-                        if (error-message.text == "") {                            
-                            add-event(new-name.text, new-start-date.text, new-end-date.text);
-                            new-name.text = "";
-                            new-start-date.text = "";
-                            new-end-date.text = "";
-                        }
-                    } else {
-                        error-message.text = "Invalid date";
+                    error-message.text = add-event(new-name.text, new-start-date.text, new-end-date.text);
+                    if (error-message.text == "") {                            
+                        new-name.text = "";
+                        new-start-date.text = "";
+                        new-end-date.text = "";
                     }
                 }
             }
-            error-message := Text {
-                text: "";
-                color: red;
-                visible: text != "";
-            }
+        }
+        error-message := Text {
+            text: "";
+            color: red;
+            visible: text != "";
         }
     }
 }

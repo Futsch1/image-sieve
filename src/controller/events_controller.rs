@@ -6,7 +6,7 @@ use std::{
 use sixtyfps::{Model, SharedString};
 
 use crate::{
-    item_sort_list::{parse_date, ItemList},
+    item_sort_list::{self, parse_date, ItemList},
     main_window,
 };
 
@@ -44,65 +44,42 @@ impl EventsController {
         }
     }
 
-    /// Check the validity of an event
-    pub fn check_event(&self, start_date: &str, end_date: &str, new_event: bool) -> SharedString {
-        let start_date = parse_date(start_date).unwrap();
-        let end_date = parse_date(end_date).unwrap();
-        if start_date > end_date {
-            return SharedString::from("Start date must be before end date");
-        }
-        let item_list = self.item_list.lock().unwrap();
-        let allowed_overlaps = if new_event { 0 } else { 1 };
-        let mut overlaps = 0;
-        for event in item_list.events.iter() {
-            if event.contains(&start_date) || event.contains(&end_date) {
-                overlaps += 1;
-                if overlaps > allowed_overlaps {
-                    return SharedString::from(String::from("Event overlaps with ") + &event.name);
-                }
-            }
-        }
-        SharedString::from("")
-    }
-
-    /// Add an event to the item list and to the events model
-    pub fn add_event(&mut self, name: &str, start_date: &str, end_date: &str) -> bool {
-        if let Ok(event) =
-            crate::item_sort_list::Event::new(String::from(name), start_date, end_date)
-        {
+    /// Add an event to the item list and to the events model and sorts the lists
+    pub fn add_event(&mut self, name: &str, start_date: &str, end_date: &str) -> SharedString {
+        if let Err(error) = self.check_event(start_date, end_date, None) {
+            error
+        } else {
+            let event = item_sort_list::Event::new(name, start_date, end_date);
             {
                 let mut item_list = self.item_list.lock().unwrap();
                 item_list.events.push(event);
                 item_list.events.sort_unstable();
             }
             self.synchronize();
-            true
-        } else {
-            false
+            SharedString::from("")
         }
     }
 
     /// Update an event from the events model to the item list
-    pub fn update_event(&mut self, index: i32) -> bool {
+    pub fn update_event(
+        &mut self,
+        index: i32,
+        name: &str,
+        start_date: &str,
+        end_date: &str,
+    ) -> SharedString {
         let index = index as usize;
-        let event = self.events_model.row_data(index);
-        let updated = {
-            let mut item_list = self.item_list.lock().unwrap();
-            if item_list.events[index].update(
-                event.name.to_string(),
-                event.start_date.as_str(),
-                event.end_date.as_str(),
-            ) {
+        if let Err(error) = self.check_event(start_date, end_date, Some(index)) {
+            error
+        } else {
+            {
+                let mut item_list = self.item_list.lock().unwrap();
+                assert!(item_list.events[index].update(name, start_date, end_date));
                 item_list.events.sort_unstable();
-                true
-            } else {
-                false
-            }
-        };
-        if updated {
+            };
             self.synchronize();
+            SharedString::from("")
         }
-        updated
     }
 
     /// Removes an event from the item list and the events model
@@ -120,5 +97,212 @@ impl EventsController {
     /// Clear the events model
     pub fn clear(&mut self) {
         helper::clear_model(self.events_model.clone());
+    }
+
+    /// Check the validity of an event
+    fn check_event(
+        &self,
+        start_date: &str,
+        end_date: &str,
+        event_index: Option<usize>,
+    ) -> Result<(), SharedString> {
+        let start_date = parse_date(start_date);
+        if let Err(start_date) = start_date {
+            return Err(SharedString::from(format!("Start date: {}", start_date)));
+        }
+        let start_date = start_date.unwrap();
+
+        let end_date = parse_date(end_date);
+        if let Err(end_date) = end_date {
+            return Err(SharedString::from(format!("End date: {}", end_date)));
+        }
+        let end_date = end_date.unwrap();
+
+        if start_date > end_date {
+            return Err(SharedString::from("Start date must be before end date"));
+        }
+
+        let item_list = self.item_list.lock().unwrap();
+        for (index, event) in item_list.events.iter().enumerate() {
+            if event_index.is_some() && index == event_index.unwrap() {
+                continue;
+            }
+            if event.contains(&start_date) || event.contains(&end_date) {
+                return Err(SharedString::from(
+                    String::from("Event overlaps with ") + &event.name,
+                ));
+            }
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::Datelike;
+
+    use super::*;
+
+    #[test]
+    fn test_synchronize() {
+        let item_list = Arc::new(Mutex::new(ItemList::new()));
+        let mut events_controller = EventsController::new(item_list.clone());
+        {
+            let mut item_list = item_list.lock().unwrap();
+            item_list.events.push(item_sort_list::Event::new(
+                "Event 1",
+                "2020-01-01",
+                "2020-01-02",
+            ));
+            item_list.events.push(item_sort_list::Event::new(
+                "Event 2",
+                "2020-02-01",
+                "2020-02-02",
+            ));
+        }
+        events_controller.synchronize();
+        let events_model = events_controller.get_model();
+        assert_eq!(events_model.row_count(), 2);
+        assert_eq!(events_model.row_data(0).name.as_str(), "Event 1");
+        assert_eq!(events_model.row_data(0).start_date.as_str(), "2020-01-01");
+        assert_eq!(events_model.row_data(0).end_date.as_str(), "2020-01-02");
+        assert_eq!(events_model.row_data(1).name.as_str(), "Event 2");
+        assert_eq!(events_model.row_data(1).start_date.as_str(), "2020-02-01");
+        assert_eq!(events_model.row_data(1).end_date.as_str(), "2020-02-02");
+    }
+
+    #[test]
+    fn test_update() {
+        let item_list = Arc::new(Mutex::new(ItemList::new()));
+        let mut events_controller = EventsController::new(item_list.clone());
+        events_controller.add_event("Event 1", "2020-01-01", "2020-01-02");
+
+        assert_eq!(
+            events_controller
+                .update_event(0, "Event 11", "2020-13-03", "2020-01-04")
+                .as_str(),
+            "Start date: Invalid date 2020-13-03"
+        );
+        assert_eq!(
+            events_controller
+                .update_event(0, "Event 12", "2020-01-03", "01-01-2004")
+                .as_str(),
+            "End date: Invalid date 01-01-2004"
+        );
+        assert_eq!(
+            events_controller
+                .update_event(0, "Event 13", "2020-01-03", "2020-01-04")
+                .as_str(),
+            ""
+        );
+        let events_model = events_controller.get_model();
+        assert_eq!(events_model.row_count(), 1);
+        assert_eq!(events_model.row_data(0).name.as_str(), "Event 13");
+        assert_eq!(events_model.row_data(0).start_date.as_str(), "2020-01-03");
+        assert_eq!(events_model.row_data(0).end_date.as_str(), "2020-01-04");
+        {
+            let item_list = item_list.lock().unwrap();
+            assert_eq!(item_list.events[0].name.as_str(), "Event 13");
+            assert_eq!(item_list.events[0].start_date.day(), 3);
+            assert_eq!(item_list.events[0].end_date.day(), 4);
+        }
+
+        events_controller.add_event("Event 2", "2021-01-01", "2021-01-02");
+        assert_eq!(
+            events_controller
+                .update_event(1, "Event 2", "2020-01-02", "2020-01-03")
+                .as_str(),
+            "Event overlaps with Event 13"
+        );
+        assert_eq!(
+            events_controller
+                .update_event(1, "Event 2", "2020-01-04", "2020-01-06")
+                .as_str(),
+            "Event overlaps with Event 13"
+        );
+        assert_eq!(
+            events_controller
+                .update_event(0, "Event 1", "2020-01-02", "2020-01-01",)
+                .as_str(),
+            "Start date must be before end date"
+        );
+
+        // Test changing positions
+        assert_eq!(
+            events_controller
+                .update_event(1, "Event 2", "2019-01-01", "2019-01-01",)
+                .as_str(),
+            ""
+        );
+        let events_model = events_controller.get_model();
+        assert_eq!(events_model.row_count(), 2);
+        assert_eq!(events_model.row_data(0).name.as_str(), "Event 2");
+        assert_eq!(events_model.row_data(1).name.as_str(), "Event 13");
+        {
+            let item_list = item_list.lock().unwrap();
+            assert_eq!(item_list.events[0].name.as_str(), "Event 2");
+            assert_eq!(item_list.events[1].name.as_str(), "Event 13");
+        }
+    }
+
+    #[test]
+    fn test_add_remove_clear() {
+        let item_list = Arc::new(Mutex::new(ItemList::new()));
+        let mut events_controller = EventsController::new(item_list.clone());
+
+        assert_eq!(
+            events_controller
+                .add_event("Event 1", "2020-01-01", "2020-01-02")
+                .as_str(),
+            ""
+        );
+        let events_model = events_controller.get_model();
+        assert_eq!(events_model.row_count(), 1);
+        assert_eq!(events_model.row_data(0).name.as_str(), "Event 1");
+        assert_eq!(events_model.row_data(0).start_date.as_str(), "2020-01-01");
+        assert_eq!(events_model.row_data(0).end_date.as_str(), "2020-01-02");
+        {
+            let item_list = item_list.lock().unwrap();
+            assert_eq!(item_list.events[0].name.as_str(), "Event 1");
+            assert_eq!(item_list.events[0].start_date.day(), 1);
+            assert_eq!(item_list.events[0].end_date.day(), 2);
+        }
+
+        assert_eq!(
+            events_controller
+                .add_event("Event 2", "2019-01-03", "2019-01-04")
+                .as_str(),
+            ""
+        );
+        let events_model = events_controller.get_model();
+        assert_eq!(events_model.row_count(), 2);
+        assert_eq!(events_model.row_data(0).name.as_str(), "Event 2");
+        assert_eq!(events_model.row_data(0).start_date.as_str(), "2019-01-03");
+        assert_eq!(events_model.row_data(0).end_date.as_str(), "2019-01-04");
+        {
+            let item_list = item_list.lock().unwrap();
+            assert_eq!(item_list.events[0].name.as_str(), "Event 2");
+        }
+
+        assert_eq!(
+            events_controller
+                .add_event("Event 3", "2020-13-03", "2020-01-02")
+                .as_str(),
+            "Start date: Invalid date 2020-13-03"
+        );
+        assert_eq!(
+            events_controller
+                .add_event("Event 3", "2020-01-01", "2021-01-01")
+                .as_str(),
+            "Event overlaps with Event 1"
+        );
+
+        events_controller.remove_event(1);
+        let events_model = events_controller.get_model();
+        assert_eq!(events_model.row_count(), 1);
+        assert_eq!(events_model.row_data(0).name.as_str(), "Event 2");
+
+        events_controller.clear();
+        assert_eq!(events_controller.get_model().row_count(), 0);
     }
 }

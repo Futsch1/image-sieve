@@ -25,25 +25,25 @@ pub struct Event {
 
 impl Event {
     /// Creates a new event if the start and end date strings have a correct format
-    pub fn new(name: String, start_date: &str, end_date: &str) -> Result<Self, String> {
-        let start_date = parse_date(start_date)?;
-        let end_date = parse_date(end_date)?;
-        Ok(Self {
-            name,
+    pub fn new(name: &str, start_date: &str, end_date: &str) -> Self {
+        let start_date = parse_date(start_date).expect("Invalid start date");
+        let end_date = parse_date(end_date).expect("Invalid end date");
+        Self {
+            name: String::from(name),
             start_date,
             end_date,
-        })
+        }
     }
 
     /// Updates an event with a new name and start and end date. If start or end date have an invalid format,
     /// return false.
-    pub fn update(&mut self, name: String, start_date: &str, end_date: &str) -> bool {
+    pub fn update(&mut self, name: &str, start_date: &str, end_date: &str) -> bool {
         let start_date = parse_date(start_date);
         let end_date = parse_date(end_date);
         if matches!(end_date, Ok(_)) && matches!(start_date, Ok(_)) {
             self.start_date = start_date.unwrap();
             self.end_date = end_date.unwrap();
-            self.name = name;
+            self.name = String::from(name);
             true
         } else {
             false
@@ -79,7 +79,7 @@ pub fn parse_date(date: &str) -> Result<NaiveDate, String> {
             return Ok(parsed_date);
         }
     }
-    Err(format!("Cannot parse string {}", date))
+    Err(format!("Invalid date {}", date))
 }
 
 impl PartialOrd for Event {
@@ -121,29 +121,35 @@ mod tests {
 
     #[test]
     fn test_as_string() {
-        let event = Event::new("test".to_string(), "2021-09-14", "2021-09-15").unwrap();
+        let event = Event::new("test", "2021-09-14", "2021-09-15");
 
         assert_eq!(event.start_date_as_string(), "2021-09-14");
         assert_eq!(event.end_date_as_string(), "2021-09-15");
     }
 
     #[test]
+    #[should_panic]
+    fn test_create_error_start() {
+        Event::new("test", "20-13-14", "2021-09-14");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_create_error_end() {
+        Event::new("test", "2021-09-14", "2021.09-14");
+    }
+
+    #[test]
     fn test_create_and_update() {
-        let event = Event::new("test".to_string(), "20-13-14", "2021-09-14");
-        assert!(event.is_err());
+        let mut event = Event::new("test", "2021-09-14", "2021-09-15");
 
-        let event = Event::new("test".to_string(), "2021-09-14", "2021.09-14");
-        assert!(event.is_err());
-
-        let mut event = Event::new("test".to_string(), "2021-09-14", "2021-09-15").unwrap();
-
-        assert!(event.update("test2".to_string(), "2021-09-16", "2021-09-17",));
+        assert!(event.update("test2", "2021-09-16", "2021-09-17",));
         assert_eq!(event.name, "test2");
         assert_eq!(event.start_date_as_string(), "2021-09-16");
         assert_eq!(event.end_date_as_string(), "2021-09-17");
 
-        assert!(!event.update("test3".to_string(), "20-09.16", "2021-09-18",));
-        assert!(!event.update("test3".to_string(), "2021-09-19", "2021-09",));
+        assert!(!event.update("test3", "20-09.16", "2021-09-18",));
+        assert!(!event.update("test3", "2021-09-19", "2021-09",));
 
         assert_eq!(event.name, "test2");
         assert_eq!(event.start_date_as_string(), "2021-09-16");
@@ -152,7 +158,7 @@ mod tests {
 
     #[test]
     fn test_contains() {
-        let event = Event::new("test".to_string(), "2021-09-14", "2021-09-16").unwrap();
+        let event = Event::new("test", "2021-09-14", "2021-09-16");
 
         assert!(event.contains(&NaiveDate::from_ymd(2021, 9, 14)));
         assert!(event.contains(&NaiveDate::from_ymd(2021, 9, 15)));
@@ -163,9 +169,9 @@ mod tests {
 
     #[test]
     fn test_compare() {
-        let event1 = Event::new("test1".to_string(), "2021-09-14", "2021-09-15").unwrap();
-        let event2 = Event::new("test2".to_string(), "2021-09-14", "2021-09-15").unwrap();
-        let event3 = Event::new("test3".to_string(), "2021-09-12", "2021-09-16").unwrap();
+        let event1 = Event::new("test1", "2021-09-14", "2021-09-15");
+        let event2 = Event::new("test2", "2021-09-14", "2021-09-15");
+        let event3 = Event::new("test3", "2021-09-12", "2021-09-16");
 
         assert_eq!(event1.cmp(&event2), Ordering::Equal);
         assert_eq!(event1.cmp(&event3), Ordering::Greater);
