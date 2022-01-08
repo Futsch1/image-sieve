@@ -14,13 +14,13 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 
+use crate::controller::events_controller::EventsController;
+use crate::controller::gui_items::sort_item_from_file_item;
+use crate::controller::list_model::populate_list_model;
+use crate::controller::list_model::update_list_model;
 use crate::item_sort_list::ItemList;
 use crate::misc::image_cache::{self, ImageCache, Purpose};
 use crate::misc::images::get_empty_image;
-use crate::models::events_model::EventsModel;
-use crate::models::gui_items::sort_item_from_file_item;
-use crate::models::list_model::populate_list_model;
-use crate::models::list_model::update_list_model;
 use crate::persistence::json::JsonPersistence;
 use crate::persistence::json::{get_project_filename, get_settings_filename};
 use crate::persistence::model_to_enum::model_to_enum;
@@ -46,7 +46,7 @@ pub struct MainWindow {
     item_list: Arc<Mutex<ItemList>>,
     list_model: Rc<sixtyfps::VecModel<ListItem>>,
     similar_images_model: Rc<sixtyfps::VecModel<SortItem>>,
-    events_model: Rc<RefCell<EventsModel>>,
+    events_model: Rc<RefCell<EventsController>>,
     sieve_result_model: Rc<sixtyfps::VecModel<SieveResult>>,
     image_cache: Rc<ImageCache>,
     synchronizer: Rc<Synchronizer>,
@@ -78,7 +78,7 @@ impl MainWindow {
 
         let item_list = Arc::new(Mutex::new(item_list));
 
-        let events_model = Rc::new(RefCell::new(EventsModel::new(item_list.clone())));
+        let events_model = Rc::new(RefCell::new(EventsController::new(item_list.clone())));
         let item_list_model = Rc::new(sixtyfps::VecModel::<ListItem>::default());
         let sieve_result_model = Rc::new(sixtyfps::VecModel::<SieveResult>::default());
 
@@ -253,7 +253,7 @@ impl MainWindow {
                     }
 
                     empty_model(list_model.clone());
-                    events_model.borrow_mut().empty();
+                    events_model.borrow_mut().clear();
 
                     // Synchronize in a background thread
                     window_weak.unwrap().set_loading(true);
