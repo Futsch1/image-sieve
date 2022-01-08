@@ -10,6 +10,8 @@ use crate::{
     main_window,
 };
 
+use super::helper;
+
 pub struct EventsController {
     item_list: Arc<Mutex<ItemList>>,
     events_model: Rc<sixtyfps::VecModel<main_window::Event>>,
@@ -17,7 +19,7 @@ pub struct EventsController {
 
 impl EventsController {
     pub fn new(item_list: Arc<Mutex<ItemList>>) -> Self {
-        EventsController {
+        Self {
             item_list,
             events_model: Rc::new(sixtyfps::VecModel::<main_window::Event>::default()),
         }
@@ -111,14 +113,12 @@ impl EventsController {
     }
 
     /// Returns the contained sixtyfps VecModel
-    pub fn get_vec_model(&self) -> Rc<sixtyfps::VecModel<main_window::Event>> {
+    pub fn get_model(&self) -> Rc<sixtyfps::VecModel<main_window::Event>> {
         self.events_model.clone()
     }
 
     /// Clear the events model
     pub fn clear(&mut self) {
-        for _ in 0..self.events_model.row_count() {
-            self.events_model.remove(0);
-        }
+        helper::clear_model(self.events_model.clone());
     }
 }
