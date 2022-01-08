@@ -10,16 +10,14 @@ use std::cell::RefCell;
 use std::fmt::Debug;
 use std::path::Path;
 use std::rc::Rc;
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::thread;
 
 use crate::controller::events_controller::EventsController;
 use crate::controller::items_controller::ItemsController;
 use crate::item_sort_list::ItemList;
 use crate::misc::images::get_empty_image;
-use crate::persistence::json::JsonPersistence;
-use crate::persistence::json::{get_project_filename, get_settings_filename};
+use crate::persistence::json::{JsonPersistence, get_project_filename, get_settings_filename};
 use crate::persistence::model_to_enum::model_to_enum;
 use crate::persistence::settings::Settings;
 use crate::synchronize::Synchronizer;
