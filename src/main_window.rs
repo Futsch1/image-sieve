@@ -6,22 +6,18 @@ extern crate nfd;
 extern crate sixtyfps;
 
 use sixtyfps::{Model, ModelHandle, SharedString};
+use std::cell::RefCell;
 use std::fmt::Debug;
 use std::path::Path;
 use std::rc::Rc;
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::thread;
 
-use crate::gui_items::list_item_from_file_item;
-use crate::gui_items::list_item_title;
-use crate::gui_items::sort_item_from_file_item;
-use crate::item_sort_list::parse_date;
-use crate::item_sort_list::FileItem;
+use crate::controller::events_controller::EventsController;
+use crate::controller::items_controller::ItemsController;
 use crate::item_sort_list::ItemList;
-use crate::misc::image_cache::{self, ImageCache, Purpose};
-use crate::persistence::json::JsonPersistence;
-use crate::persistence::json::{get_project_filename, get_settings_filename};
+use crate::misc::images::get_empty_image;
+use crate::persistence::json::{JsonPersistence, get_project_filename, get_settings_filename};
 use crate::persistence::model_to_enum::model_to_enum;
 use crate::persistence::settings::Settings;
 use crate::synchronize::Synchronizer;
@@ -43,11 +39,9 @@ pub use generated_code::*;
 pub struct MainWindow {
     window: ImageSieve,
     item_list: Arc<Mutex<ItemList>>,
-    list_model: Rc<sixtyfps::VecModel<ListItem>>,
-    similar_images_model: Rc<sixtyfps::VecModel<SortItem>>,
-    events_model: Rc<sixtyfps::VecModel<Event>>,
+    items_controller: Rc<RefCell<ItemsController>>,
+    events_controller: Rc<RefCell<EventsController>>,
     sieve_result_model: Rc<sixtyfps::VecModel<SieveResult>>,
-    image_cache: Rc<ImageCache>,
     synchronizer: Rc<Synchronizer>,
 }
 
@@ -77,8 +71,8 @@ impl MainWindow {
 
         let item_list = Arc::new(Mutex::new(item_list));
 
-        let event_list_model = Rc::new(sixtyfps::VecModel::<Event>::default());
-        let item_list_model = Rc::new(sixtyfps::VecModel::<ListItem>::default());
+        let events_controller = Rc::new(RefCell::new(EventsController::new(item_list.clone())));
+        let items_controller = Rc::new(RefCell::new(ItemsController::new(item_list.clone())));
         let sieve_result_model = Rc::new(sixtyfps::VecModel::<SieveResult>::default());
 
         // Construct main window
@@ -87,22 +81,15 @@ impl MainWindow {
         let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve);
         if !settings.source_directory.is_empty() {
             // Start synchronization in a background thread
-            synchronizer.synchronize(
-                Some(Path::new(&settings.source_directory)),
-                settings.clone(),
-            );
+            synchronizer.scan_path(Path::new(&settings.source_directory));
         }
-        let mut cache = ImageCache::new();
-        cache.restrict_size(1600, 1000);
 
         let main_window = Self {
             window: image_sieve,
             item_list,
-            list_model: item_list_model,
-            similar_images_model: Rc::new(sixtyfps::VecModel::<SortItem>::default()),
-            events_model: event_list_model,
+            items_controller,
+            events_controller,
             sieve_result_model,
-            image_cache: Rc::new(cache),
             synchronizer: Rc::new(synchronizer),
         };
 
@@ -120,15 +107,22 @@ impl MainWindow {
         // Set model references
         main_window
             .window
-            .set_list_model(sixtyfps::ModelHandle::new(main_window.list_model.clone()));
-        main_window
-            .window
-            .set_similar_images_model(sixtyfps::ModelHandle::new(
-                main_window.similar_images_model.clone(),
+            .set_list_model(sixtyfps::ModelHandle::new(
+                main_window.items_controller.borrow().get_list_model(),
             ));
         main_window
             .window
-            .set_events_model(sixtyfps::ModelHandle::new(main_window.events_model.clone()));
+            .set_similar_images_model(sixtyfps::ModelHandle::new(
+                main_window
+                    .items_controller
+                    .borrow()
+                    .get_similar_items_model(),
+            ));
+        main_window
+            .window
+            .set_events_model(sixtyfps::ModelHandle::new(
+                main_window.events_controller.borrow().get_model(),
+            ));
         main_window
             .window
             .set_sieve_result_model(sixtyfps::ModelHandle::new(
@@ -161,23 +155,13 @@ impl MainWindow {
     fn setup_callbacks(&self) {
         self.window.on_item_selected({
             // New item selected on the list of images or next/previous clicked
-            let item_list = self.item_list.clone();
-            let list_model = self.list_model.clone();
-            let similar_items_model = self.similar_images_model.clone();
+            let items_controller = self.items_controller.clone();
             let window_weak = self.window.as_weak();
-            let image_cache = self.image_cache.clone();
 
             move |i: i32| {
-                let index = list_model.row_data(i as usize).local_index as usize;
-                let item_list = &item_list.lock().unwrap();
-                synchronize_similar_items_model(
-                    index,
-                    item_list,
-                    similar_items_model.clone(),
-                    window_weak.clone(),
-                    &image_cache,
-                );
-                prefetch_images(i, item_list, &list_model, &image_cache);
+                items_controller
+                    .borrow_mut()
+                    .selected_list_item(i as usize, window_weak.clone());
             }
         });
 
@@ -198,37 +182,19 @@ impl MainWindow {
 
         self.window.on_set_take_over({
             // Image was clicked, toggle take over state
-            let list_model = self.list_model.clone();
-            let similar_items_model = self.similar_images_model.clone();
-            let item_list = self.item_list.clone();
+            let items_controller = self.items_controller.clone();
 
             move |i: i32, take_over: bool| {
                 // Change the state of the SortImage in the items_model
 
-                let index = i as usize;
-                {
-                    // Change the item_list state
-                    let mut item_list_mut = item_list.lock().unwrap();
-                    item_list_mut.items[index].set_take_over(take_over);
-                }
-                // Update item list model to reflect change in icons in list
-                update_list_model_texts(&item_list.lock().unwrap(), &list_model);
-                // And update the take over state in the similar items model
-                for count in 0..similar_items_model.row_count() {
-                    let mut item: SortItem = similar_items_model.row_data(count);
-                    if item.local_index == i {
-                        item.take_over = take_over;
-                        similar_items_model.set_row_data(count, item);
-                        break;
-                    }
-                }
+                items_controller.borrow_mut().set_take_over(i, take_over);
             }
         });
 
         self.window.on_browse_source({
             // Browse source was clicked, select new path
-            let list_model = self.list_model.clone();
-            let events_model = self.events_model.clone();
+            let events_controller = self.events_controller.clone();
+            let items_controller = self.items_controller.clone();
             let item_list = self.item_list.clone();
             let window_weak = self.window.as_weak();
             let synchronizer = self.synchronizer.clone();
@@ -252,15 +218,12 @@ impl MainWindow {
                         }
                     }
 
-                    empty_model(list_model.clone());
-                    empty_model(events_model.clone());
+                    items_controller.borrow_mut().clear_list();
+                    events_controller.borrow_mut().clear();
 
                     // Synchronize in a background thread
                     window_weak.unwrap().set_loading(true);
-                    synchronizer.synchronize(
-                        Some(Path::new(&folder)),
-                        Settings::from_window(&window_weak.unwrap()),
-                    );
+                    synchronizer.scan_path(Path::new(&folder));
 
                     window_weak
                         .unwrap()
@@ -288,56 +251,88 @@ impl MainWindow {
             }
         });
 
-        self.window.on_check_event({
-            // Check event for overlapping dates
-            let item_list = self.item_list.clone();
+        self.window.on_synchronization_finished({
+            // First step of synchronization (browsing for files) finished
+            let window_weak = self.window.as_weak();
+            let events_controller = self.events_controller.clone();
+            let items_controller = self.items_controller.clone();
+            let synchronizer = self.synchronizer.clone();
 
+            move || {
+                let window = window_weak.unwrap();
+                let filters = window.get_filters();
+                // First fill the list of items
+                let num_items = items_controller.borrow_mut().populate_list_model(&filters);
+
+                // Now fill the events model
+                events_controller.borrow_mut().synchronize();
+
+                // Update the selection variables
+                if num_items > 0 {
+                    window.set_current_list_item(0);
+                    window.invoke_item_selected(0);
+                } else {
+                    let empty_image = SortItem {
+                        image: get_empty_image(),
+                        take_over: true,
+                        text: SharedString::from("No images found"),
+                        local_index: 0,
+                    };
+                    window.set_current_image(empty_image);
+                    items_controller.borrow_mut().clear_similar_items();
+                }
+
+                // Show the GUI by resetting the loading flag
+                window.set_loading(false);
+
+                // And tell the synchronizer to calculate similarities now
+                synchronizer.calculate_similarities(Settings::from_window(&window));
+            }
+        });
+
+        self.window.on_similarities_calculated({
+            // Second step of synchronization (calculating similarities) finished
+            let items_controller = self.items_controller.clone();
+            let window_weak = self.window.as_weak();
+
+            move |finished| {
+                let window = window_weak.unwrap();
+                items_controller.borrow_mut().update_list_model();
+                items_controller.borrow_mut().selected_list_item(
+                    window.get_current_list_item() as usize,
+                    window_weak.clone(),
+                );
+                if finished {
+                    window.set_calculating_similarities(false);
+                }
+            }
+        });
+
+        self.window.on_check_event({
+            let events_controller = self.events_controller.clone();
+            // Check event for overlapping dates
             move |start_date: SharedString,
                   end_date: SharedString,
                   new_event: bool|
                   -> SharedString {
-                let start_date = parse_date(&start_date).unwrap();
-                let end_date = parse_date(&end_date).unwrap();
-                if start_date > end_date {
-                    return SharedString::from("Start date must be before end date");
-                }
-                let item_list = item_list.lock().unwrap();
-                let allowed_overlaps = if new_event { 0 } else { 1 };
-                let mut overlaps = 0;
-                for event in item_list.events.iter() {
-                    if event.contains(&start_date) || event.contains(&end_date) {
-                        overlaps += 1;
-                        if overlaps > allowed_overlaps {
-                            return SharedString::from(
-                                String::from("Event overlaps with ") + &event.name,
-                            );
-                        }
-                    }
-                }
-                SharedString::from("")
+                events_controller
+                    .borrow()
+                    .check_event(&start_date, &end_date, new_event)
             }
         });
 
         self.window.on_add_event({
             // New event was added, return true if the dates are ok
-            let list_model = self.list_model.clone();
-            let events_model = self.events_model.clone();
-            let item_list = self.item_list.clone();
+            let events_controller = self.events_controller.clone();
+            let items_controller = self.items_controller.clone();
 
-            move |name, start_date: SharedString, end_date: SharedString| {
-                let name_s = name.to_string();
-                let event = crate::item_sort_list::Event::new(
-                    name_s,
-                    start_date.as_str(),
-                    end_date.as_str(),
-                )
-                .unwrap();
-                let mut item_list = item_list.lock().unwrap();
-                item_list.events.push(event);
-                item_list.events.sort_unstable();
-                synchronize_event_model(&item_list, &events_model);
-                // Synchronize the item list to update the icons of the entries
-                update_list_model_texts(&item_list, &list_model.clone());
+            move |name: SharedString, start_date: SharedString, end_date: SharedString| {
+                if events_controller
+                    .borrow_mut()
+                    .add_event(&name, &start_date, &end_date)
+                {
+                    items_controller.borrow_mut().update_list_model();
+                }
             }
         });
 
@@ -346,38 +341,23 @@ impl MainWindow {
         });
 
         self.window.on_update_event({
-            let list_model = self.list_model.clone();
-            let events_model = self.events_model.clone();
-            let item_list = self.item_list.clone();
-
+            let events_controller = self.events_controller.clone();
+            let items_controller = self.items_controller.clone();
             move |index| {
-                let index = index as usize;
-                let event = events_model.row_data(index);
-                let mut item_list = item_list.lock().unwrap();
-                if item_list.events[index].update(
-                    event.name.to_string(),
-                    event.start_date.as_str(),
-                    event.end_date.as_str(),
-                ) {
-                    item_list.events.sort_unstable();
-                    synchronize_event_model(&item_list, &events_model);
-                    update_list_model_texts(&item_list, &list_model.clone());
+                if events_controller.borrow_mut().update_event(index) {
+                    items_controller.borrow_mut().update_list_model();
                 }
             }
         });
 
         self.window.on_remove_event({
             // Event was removed
-            let list_model = self.list_model.clone();
-            let events_model = self.events_model.clone();
-            let item_list = self.item_list.clone();
+            let events_controller = self.events_controller.clone();
+            let items_controller = self.items_controller.clone();
 
             move |index| {
-                events_model.remove(index as usize);
-                let mut item_list = item_list.lock().unwrap();
-                item_list.events.remove(index as usize);
-                // Synchronize the item list to update the icons of the entries
-                update_list_model_texts(&item_list, &list_model.clone());
+                events_controller.borrow_mut().remove_event(index);
+                items_controller.borrow_mut().update_list_model();
             }
         });
 
@@ -402,9 +382,10 @@ impl MainWindow {
             let synchronizer = self.synchronizer.clone();
 
             move || {
+                let window = window_weak.unwrap();
                 // Synchronize in a background thread
-                window_weak.unwrap().set_calculating_similarities(true);
-                synchronizer.synchronize(None, Settings::from_window(&window_weak.unwrap()));
+                window.set_calculating_similarities(true);
+                synchronizer.calculate_similarities(Settings::from_window(&window));
             }
         });
 
@@ -416,183 +397,18 @@ impl MainWindow {
         });
 
         self.window.on_filter({
-            let list_model = self.list_model.clone();
-            let item_list = self.item_list.clone();
+            let items_controller = self.items_controller.clone();
             let window_weak = self.window.as_weak();
 
             move |filters| {
-                let item_list = item_list.lock().unwrap();
-                empty_model(list_model.clone());
-                populate_list_model(&item_list, &list_model, &filters);
-                let rows = list_model.row_count() as i32;
+                items_controller.borrow_mut().clear_list();
+                let rows = items_controller.borrow_mut().populate_list_model(&filters) as i32;
 
                 if rows >= window_weak.unwrap().get_current_list_item() {
                     window_weak.unwrap().set_current_list_item(rows - 1);
                 }
             }
         });
-    }
-}
-
-/// Removes all items from a model
-fn empty_model<T: 'static + Clone>(vec_model: Rc<sixtyfps::VecModel<T>>) {
-    for _ in 0..vec_model.row_count() {
-        vec_model.remove(0);
-    }
-}
-
-/// Fills the list of found items from the internal data structure to the sixtyfps VecModel
-pub fn populate_list_model(
-    item_list: &ItemList,
-    list_model: &sixtyfps::VecModel<ListItem>,
-    filters: &Filters,
-) {
-    let mut filtered_list: Vec<&FileItem> = item_list
-        .items
-        .iter()
-        .filter(|item| filter_file_items(item, filters))
-        .collect();
-    filtered_list.sort_unstable_by(|a, b| compare_file_items(a, b, filters));
-    if filters.direction == "Desc" {
-        filtered_list.reverse();
-    }
-    for image in filtered_list {
-        let list_item = list_item_from_file_item(image, item_list);
-        list_model.push(list_item);
-    }
-}
-
-/// Update the texts for all entries in the list model
-/// Should be called when the underlying data (i.e. the item list) has changed
-pub fn update_list_model_texts(item_list: &ItemList, list_model: &sixtyfps::VecModel<ListItem>) {
-    for count in 0..list_model.row_count() {
-        let mut list_item = list_model.row_data(count);
-        let file_item = &item_list.items[list_item.local_index as usize];
-        list_item.text = list_item_title(file_item, item_list);
-        list_model.set_row_data(count, list_item);
-    }
-}
-
-/// Synchronize the event list with the GUI model
-pub fn synchronize_event_model(item_list: &ItemList, event_model: &sixtyfps::VecModel<Event>) {
-    let model_count = event_model.row_count();
-    // Event model
-    for (index, event) in item_list.events.iter().enumerate() {
-        let _event = Event {
-            name: SharedString::from(event.name.clone()),
-            start_date: SharedString::from(event.start_date_as_string()),
-            end_date: SharedString::from(event.end_date_as_string()),
-        };
-        if index >= model_count {
-            event_model.push(_event);
-        } else {
-            event_model.set_row_data(index, _event);
-        }
-    }
-}
-
-/// Synchronizes the images to show at the same time from a selected image to the sixtyfps VecModel
-fn synchronize_similar_items_model(
-    current_item_local_index: usize,
-    item_list: &ItemList,
-    similar_items_model: Rc<sixtyfps::VecModel<SortItem>>,
-    window: sixtyfps::Weak<ImageSieve>,
-    image_cache: &ImageCache,
-) {
-    let similars = item_list.items[current_item_local_index].get_similars();
-
-    // Clear images model
-    empty_model(similar_items_model.clone());
-
-    let mut model_index: usize = 0;
-
-    let mut add_item = |item_index: &usize,
-                        current_image: bool,
-                        has_similars: bool,
-                        window_weak: sixtyfps::Weak<ImageSieve>| {
-        let item = &item_list.items[*item_index];
-        let image = {
-            let image = image_cache.get(item);
-            if let Some(image) = image {
-                image
-            } else {
-                let f: image_cache::DoneCallback = Box::new(move |image_buffer| {
-                    window_weak.clone().upgrade_in_event_loop(move |handle| {
-                        // Check if still the image is visible that caused the image loads
-                        if handle.get_current_image().local_index == current_item_local_index as i32
-                        {
-                            let mut row_data =
-                                handle.get_similar_images_model().row_data(model_index);
-                            if has_similars {
-                                row_data.image =
-                                    crate::misc::images::get_sixtyfps_image(&image_buffer);
-                                handle
-                                    .get_similar_images_model()
-                                    .set_row_data(model_index, row_data);
-                            }
-                            // If the image is the current image, then we need to also update the current image SortImage
-                            if current_image {
-                                let mut current_image = handle.get_current_image();
-                                current_image.image =
-                                    crate::misc::images::get_sixtyfps_image(&image_buffer);
-                                handle.set_current_image(current_image);
-                            }
-                        }
-                    })
-                });
-                image_cache.load(
-                    item,
-                    if current_image {
-                        Purpose::CurrentImage
-                    } else {
-                        Purpose::SimilarImage
-                    },
-                    Some(f),
-                );
-                image_cache.get_waiting()
-            }
-        };
-
-        let sort_image = sort_item_from_file_item(item, item_list, image);
-        similar_items_model.push(sort_image);
-        model_index += 1;
-    };
-
-    // Clear pending commands in the image cache
-    image_cache.purge();
-
-    add_item(
-        &current_item_local_index,
-        true,
-        !similars.is_empty(),
-        window.clone(),
-    );
-    for image_index in similars {
-        add_item(image_index, false, !similars.is_empty(), window.clone());
-    }
-
-    // Set properties
-    window
-        .unwrap()
-        .set_current_image(similar_items_model.row_data(0));
-}
-
-/// Prefetch the next images in the model list
-fn prefetch_images(
-    model_index: i32,
-    item_list: &ItemList,
-    list_model: &sixtyfps::VecModel<ListItem>,
-    image_cache: &ImageCache,
-) {
-    // Prefetch next two images
-    for i in model_index + 1..model_index + 3 {
-        if i < list_model.row_count() as i32 {
-            let list_item = &list_model.row_data(i as usize);
-            let file_item = &item_list.items[list_item.local_index as usize];
-            if file_item.is_image() {
-                image_cache.load(file_item, Purpose::Prefetch, None);
-            }
-        }
     }
 }
 
@@ -661,38 +477,4 @@ pub fn sieve(
             progress_callback,
         );
     });
-}
-
-/// Filter file items to display in the item list
-fn filter_file_items(file_item: &FileItem, filters: &Filters) -> bool {
-    let mut visible = true;
-    if !filters.images && file_item.is_image() {
-        visible = false;
-    }
-    if !filters.videos && file_item.is_video() {
-        visible = false;
-    }
-    if !filters.sorted_out && !file_item.get_take_over() {
-        visible = false;
-    }
-    visible
-}
-
-/// Compare two file items taking the current sort settings into account
-fn compare_file_items(a: &FileItem, b: &FileItem, filters: &Filters) -> std::cmp::Ordering {
-    match filters.sort_by.as_str() {
-        "Date" => a.cmp(b),
-        "Name" => a.path.cmp(&b.path),
-        "Type" => {
-            if a.is_image() && b.is_image() {
-                a.cmp(b)
-            } else if a.is_image() && b.is_video() {
-                std::cmp::Ordering::Less
-            } else {
-                std::cmp::Ordering::Greater
-            }
-        }
-        "Size" => a.get_size().cmp(&b.get_size()),
-        _ => std::cmp::Ordering::Less,
-    }
 }
