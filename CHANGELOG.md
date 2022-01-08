@@ -11,7 +11,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
- - Added filters and sort options to the item list
+ - Filters and sort options to the item list
+ - Some symbols in the GUI
 
 ### Fixed
 

@@ -24,7 +24,7 @@ export SettingsView := VerticalBox {
                     }
                 }
                 Text {
-                    text: "Maximum timestamp difference (s): ";                
+                    text: "⇔ Maximum timestamp difference (s): ";                
                     vertical-alignment: center;
                     horizontal-alignment: right;
                     row: 2;
@@ -67,11 +67,10 @@ export SettingsView := VerticalBox {
             VerticalBox {                 
                 alignment: start;
                 Text {
-                    text: "Developed by Florian Fetz";
-                    color: blue;
+                    text: "💻 Developed by Florian Fetz";
                 }
                 Text {
-                    text: "https://www.github.com/Futsch1/image-sieve";
+                    text: "🔗 https://www.github.com/Futsch1/image-sieve";
                     color: blue;
                 }
             }

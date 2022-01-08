@@ -40,7 +40,7 @@ export SieveView := HorizontalBox {
         alignment: start;
 
         GroupBox { 
-            title: "Target directory";
+            title: "🎯 Target directory";
             enabled: sieve-method-combo-box.current-index != 3;
             VerticalBox { 
                 HorizontalBox { 
@@ -51,7 +51,7 @@ export SieveView := HorizontalBox {
                         placeholder-text: "Select target directory";
                     }
                     Button {
-                        text: "\u{1F4C2} Browse...";
+                        text: "📂 Browse...";
                         width: 200px;
                         enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
                         clicked => { 
@@ -89,7 +89,7 @@ export SieveView := HorizontalBox {
         }
 
         Button {
-            text: "\u{2705} Start";
+            text: "✅ Start";
             width: 300px;
             enabled: !sieve-running && target-directory-edit.text != "";
             clicked => {
@@ -109,7 +109,7 @@ export SieveView := HorizontalBox {
             HorizontalBox { 
                 spacing: 5px;
                 Button {
-                    text: "\u{2705} Yes";
+                    text: "✅ Yes";
                     width: 300px;
                     visible: show-warning;
                     clicked => {            
@@ -119,7 +119,7 @@ export SieveView := HorizontalBox {
                     }
                 }
                 Button {
-                    text: "\u{274C} No";
+                    text: "❌ No";
                     width: 300px;
                     visible: show-warning;
                     clicked => {            

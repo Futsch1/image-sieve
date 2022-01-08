@@ -4,7 +4,7 @@ export HelpView := ScrollView {
     VerticalBox { 
         alignment: start;
         Text {
-            text: "\u{1F4F7} \u{1F4F9} Sorting images";
+            text: "📷 📹 Sorting images";
             font-size: 20px;
         }
         HorizontalBox {
@@ -12,7 +12,7 @@ export HelpView := ScrollView {
             font-size: 14px;} 
         }
         Text {
-            text: "\u{1F4C5} Events";
+            text: "📅 Events";
             font-size: 20px;
         }
         HorizontalBox {            
@@ -20,7 +20,7 @@ export HelpView := ScrollView {
             font-size: 14px;}
         }
         Text {
-            text: "\u{2699} Settings";
+            text: "⚙ Settings";
             font-size: 20px;
         }
         HorizontalBox {
@@ -28,7 +28,7 @@ export HelpView := ScrollView {
             font-size: 14px;} 
         }
         Text {
-            text: "\u{1F4BE} Sieving";
+            text: "💾 Sieving";
             font-size: 20px;
         }
         HorizontalBox {

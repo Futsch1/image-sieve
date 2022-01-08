@@ -170,19 +170,19 @@ impl FileItem {
     /// Gets a string representing the item type and if it has simlar items or not, if it will be discarded and the item path
     pub fn get_item_string(&self, base_path: &Path) -> String {
         let path = self.path.strip_prefix(base_path).unwrap_or(&self.path);
-        let similars_str = if !self.has_similars() {
-            "\u{1F500} "
-        } else {
-            ""
-        };
+        let similars_str = if !self.has_similars() { "🔀" } else { "" };
         let extension_str = self.extension_to_unicode_icon();
-        let take_over_str = if self.take_over { "" } else { "\u{1F5D1} " };
-        let strings = [
+        let take_over_str = if self.take_over { "" } else { "🗑" };
+        let strings: Vec<&str> = [
             similars_str,
             extension_str,
             take_over_str,
             path.to_str().unwrap(),
-        ];
+        ]
+        .iter()
+        .filter(|&s| !s.is_empty())
+        .copied()
+        .collect();
         strings.join(" ")
     }
 
@@ -199,9 +199,9 @@ impl FileItem {
     /// Get the unicode icon for the extension
     fn extension_to_unicode_icon(&self) -> &str {
         if self.is_image() {
-            "\u{1F4F7} "
+            "📷"
         } else if self.is_video() {
-            "\u{1F4F9} "
+            "📹"
         } else {
             ""
         }

@@ -72,6 +72,7 @@ impl ItemsController {
             // Clear pending commands in the image cache
             self.image_cache.purge();
 
+            // Add the current image
             let item = &item_list.items[items_index];
             let image = self.get_item_image(
                 item,
@@ -84,6 +85,7 @@ impl ItemsController {
             let sort_image = sort_item_from_file_item(item, &item_list, image);
             self.similar_items_model.push(sort_image);
 
+            // Now add all similar images
             let mut model_index = 1;
             for image_index in similars {
                 let item = &item_list.items[*image_index];
@@ -101,7 +103,7 @@ impl ItemsController {
             }
         }
 
-        // Set properties
+        // Set the data of the current image
         window
             .unwrap()
             .set_current_image(self.similar_items_model.row_data(0));
@@ -275,7 +277,7 @@ fn sort_item_from_file_item(
 ) -> main_window::SortItem {
     let mut description = format!("{}", file_item);
     if let Some(event) = item_list.get_event(file_item) {
-        description = description + ", \u{1F4C5} " + &event.name;
+        description = description + ", 📅 " + &event.name;
     }
     main_window::SortItem {
         text: sixtyfps::SharedString::from(description),
@@ -289,7 +291,7 @@ fn sort_item_from_file_item(
 fn list_item_title(file_item: &FileItem, item_list: &ItemList) -> sixtyfps::SharedString {
     let mut title = file_item.get_item_string(&item_list.path);
     if item_list.get_event(file_item).is_some() {
-        title = String::from("\u{1F4C5} ") + &title;
+        title = String::from("📅 ") + &title;
     }
     sixtyfps::SharedString::from(title)
 }
@@ -299,5 +301,39 @@ fn list_item_from_file_item(file_item: &FileItem, item_list: &ItemList) -> main_
     main_window::ListItem {
         text: list_item_title(file_item, item_list),
         local_index: item_list.index_of_item(file_item).unwrap() as i32,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use sixtyfps::SharedString;
+
+    use super::*;
+
+    #[test]
+    fn test_populate() {
+        let item_list = Arc::new(Mutex::new(ItemList::new()));
+        let mut items_controller = ItemsController::new(item_list.clone());
+        let filters = main_window::Filters {
+            images: true,
+            videos: true,
+            sorted_out: true,
+            sort_by: SharedString::from("Date"),
+            direction: SharedString::from("Asc"),
+        };
+        {
+            let mut item_list = item_list.lock().unwrap();
+            item_list.items.push(FileItem::dummy("test2.mov", 1, true));
+            let mut file_item = FileItem::dummy("test1.jpg", 0, false);
+            file_item.add_similar_range(&(1..2));
+            item_list.items.push(file_item);
+        }
+        items_controller.populate_list_model(&filters);
+        let list_model = items_controller.get_list_model();
+        assert_eq!(list_model.row_count(), 2);
+        assert_eq!(list_model.row_data(0).local_index, 1);
+        assert_eq!(list_model.row_data(0).text, "🔀 📷 🗑 test1.jpg");
+        assert_eq!(list_model.row_data(1).local_index, 0);
+        assert_eq!(list_model.row_data(1).text, "📹 test2.mov");
     }
 }

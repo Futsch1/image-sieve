@@ -32,7 +32,7 @@ EventsView := ScrollView {
                     text: item.name;
                 }
                 Text {
-                    text: "\u{1F4C5} Start date";
+                    text: "📅 Start date";
                     row: 1;
                     vertical-alignment: center;
                 }
@@ -41,7 +41,7 @@ EventsView := ScrollView {
                     min-width: 300px;
                 }
                 Text {
-                    text: "\u{1F4C5} End date";
+                    text: "📅 End date";
                     row: 2;
                     vertical-alignment: center;
                 }
@@ -54,14 +54,14 @@ EventsView := ScrollView {
                 spacing: 5px;
                 Button {
                     width: 150px;
-                    text: "\u{1F4BE} Update";
+                    text: "💾 Update";
                     clicked => { 
                         error-message.text = update-event(i, event-name.text, start-date.text, end-date.text);
                     }
                 }
                 Button {
                     width: 150px;
-                    text: "\u{1F5D1} Remove";
+                    text: "🗑 Remove";
                     clicked => { remove-event(i) }
                 }
             }
@@ -85,7 +85,7 @@ EventsView := ScrollView {
                 }
             }
             Button {
-                text: "\u{2795} Add";
+                text: "➕ Add";
                 width: 300px;
                 clicked => { 
                     error-message.text = add-event(new-name.text, new-start-date.text, new-end-date.text);

@@ -91,7 +91,7 @@ ImageSieve := Window {
         HorizontalLayout { 
             alignment: center;
             Text {
-                text: "Please wait, searching for images...";
+                text: "⌛ Please wait, searching for images...";
                 visible: loading;
                 font-size: 20px;
             }
@@ -105,7 +105,7 @@ ImageSieve := Window {
         HorizontalLayout { 
             alignment: center;
             Button {
-                text: "\u{274C} Cancel";
+                text: "❌ Cancel";
                 visible: loading;
                 width: 200px;
                 clicked => {
@@ -120,35 +120,35 @@ ImageSieve := Window {
     TabWidget { 
         visible: !loading;
         Tab {
-            title: "\u{1F4F7} \u{1F4F9}  Images";
+            title: "📷 📹  Images";
             
             sort-view := SortView {
             }
         }
 
         Tab {
-            title: "\u{1F4C5}  Events";
+            title: "📅  Events";
 
             events-view := EventsView {
             }
         }
 
         Tab {
-            title: "\u{1F4BE}  Sieve";
+            title: "💾  Sieve";
             
             sieve-view := SieveView {
             }
         }
 
         Tab {
-            title: "\u{2699}  Settings";
+            title: "⚙  Settings";
             
             settings-view := SettingsView {                
             }
         }
 
         Tab {
-            title: "\u{2753}  Help";
+            title: "❓  Help";
             help-view := HelpView {
             }
         }

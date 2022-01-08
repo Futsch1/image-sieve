@@ -95,7 +95,7 @@ export SortView := HorizontalBox {
                 text: current-image.text;
             }
             Text {
-                text: "\u{231B} Please wait, calculating similarities...";
+                text: "⌛ Please wait, calculating similarities...";
                 visible: calculating-similarities;
             }
         }
@@ -131,7 +131,7 @@ export SortView := HorizontalBox {
             spacing: 5px;
 
             previous-button := Button {                
-                text: "\u{2B05} Previous";
+                text: "⬅ Previous";
                 enabled: current-list-item > 0;
                 clicked => { 
                     if (current-list-item >= list-model.length) {
@@ -143,14 +143,14 @@ export SortView := HorizontalBox {
                 }
             }
             open-button := Button {
-                text: "\u{1F4C2} Open";
+                text: "📂 Open";
                 enabled: list-model.length > 0;
                 clicked => { 
                     open(current-image.local-index);
                 }
             }
             next-button := Button {
-                text: "Next \u{27A1}";
+                text: "Next ➡";
                 enabled: list-model.length > 0 && current-list-item < list-model.length - 1;
                 clicked => { 
                     if (current-list-item >= list-model.length) {
@@ -173,7 +173,7 @@ export SortView := HorizontalBox {
             placeholder-text: "Select a folder with images";
         }
         Button {
-            text: "\u{1F4C2} Browse...";
+            text: "📂 Browse...";
             width: 200px;
             enabled: !calculating-similarities;
             clicked => { 
