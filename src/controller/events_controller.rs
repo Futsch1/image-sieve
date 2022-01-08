@@ -10,14 +10,14 @@ use crate::{
     main_window,
 };
 
-pub struct EventsModel {
+pub struct EventsController {
     item_list: Arc<Mutex<ItemList>>,
     events_model: Rc<sixtyfps::VecModel<main_window::Event>>,
 }
 
-impl EventsModel {
+impl EventsController {
     pub fn new(item_list: Arc<Mutex<ItemList>>) -> Self {
-        EventsModel {
+        EventsController {
             item_list,
             events_model: Rc::new(sixtyfps::VecModel::<main_window::Event>::default()),
         }
@@ -110,11 +110,13 @@ impl EventsModel {
         self.events_model.remove(index as usize);
     }
 
+    /// Returns the contained sixtyfps VecModel
     pub fn get_vec_model(&self) -> Rc<sixtyfps::VecModel<main_window::Event>> {
         self.events_model.clone()
     }
 
-    pub fn empty(&mut self) {
+    /// Clear the events model
+    pub fn clear(&mut self) {
         for _ in 0..self.events_model.row_count() {
             self.events_model.remove(0);
         }
