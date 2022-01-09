@@ -400,7 +400,6 @@ impl MainWindow {
             let window_weak = self.window.as_weak();
 
             move |filters| {
-                items_controller.borrow_mut().clear_list();
                 let rows = items_controller.borrow_mut().populate_list_model(&filters) as i32;
 
                 if rows >= window_weak.unwrap().get_current_list_item() {

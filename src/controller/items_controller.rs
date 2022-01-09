@@ -146,6 +146,8 @@ impl ItemsController {
 
     /// Fills the list of found items from the internal data structure to the sixtyfps VecModel
     pub fn populate_list_model(&mut self, filters: &main_window::Filters) -> usize {
+        self.clear_list();
+
         let item_list = self.item_list.lock().unwrap();
         let mut filtered_list: Vec<&FileItem> = item_list
             .items
@@ -306,21 +308,26 @@ fn list_item_from_file_item(file_item: &FileItem, item_list: &ItemList) -> main_
 
 #[cfg(test)]
 mod tests {
-    use sixtyfps::SharedString;
+    use crate::main_window::ImageSieve;
+    use sixtyfps::{ComponentHandle, SharedString};
 
     use super::*;
 
-    #[test]
-    fn test_populate() {
-        let item_list = Arc::new(Mutex::new(ItemList::new()));
-        let mut items_controller = ItemsController::new(item_list.clone());
-        let filters = main_window::Filters {
+    fn build_filters() -> main_window::Filters {
+        main_window::Filters {
             images: true,
             videos: true,
             sorted_out: true,
             sort_by: SharedString::from("Date"),
             direction: SharedString::from("Asc"),
-        };
+        }
+    }
+
+    #[test]
+    fn test_populate() {
+        let item_list = Arc::new(Mutex::new(ItemList::new()));
+        let mut items_controller = ItemsController::new(item_list.clone());
+        let mut filters = build_filters();
         {
             let mut item_list = item_list.lock().unwrap();
             item_list.items.push(FileItem::dummy("test2.mov", 1, true));
@@ -335,5 +342,142 @@ mod tests {
         assert_eq!(list_model.row_data(0).text, "🔀 📷 🗑 test1.jpg");
         assert_eq!(list_model.row_data(1).local_index, 0);
         assert_eq!(list_model.row_data(1).text, "📹 test2.mov");
+
+        filters.direction = SharedString::from("Desc");
+        items_controller.populate_list_model(&filters);
+        assert_eq!(list_model.row_count(), 2);
+        assert_eq!(list_model.row_data(1).local_index, 1);
+        assert_eq!(list_model.row_data(1).text, "🔀 📷 🗑 test1.jpg");
+        assert_eq!(list_model.row_data(0).local_index, 0);
+        assert_eq!(list_model.row_data(0).text, "📹 test2.mov");
+
+        filters.images = false;
+        items_controller.populate_list_model(&filters);
+        assert_eq!(list_model.row_count(), 1);
+        assert_eq!(list_model.row_data(0).local_index, 0);
+        assert_eq!(list_model.row_data(0).text, "📹 test2.mov");
+
+        filters.images = true;
+        filters.videos = false;
+        items_controller.populate_list_model(&filters);
+        assert_eq!(list_model.row_count(), 1);
+        assert_eq!(list_model.row_data(0).local_index, 1);
+        assert_eq!(list_model.row_data(0).text, "🔀 📷 🗑 test1.jpg");
+
+        filters.videos = true;
+        filters.sorted_out = false;
+        items_controller.populate_list_model(&filters);
+        assert_eq!(list_model.row_count(), 1);
+        assert_eq!(list_model.row_data(0).local_index, 0);
+        assert_eq!(list_model.row_data(0).text, "📹 test2.mov");
+
+        items_controller.clear_list();
+        assert_eq!(items_controller.get_list_model().row_count(), 0);
+    }
+
+    #[test]
+    fn test_take_over() {
+        let item_list = Arc::new(Mutex::new(ItemList::new()));
+        let mut items_controller = ItemsController::new(item_list.clone());
+        let window = ImageSieve::new();
+        let window_weak = window.as_weak();
+        let filters = build_filters();
+        {
+            let mut item_list = item_list.lock().unwrap();
+            item_list.items.push(FileItem::dummy("test2.mov", 1, true));
+            let mut file_item = FileItem::dummy("test1.jpg", 0, false);
+            file_item.add_similar_range(&(0..1));
+            item_list.items.push(file_item);
+        }
+        items_controller.populate_list_model(&filters);
+        items_controller.selected_list_item(1, window_weak);
+
+        items_controller.set_take_over(0, false);
+        {
+            let item_list = item_list.lock().unwrap();
+            assert!(!item_list.items[0].get_take_over());
+        }
+        let list_model = items_controller.get_list_model();
+        let similar_items_model = items_controller.get_similar_items_model();
+        assert_eq!(list_model.row_data(1).text, "📹 🗑 test2.mov");
+        assert!(!similar_items_model.row_data(0).take_over);
+
+        items_controller.set_take_over(0, true);
+        {
+            let item_list = item_list.lock().unwrap();
+            assert!(item_list.items[0].get_take_over());
+        }
+        assert_eq!(list_model.row_data(1).text, "📹 test2.mov");
+        assert!(window.get_current_image().take_over);
+        assert!(similar_items_model.row_data(0).take_over);
+    }
+
+    #[test]
+    fn test_select_item() {
+        let item_list = Arc::new(Mutex::new(ItemList::new()));
+        let mut items_controller = ItemsController::new(item_list.clone());
+        let window = ImageSieve::new();
+        let window_weak = window.as_weak();
+        let filters = build_filters();
+        {
+            let mut item_list = item_list.lock().unwrap();
+            item_list.items.push(FileItem::dummy("test2.mov", 1, true));
+            let mut file_item = FileItem::dummy("test1.jpg", 0, false);
+            file_item.add_similar_range(&(0..1));
+            item_list.items.push(file_item);
+        }
+        items_controller.populate_list_model(&filters);
+
+        let similar_items_model = items_controller.get_similar_items_model();
+
+        items_controller.selected_list_item(0, window_weak.clone());
+        assert_eq!(similar_items_model.row_count(), 2);
+        assert_eq!(
+            similar_items_model.row_data(0).text,
+            "🔀 📷 🗑 test1.jpg - 1970-01-01 00:00:00, 0 KB"
+        );
+        assert_eq!(
+            similar_items_model.row_data(1).text,
+            "📹 test2.mov - 1970-01-01 00:00:01, 0 KB"
+        );
+        assert_eq!(
+            similar_items_model.row_data(0).image.size().width as i32,
+            256
+        );
+        assert_eq!(window.get_current_image().image.size().height as i32, 256);
+        assert_eq!(window.get_current_image().local_index, 1);
+
+        items_controller.selected_list_item(1, window_weak);
+        assert_eq!(similar_items_model.row_count(), 1);
+        assert_eq!(window.get_current_image().local_index, 0);
+    }
+
+    #[test]
+    fn test_update_list() {
+        let item_list = Arc::new(Mutex::new(ItemList::new()));
+        let mut items_controller = ItemsController::new(item_list.clone());
+        let filters = build_filters();
+        {
+            let mut item_list = item_list.lock().unwrap();
+            item_list.items.push(FileItem::dummy("test2.mov", 1, true));
+            let mut file_item = FileItem::dummy("test1.jpg", 0, false);
+            file_item.add_similar_range(&(1..2));
+            item_list.items.push(file_item);
+        }
+        items_controller.populate_list_model(&filters);
+
+        {
+            let mut item_list = item_list.lock().unwrap();
+            item_list.events.push(crate::item_sort_list::Event::new(
+                "Test",
+                "1970-01-01",
+                "1970-01-01",
+            ));
+        }
+        items_controller.update_list_model();
+        let list_model = items_controller.get_list_model();
+        assert_eq!(list_model.row_count(), 2);
+        assert_eq!(list_model.row_data(0).text, "📅 🔀 📷 🗑 test1.jpg");
+        assert_eq!(list_model.row_data(1).text, "📅 📹 test2.mov");
     }
 }
