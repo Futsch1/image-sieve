@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+ - 
+
+### Added
+
+ - 
+
+### Fixed
+
+ - 
+ 
+## [0.4.1] - 2022-01-05
+
+### Changed
+
  - Now reading EXIF files for all image formats, not only for JPEGs
  - Optimized loading of similar images
  - Events now have an update button to be able to move an event after or before another event
