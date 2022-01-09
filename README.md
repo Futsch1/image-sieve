@@ -36,8 +36,11 @@ After the compilation, you can run the tool by typing
 
 ### 📷 📹 Images
 To get started, first open a folder containing images and videos in the "📷 📹  Images" tab. A folder can be selected by pressing the "📂 Browse..." button. All images and videos from the folder and from all subfolders will be analyzed. Depending on the amount of images, this might take a while. Note that the last selected folder will be re-opened when ImageSieve is started for the next time.
+
 Once the folder has been processed, a list of file names will appear in the box to the right. This list contains the files that have been found in the folder and that will be considered in the sieving process. Each file has a set of icons that indicate its state. 
+
 The following icons are used (exact rendering depends on platform/font):
+
 - 📷: The file is an image
 - 📹: The file is a video
 - 🗑: The file is discarded
@@ -46,19 +49,24 @@ The following icons are used (exact rendering depends on platform/font):
 
 To select a file, click it and it will be shown in the image area. Below the image, some details about the file are listed. In order to discard an image, just click it and it will be displayed in a translucent way. As an alternative, you can hit the space bar to toggle between discarded and kept state. To navigate between images, you can use the "⬅ Previous" and "Next ➡"  buttons or hit the left and right key on your keyboard.
 If you want to open an image or a video with the default application in your OS, click the "📂 Open" button.
+
 If an image belongs to a group of similar images, all these similar images are displayed below the current image. The currently selected one is highlighted in blue.
+
 Note that video files are also displayed in the list of images and previewed as a 3x3 matrix of screenshots. Similiarities are not calculated for video files.
 ![Screenshot](doc/screenshot2.png?raw=true "ImageSieve")
 
 ### 📅 Events
 Per default, the images will be sorted in folders corresponding to the months they were taken, like "09-2021", "10-2021" etc. To be able to find images more quickly in an archive, ImageSieve supports grouping pictures with the help of events in the "Events" tab. Events are named date spans that will provide a target folder name during the sieve process, like "2021-10-07 - 2021-10-10 Cool trip". All images taken in the given period of time will be put into that folder. You can specify an arbitrary number of events, but be aware that in case of overlapping dates, an image is put into the folder of the first matching event.
+
 To add an event, fill the start date, end date and name text box and click the "➕ Add" button. Valid date formats are YYYY-MM-DD or DD.MM.YYYY. You can edit existing events by modifying their fields and pressing enter - the updated values will be taken over and be visible in the event's caption when you click the "💾 Update" button. To remove an event, click the "🗑 Remove" button.
 The time spans of events must not overlap.
+
 Be aware that the events are saved in the currently selected folder along with the selection of images.
 ![Screenshot](doc/screenshot3.png?raw=true "ImageSieve")
 
 ### 💾 Sieve
 When you are done sorting the images, the sieving process can be started. Go to the "💾  Sieve" tab and select a sieving mode. The following modes are supported:
+
 - Copy to target directory: Copies only the kept items to the target directory creating folders for the items, the source directory will be left untouched.
 - Move to target directory: Moves the kept items to the target directory creating folders for the items, effectively removing them from the source directory. Discarded items will stay in the source directory.
 - Move to target directory and delete in source directory: Moves the kept items to the target directory creating folders for the items and deletes discarded items in the source directory. If the source directory contained only images and videos, it will be empty afterwards (except for sub folders).
@@ -68,8 +76,8 @@ Depending on the mode, you need to indicate a target directory that is used for 
 ![Screenshot](doc/screenshot4.png?raw=true "ImageSieve")
 
 ### ⚙ Settings
-In the settings tab, you can specify the behavior of the similarity detection process. You can turn on and off both the use of the file/capture
-date as an indicator for similarity and the similarity calculation.
+In the settings tab, you can specify the behavior of the similarity detection process. You can turn on and off both the use of the file/capture date as an indicator for similarity and the similarity calculation.
+
 Note that the similarity calculation takes some time and will not be available right from the start of the tool, especially if the number of files is huge. The similarity can be tweaked in order to provide better results.
 
 ## Misc
