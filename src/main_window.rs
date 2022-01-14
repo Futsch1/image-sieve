@@ -200,13 +200,9 @@ impl MainWindow {
             let synchronizer = self.synchronizer.clone();
 
             move || {
-                if let Ok(nfd::Response::Okay(folder)) = nfd::open_pick_folder(Some(
-                    window_weak
-                        .unwrap()
-                        .get_source_directory()
-                        .to_string()
-                        .as_str(),
-                )) {
+                if let Ok(nfd::Response::Okay(folder)) =
+                    nfd::open_pick_folder(get_folder(&window_weak.unwrap().get_source_directory()))
+                {
                     {
                         // Save current item list
                         let item_list = item_list.lock().unwrap();
@@ -237,13 +233,9 @@ impl MainWindow {
             let window_weak = self.window.as_weak();
 
             move || {
-                if let Ok(nfd::Response::Okay(folder)) = nfd::open_pick_folder(Some(
-                    window_weak
-                        .unwrap()
-                        .get_target_directory()
-                        .to_string()
-                        .as_str(),
-                )) {
+                if let Ok(nfd::Response::Okay(folder)) =
+                    nfd::open_pick_folder(get_folder(&window_weak.unwrap().get_target_directory()))
+                {
                     window_weak
                         .unwrap()
                         .set_target_directory(SharedString::from(folder));
@@ -475,4 +467,14 @@ pub fn sieve(
             progress_callback,
         );
     });
+}
+
+/// Convert a folder setting to an option if the folder exists
+fn get_folder(folder: &SharedString) -> Option<&str> {
+    let folder = folder.as_str();
+    if Path::new(folder).exists() {
+        Some(folder)
+    } else {
+        None
+    }
 }

@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - 
+ - Do not pass default folder to dir picker if it does not exist
 
 ## [0.4.2] - 2022-01-09
 
