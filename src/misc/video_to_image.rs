@@ -1,6 +1,6 @@
 extern crate ffmpeg_next as ffmpeg;
 
-use super::images::ImageBuffer;
+use super::images::{get_size, ImageBuffer};
 use crate::item_sort_list::{FileItem, Orientation};
 use image::imageops;
 
@@ -9,8 +9,8 @@ const SCREENSHOTS_Y: u32 = 3;
 const VIDEO_PNG: &[u8; 2900] = include_bytes!("video.png");
 
 /// Construct an image for a video by combining 9 frames from the video.
-pub fn get_image_buffer(item: &FileItem, _: u32, _: u32) -> ImageBuffer {
-    create_image_from_video(item).unwrap_or_else(|_| get_alternative_image())
+pub fn get_image_buffer(item: &FileItem, max_width: u32, max_height: u32) -> ImageBuffer {
+    create_image_from_video(item, max_width, max_height).unwrap_or_else(|_| get_alternative_image())
 }
 
 /// Get the alternative image of a video camera
@@ -44,7 +44,11 @@ fn get_position(orientation: Option<&Orientation>, i: u32, width: u32, height: u
 }
 
 /// Create the 3x3 frames image from a video
-fn create_image_from_video(item: &FileItem) -> Result<ImageBuffer, ffmpeg::Error> {
+fn create_image_from_video(
+    item: &FileItem,
+    max_width: u32,
+    max_height: u32,
+) -> Result<ImageBuffer, ffmpeg::Error> {
     let mut input_context = ffmpeg::format::input(&item.path)?;
     if let Some(video_stream) = input_context.streams().best(ffmpeg::media::Type::Video) {
         let stream_index = video_stream.index();
@@ -103,6 +107,16 @@ fn create_image_from_video(item: &FileItem) -> Result<ImageBuffer, ffmpeg::Error
                 }
             };
         }
+
+        // Scale to max size
+        let (new_width, new_height) =
+            get_size((buffer.width(), buffer.height()), (max_width, max_height));
+        let buffer = image::imageops::resize(
+            &buffer,
+            new_width,
+            new_height,
+            image::imageops::FilterType::Nearest,
+        );
 
         Ok(buffer)
     } else {
