@@ -171,13 +171,17 @@ mod tests {
         assert_eq!(image_buffer.width(), SCREENSHOTS_X * 320);
         assert_eq!(image_buffer.height(), SCREENSHOTS_Y * 240);
 
+        let image_buffer = get_image_buffer(&file_item, 200, 100);
+        assert!(image_buffer.width() <= 200);
+        assert!(image_buffer.height() <= 100);
+
         let file_item = FileItem::dummy("tests/test2.MP4", 0, false);
         let image_buffer = get_image_buffer(&file_item, 0, 0);
         assert_eq!(image_buffer.width(), SCREENSHOTS_X * 1920);
         assert_eq!(image_buffer.height(), SCREENSHOTS_Y * 1080);
 
         let file_item = FileItem::dummy("tests/test_invalid.mp4", 0, false);
-        let image_buffer = get_image_buffer(&file_item, 0, 0);
+        let image_buffer = get_image_buffer(&file_item, 10000, 10000);
         assert_eq!(image_buffer.width(), 256);
         assert_eq!(image_buffer.height(), 256);
     }

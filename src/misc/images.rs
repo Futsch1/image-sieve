@@ -92,13 +92,17 @@ fn process_dynamic_image(
 }
 
 /// Get the actual size from the current size and the max size
-pub fn get_size((width, height): (u32, u32), (nwidth, nheight): (u32, u32)) -> (u32, u32) {
-    let wratio = nwidth as f32 / width as f32;
-    let hratio = nheight as f32 / height as f32;
+pub fn get_size((width, height): (u32, u32), (max_width, max_height): (u32, u32)) -> (u32, u32) {
+    if width > max_width && height > max_height && max_height != 0 && max_width != 0 {
+        let wratio = max_width as f32 / width as f32;
+        let hratio = max_height as f32 / height as f32;
 
-    let ratio = f32::min(wratio, hratio);
+        let ratio = f32::min(wratio, hratio);
 
-    let nw = max((width as f32 * ratio).round() as u32, 1);
-    let nh = max((height as f32 * ratio).round() as u32, 1);
-    (nw, nh)
+        let new_width = max((width as f32 * ratio).round() as u32, 1);
+        let new_height = max((height as f32 * ratio).round() as u32, 1);
+        (new_width, new_height)
+    } else {
+        (width, height)
+    }
 }
