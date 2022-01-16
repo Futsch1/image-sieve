@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
  - Also resize video preview image
+ - Optimized image loading time
 
 ### Added
 

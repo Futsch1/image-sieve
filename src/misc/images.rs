@@ -1,11 +1,10 @@
 extern crate image;
 extern crate sixtyfps;
 
-use std::cmp::max;
-
-use image::{imageops, DynamicImage, GenericImageView};
-
+use super::resize::resize_image;
 use crate::item_sort_list::FileItem;
+use image::GenericImageView;
+use std::cmp::max;
 
 /// Image buffer from the image crate
 pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
@@ -58,37 +57,29 @@ fn load_image_and_rotate(
     max_height: u32,
 ) -> Result<ImageBuffer, image::ImageError> {
     let cat_image = image::open(path)?;
-    Ok(process_dynamic_image(
-        cat_image, rotate, max_width, max_height,
-    ))
+    let (new_width, new_height) = get_size(
+        (cat_image.width(), cat_image.height()),
+        (max_width, max_height),
+    );
+    if let Ok(cat_image) = resize_image(cat_image.to_rgba8(), new_width, new_height) {
+        Ok(match rotate {
+            90 => image::imageops::rotate90(&cat_image),
+            180 => image::imageops::rotate180(&cat_image),
+            270 => image::imageops::rotate270(&cat_image),
+            _ => cat_image,
+        })
+    } else {
+        Err(image::ImageError::IoError(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Could not load image",
+        )))
+    }
 }
 
 /// Converts a byte buffer to an image buffer
 pub fn image_from_buffer(bytes: &[u8]) -> Result<ImageBuffer, image::ImageError> {
     let cat_image = image::load_from_memory(bytes)?;
     Ok(cat_image.into_rgba8())
-}
-
-/// Processes a dynamic image by rotating it and resizing it to the given width and height
-fn process_dynamic_image(
-    cat_image: DynamicImage,
-    rotate: i32,
-    max_width: u32,
-    max_height: u32,
-) -> ImageBuffer {
-    let (new_width, new_height) = get_size(
-        (cat_image.width(), cat_image.height()),
-        (max_width, max_height),
-    );
-    let cat_image = cat_image.resize(new_width, new_height, imageops::FilterType::Nearest);
-
-    let cat_image = cat_image.into_rgba8();
-    match rotate {
-        90 => image::imageops::rotate90(&cat_image),
-        180 => image::imageops::rotate180(&cat_image),
-        270 => image::imageops::rotate270(&cat_image),
-        _ => cat_image,
-    }
 }
 
 /// Get the actual size from the current size and the max size

@@ -1,6 +1,9 @@
 extern crate ffmpeg_next as ffmpeg;
 
-use super::images::{get_size, ImageBuffer};
+use super::{
+    images::{get_size, ImageBuffer},
+    resize::resize_image,
+};
 use crate::item_sort_list::{FileItem, Orientation};
 use image::imageops;
 
@@ -111,14 +114,11 @@ fn create_image_from_video(
         // Scale to max size
         let (new_width, new_height) =
             get_size((buffer.width(), buffer.height()), (max_width, max_height));
-        let buffer = image::imageops::resize(
-            &buffer,
-            new_width,
-            new_height,
-            image::imageops::FilterType::Nearest,
-        );
-
-        Ok(buffer)
+        if let Ok(buffer) = resize_image(buffer, new_width, new_height) {
+            Ok(buffer)
+        } else {
+            Err(ffmpeg::Error::InvalidData)
+        }
     } else {
         Err(ffmpeg::Error::StreamNotFound)
     }
