@@ -1,4 +1,4 @@
-use std::{num::NonZeroU32, time::Instant};
+use std::num::NonZeroU32;
 
 use fast_image_resize::{
     DifferentTypesOfPixelsError, Image, ImageBufferError, MulDiv, MulDivImageError,
@@ -42,8 +42,6 @@ pub fn resize_image(
     new_width: u32,
     new_height: u32,
 ) -> Result<ImageBuffer, ResizeImageError> {
-    let now = Instant::now();
-
     let width = src_image.width();
     let height = src_image.height();
     let src_image_data = Image::from_slice_u8(
@@ -71,9 +69,6 @@ pub fn resize_image(
     mul_div.multiply_alpha(&src_view, &mut premultiplied_src_image.view_mut())?;
     fast_resizer.resize(&premultiplied_src_image.view(), &mut dst_view)?;
     mul_div.divide_alpha_inplace(&mut dst_view)?;
-
-    let elapsed_time = now.elapsed();
-    println!("Resize time: {:?}", elapsed_time.as_micros());
 
     Ok(ImageBuffer::from_raw(new_width, new_height, dst_image.buffer().to_vec()).unwrap())
 }
