@@ -289,11 +289,12 @@ impl MainWindow {
 
             move |finished| {
                 let window = window_weak.unwrap();
-                items_controller.borrow_mut().update_list_model();
-                items_controller.borrow_mut().selected_list_item(
-                    window.get_current_list_item() as usize,
-                    window_weak.clone(),
-                );
+                if items_controller.borrow_mut().update_list_model() {
+                    items_controller.borrow_mut().selected_list_item(
+                        window.get_current_list_item() as usize,
+                        window_weak.clone(),
+                    );
+                }
                 if finished {
                     window.set_calculating_similarities(false);
                 }

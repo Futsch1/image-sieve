@@ -132,9 +132,9 @@ impl ItemsController {
         }
     }
 
-    /// Update the texts for all entries in the list model
+    /// Update the texts for all entries in the list model and returns true if the list contains more than one item
     /// Should be called when the underlying data (i.e. the item list) has changed
-    pub fn update_list_model(&mut self) {
+    pub fn update_list_model(&mut self) -> bool {
         let item_list = self.item_list.lock().unwrap();
         for count in 0..self.list_model.row_count() {
             let mut list_item = self.list_model.row_data(count);
@@ -142,6 +142,7 @@ impl ItemsController {
             list_item.text = list_item_title(file_item, &item_list);
             self.list_model.set_row_data(count, list_item);
         }
+        !item_list.items.is_empty()
     }
 
     /// Fills the list of found items from the internal data structure to the sixtyfps VecModel
@@ -456,6 +457,7 @@ mod tests {
     fn test_update_list() {
         let item_list = Arc::new(Mutex::new(ItemList::new()));
         let mut items_controller = ItemsController::new(item_list.clone());
+        assert!(!items_controller.update_list_model());
         let filters = build_filters();
         {
             let mut item_list = item_list.lock().unwrap();
@@ -474,7 +476,7 @@ mod tests {
                 "1970-01-01",
             ));
         }
-        items_controller.update_list_model();
+        assert!(items_controller.update_list_model());
         let list_model = items_controller.get_list_model();
         assert_eq!(list_model.row_count(), 2);
         assert_eq!(list_model.row_data(0).text, "📅 🔀 📷 🗑 test1.jpg");
