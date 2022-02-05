@@ -101,7 +101,7 @@ export SortView := HorizontalBox {
         }
         ScrollView {
             padding: 0px;
-            viewport-height: 125px;
+            viewport-height: 100px;
             height: similar-images-model.length > 1 ? 125px : 0px;
             visible: similar-images-model.length > 1;
 
