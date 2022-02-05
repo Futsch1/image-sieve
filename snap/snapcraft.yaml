@@ -21,6 +21,8 @@ apps:
     extensions: [gnome-3-38]
     plugs:
       - home
+      - removable-media
+      - network
 
 parts:
   image-sieve:
