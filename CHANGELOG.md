@@ -5,8 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - Also resize video preview image
- - Optimized image loading time
+ - 
 
 ### Added
 
@@ -14,7 +13,23 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+ - 
+
+## [0.4.2] - 2022-02-05
+
+### Changed
+
+ - Resize video preview image internally to save memory
+ - Optimized image loading time
+
+### Added
+
+ - Snap support for removable media and network if permissions are set
+
+### Fixed
+
  - Do not pass default folder to dir picker if it does not exist
+ - Fixed crash when selecting folder without images
 
 ## [0.4.2] - 2022-01-09
 
