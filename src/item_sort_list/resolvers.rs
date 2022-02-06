@@ -5,7 +5,7 @@ extern crate ffmpeg_next as ffmpeg;
 use self::chrono::NaiveDateTime;
 use self::exif::{In, Tag};
 
-use super::file_types::{is_image, is_video};
+use super::file_types::{is_image, is_raw_image, is_video};
 use super::item_traits::{Orientation, PropertyResolver};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -15,6 +15,8 @@ pub fn get_resolver(path: &Path) -> Box<dyn PropertyResolver> {
         Box::new(ExifResolver::new(path))
     } else if FFmpegResolver::supports(path) {
         Box::new(FFmpegResolver::new(path))
+    } else if RawResolver::supports(path) {
+        Box::new(RawResolver::new(path))
     } else {
         Box::new(FileResolver::new(path))
     }
@@ -182,6 +184,41 @@ impl PropertyResolver for FFmpegResolver {
             }
         }
         None
+    }
+}
+
+struct RawResolver {
+    path: PathBuf,
+}
+
+impl RawResolver {
+    pub fn new(path: &Path) -> Self {
+        Self {
+            path: PathBuf::from(path),
+        }
+    }
+
+    pub fn supports(path: &Path) -> bool {
+        is_raw_image(path)
+    }
+}
+
+impl PropertyResolver for RawResolver {
+    fn get_timestamp(&self) -> i64 {
+        ExifResolver::new(&self.path).get_timestamp()
+    }
+
+    fn get_orientation(&self) -> Option<Orientation> {
+        match rawloader::decode_file(&self.path) {
+            Ok(raw) => match raw.orientation {
+                rawloader::Orientation::Normal => Some(Orientation::Landscape),
+                rawloader::Orientation::Rotate90 => Some(Orientation::Portrait90),
+                rawloader::Orientation::Rotate270 => Some(Orientation::Portrait270),
+                rawloader::Orientation::Rotate180 => Some(Orientation::Landscape180),
+                _ => None,
+            },
+            Err(_) => None,
+        }
     }
 }
 
