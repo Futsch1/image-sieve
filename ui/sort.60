@@ -107,22 +107,26 @@ export SortView := HorizontalBox {
 
             HorizontalBox { 
                 alignment: start;
-            for item[i] in similar-images-model:
-                Image {
-                    source: item.image;
-                    opacity: item.take-over ? 1.0 : 0.2;
-                    image-fit: contain;
+            for item[i] in similar-images-model: 
+                // Workaround for https://github.com/sixtyfpsui/sixtyfps/issues/915
+                Rectangle {
                     width: 180px;
-                    height: 100px;
-                    TouchArea { 
-                        clicked => {
-                            current-image.image = item.image;
-                            current-image.take-over = item.take-over;
-                            current-image.text = item.text;
-                            current-image.local-index = item.local-index;
+                    Image {
+                        source: item.image;
+                        opacity: item.take-over ? 1.0 : 0.2;
+                        image-fit: contain;
+                        width: 180px;
+                        height: 100px;
+                        TouchArea { 
+                            clicked => {
+                                current-image.image = item.image;
+                                current-image.take-over = item.take-over;
+                                current-image.text = item.text;
+                                current-image.local-index = item.local-index;
+                            }
                         }
+                        if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: blue;}
                     }
-                    if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: blue;}
                 }
             }
         }                
