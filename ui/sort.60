@@ -111,12 +111,13 @@ export SortView := HorizontalBox {
                 // Workaround for https://github.com/sixtyfpsui/sixtyfps/issues/915
                 Rectangle {
                     width: 180px;
+                    height: 100px;
                     Image {
                         source: item.image;
                         opacity: item.take-over ? 1.0 : 0.2;
                         image-fit: contain;
-                        width: 180px;
-                        height: 100px;
+                        width: 100%;
+                        height: 100%;
                         TouchArea { 
                             clicked => {
                                 current-image.image = item.image;
