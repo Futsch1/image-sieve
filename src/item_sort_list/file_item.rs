@@ -19,6 +19,13 @@ use super::item_traits::PropertyResolver;
 
 pub type HashType = ImageHash<Vec<u8>>;
 
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+enum ItemType {
+    Image,
+    Video,
+    RawImage,
+}
+
 /// A single file item with all properties required by image_sieve
 #[derive(Eq, Debug, Clone, Serialize, Deserialize)]
 pub struct FileItem {
@@ -36,8 +43,8 @@ pub struct FileItem {
     #[serde(serialize_with = "serialize_hash")]
     #[serde(deserialize_with = "deserialize_hash")]
     hash: Option<HashType>,
-    /// Image extension (implicit property of path, but saved for performance purposes)
-    extension: String,
+    /// File item type
+    item_type: ItemType,
 }
 
 pub fn serialize_hash<S>(hash: &Option<HashType>, s: S) -> Result<S::Ok, S::Error>
@@ -62,6 +69,15 @@ where
     }
 }
 
+fn get_item_type(path: &Path) -> ItemType {
+    match (is_image(path), is_video(path), is_raw_image(path)) {
+        (true, _, _) => ItemType::Image,
+        (_, true, _) => ItemType::Video,
+        (_, _, true) => ItemType::RawImage,
+        _ => panic!("FileItem::new: File type not supported"),
+    }
+}
+
 impl FileItem {
     /// Create a new file item from a path and initialize properties from serialization
     pub fn new(
@@ -73,7 +89,7 @@ impl FileItem {
         let timestamp = property_resolver.get_timestamp();
         let orientation = property_resolver.get_orientation();
         let hash = process_encoded_hash(encoded_hash);
-        let extension = extension(&path);
+        let item_type = get_item_type(&path);
 
         Self {
             path,
@@ -82,21 +98,23 @@ impl FileItem {
             similar: Vec::new(),
             orientation,
             hash,
-            extension,
+            item_type,
         }
     }
 
     /// Construct a dummy/empty file item
     #[cfg(test)]
     pub fn dummy(path: &str, timestamp: i64, take_over: bool) -> Self {
+        let path = PathBuf::from(path);
+        let item_type = get_item_type(&path);
         Self {
-            path: PathBuf::from(path),
+            path,
             timestamp,
             orientation: None,
             take_over,
             similar: Vec::new(),
             hash: None,
-            extension: extension(Path::new(path)),
+            item_type,
         }
     }
 
@@ -189,22 +207,22 @@ impl FileItem {
 
     /// Check if the item is an image
     pub fn is_image(&self) -> bool {
-        is_image(&self.path)
+        self.item_type == ItemType::Image
     }
 
     /// Check if the item is a raw image
     pub fn is_raw_image(&self) -> bool {
-        is_raw_image(&self.path)
+        self.item_type == ItemType::RawImage
     }
 
     /// Check if the item is a video
     pub fn is_video(&self) -> bool {
-        is_video(&self.path)
+        self.item_type == ItemType::Video
     }
 
     /// Get the unicode icon for the extension
     fn extension_to_unicode_icon(&self) -> &str {
-        if self.is_image() {
+        if self.is_image() || self.is_raw_image() {
             "📷"
         } else if self.is_video() {
             "📹"
@@ -277,12 +295,6 @@ impl Ord for FileItem {
     fn cmp(&self, other: &Self) -> Ordering {
         self.timestamp.cmp(&other.timestamp)
     }
-}
-
-/// Gets the extension from a path
-fn extension(path: &Path) -> String {
-    let extension = path.extension().unwrap_or_default().to_ascii_lowercase();
-    String::from(extension.to_str().unwrap())
 }
 
 /// Process an encoded hash and create an image hash from it
