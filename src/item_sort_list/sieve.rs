@@ -312,7 +312,7 @@ mod test {
                     get_sub_path(
                         &item_list,
                         &FileItem::dummy(
-                            "",
+                            "test.jpg",
                             NaiveDateTime::parse_from_str(input, "%Y-%m-%d %H:%M")
                                 .unwrap()
                                 .timestamp(),
@@ -330,8 +330,8 @@ mod test {
     fn test_sieve_methods() {
         let item_list = ItemList {
             items: vec![
-                FileItem::dummy("test/test1", 0, true),
-                FileItem::dummy("test/test2", 0, false),
+                FileItem::dummy("test/test1.jpg", 0, true),
+                FileItem::dummy("test/test2.jpg", 0, false),
             ],
             events: vec![],
             path: PathBuf::from(""),
@@ -350,7 +350,10 @@ mod test {
         assert_eq!(sieve_io.creates.borrow().len(), 0);
         assert_eq!(sieve_io.renames.borrow().len(), 0);
         assert_eq!(sieve_io.removes.borrow().len(), 1);
-        assert_eq!(sieve_io.removes.borrow()[0].to_str().unwrap(), "test/test2");
+        assert_eq!(
+            sieve_io.removes.borrow()[0].to_str().unwrap(),
+            "test/test2.jpg"
+        );
 
         sieve_io.reset();
         sieve(
@@ -364,11 +367,11 @@ mod test {
         assert_eq!(sieve_io.copies.borrow().len(), 1);
         assert_eq!(
             sieve_io.copies.borrow()[0].0.to_str().unwrap(),
-            "test/test1"
+            "test/test1.jpg"
         );
         assert_eq!(
             sieve_io.copies.borrow()[0].1.to_str().unwrap(),
-            "target/1970-01/test1"
+            "target/1970-01/test1.jpg"
         );
         assert_eq!(sieve_io.creates.borrow().len(), 1);
         assert_eq!(
@@ -396,11 +399,11 @@ mod test {
         assert_eq!(sieve_io.renames.borrow().len(), 1);
         assert_eq!(
             sieve_io.renames.borrow()[0].0.to_str().unwrap(),
-            "test/test1"
+            "test/test1.jpg"
         );
         assert_eq!(
             sieve_io.renames.borrow()[0].1.to_str().unwrap(),
-            "target/1970-01/test1"
+            "target/1970-01/test1.jpg"
         );
         assert_eq!(sieve_io.removes.borrow().len(), 0);
 
@@ -422,13 +425,16 @@ mod test {
         assert_eq!(sieve_io.renames.borrow().len(), 1);
         assert_eq!(
             sieve_io.renames.borrow()[0].0.to_str().unwrap(),
-            "test/test1"
+            "test/test1.jpg"
         );
         assert_eq!(
             sieve_io.renames.borrow()[0].1.to_str().unwrap(),
-            "target/1970-01/test1"
+            "target/1970-01/test1.jpg"
         );
         assert_eq!(sieve_io.removes.borrow().len(), 1);
-        assert_eq!(sieve_io.removes.borrow()[0].to_str().unwrap(), "test/test2");
+        assert_eq!(
+            sieve_io.removes.borrow()[0].to_str().unwrap(),
+            "test/test2.jpg"
+        );
     }
 }

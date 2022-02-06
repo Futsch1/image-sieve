@@ -13,7 +13,8 @@ ImageSieve also includes a mechanism to sort images according to user defined ev
 The idea of working with ImageSieve is as follows: Copy all the images and videos taken in a period of time with various devices to a single folder or folder structure. Open this folder with ImageSieve and select which items to discard. Create events for the sorting period and finally move the selected items to your image archive folder.
 
 ## Features
-- Browse images in jpg, tiff or png format and videos in mp4, avi and mts format from a folder structure in the order of their creation
+- Supports plenty of image formats (jpg, tiff, gif, bmp, webp, png), many raw image formats and videos in mp4, avi, mov and mts format
+- Browse images and videos from a folder structure in the order of their creation
 - Select which images to keep and which to discard
 - Images which resemble each other and images being taken within a customizable number of seconds are considered similar and are highlighted to support sorting
 - Manage events with a name, a start and an end date for the images to sort to automatically assign the images to an event

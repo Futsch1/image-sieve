@@ -187,14 +187,14 @@ fn load_image_thread(
         };
         // If it is not in the cache, load it from the file and put it into the cache
         if !contains_key {
-            let image_buffer = if command.file_item.is_image() {
-                crate::misc::images::get_image_buffer(
+            let image_buffer = if command.file_item.is_video() {
+                crate::misc::video_to_image::get_image_buffer(
                     &command.file_item,
                     command.width,
                     command.height,
                 )
             } else {
-                crate::misc::video_to_image::get_image_buffer(
+                crate::misc::images::get_image_buffer(
                     &command.file_item,
                     command.width,
                     command.height,

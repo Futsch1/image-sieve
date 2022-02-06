@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 use super::event;
 use super::file_item;
-use super::file_types::get_extensions;
+use super::file_types::is_any;
 use super::resolvers;
 use super::sieve;
 
@@ -73,18 +73,11 @@ impl ItemList {
     }
 
     /// Check if a path can be added
-    pub fn check_and_add(&mut self, path: &Path) -> bool {
-        if let Some(extension) = path.extension() {
-            if let Some(extension) = extension.to_ascii_lowercase().to_str() {
-                if get_extensions().contains(&extension)
-                    && !self.items.iter().any(|i| i.path == path)
-                {
-                    let item = Self::create_item(path.to_path_buf(), true, "");
-                    self.items.push(item);
-                }
-            }
+    pub fn check_and_add(&mut self, path: &Path) {
+        if is_any(path) && !self.items.iter().any(|i| i.path == path) {
+            let item = Self::create_item(path.to_path_buf(), true, "");
+            self.items.push(item);
         }
-        false
     }
 
     /// Returns the index of a file item
@@ -240,7 +233,7 @@ mod tests {
         let mut items: Vec<file_item::FileItem> = vec![];
         for _ in 0..6 {
             items.push(file_item::FileItem::new(
-                PathBuf::from(""),
+                PathBuf::from("test.jpg"),
                 Box::new(MockResolver::new(call_count.clone())),
                 true,
                 "",
@@ -271,7 +264,7 @@ mod tests {
         for hash in hashes {
             let encoded = base64::encode(hash);
             items.push(file_item::FileItem::new(
-                PathBuf::from(""),
+                PathBuf::from("test.jpg"),
                 Box::new(MockResolver::new(call_count.clone())),
                 true,
                 &encoded,
@@ -308,7 +301,7 @@ mod tests {
         item_list.finish_synchronizing(Path::new("tests"));
         assert_eq!("tests", item_list.path.to_str().unwrap());
 
-        item_list.add_item(Path::new("tests/not_there"), true, "");
+        item_list.add_item(Path::new("tests/not_there.jpg"), true, "");
         assert_eq!(5, item_list.items.len());
         item_list.drain_missing();
         assert_eq!(4, item_list.items.len());
