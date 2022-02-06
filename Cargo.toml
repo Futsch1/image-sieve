@@ -27,6 +27,8 @@ home = "0.5"
 walkdir = "2"
 ffmpeg-next = {version = "4.4", features = ["format", "codec", "software-scaling"], default_features = false}
 fast_image_resize = "0.7"
+rawloader = "0.37.0"
+imagepipe = "0.4.0"
 
 [dev-dependencies]
 base64 = "0.13"

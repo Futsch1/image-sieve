@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 use super::event;
 use super::file_item;
-use super::file_types::get_extensions;
+use super::file_types::is_any;
 use super::resolvers;
 use super::sieve;
 
@@ -73,18 +73,11 @@ impl ItemList {
     }
 
     /// Check if a path can be added
-    pub fn check_and_add(&mut self, path: &Path) -> bool {
-        if let Some(extension) = path.extension() {
-            if let Some(extension) = extension.to_ascii_lowercase().to_str() {
-                if get_extensions().contains(&extension)
-                    && !self.items.iter().any(|i| i.path == path)
-                {
-                    let item = Self::create_item(path.to_path_buf(), true, "");
-                    self.items.push(item);
-                }
-            }
+    pub fn check_and_add(&mut self, path: &Path) {
+        if is_any(path) && !self.items.iter().any(|i| i.path == path) {
+            let item = Self::create_item(path.to_path_buf(), true, "");
+            self.items.push(item);
         }
-        false
     }
 
     /// Returns the index of a file item

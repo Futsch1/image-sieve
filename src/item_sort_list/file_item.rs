@@ -12,6 +12,7 @@ use serde::Serialize;
 use serde::Serializer;
 
 use super::file_types::is_image;
+use super::file_types::is_raw_image;
 use super::file_types::is_video;
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
@@ -189,6 +190,11 @@ impl FileItem {
     /// Check if the item is an image
     pub fn is_image(&self) -> bool {
         is_image(&self.path)
+    }
+
+    /// Check if the item is a raw image
+    pub fn is_raw_image(&self) -> bool {
+        is_raw_image(&self.path)
     }
 
     /// Check if the item is a video

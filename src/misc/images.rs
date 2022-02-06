@@ -3,7 +3,6 @@ extern crate sixtyfps;
 
 use super::resize::resize_image;
 use crate::item_sort_list::FileItem;
-use image::GenericImageView;
 use std::cmp::max;
 
 /// Image buffer from the image crate
@@ -12,8 +11,13 @@ pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 /// Get an image buffer from a FileItem with a width and height constraint. If the image contains
 /// an orientation indication, it is rotated accordingly.
 pub fn get_image_buffer(item: &FileItem, max_width: u32, max_height: u32) -> ImageBuffer {
-    load_image_and_rotate(&item.path, get_rotation(item), max_width, max_height)
-        .unwrap_or_else(|_| ImageBuffer::new(1, 1))
+    let image_buffer = if item.is_image() {
+        load_image_and_rotate(&item.path, get_rotation(item), max_width, max_height)
+    } else {
+        load_raw_image_and_rotate(&item.path, get_rotation(item), max_width, max_height)
+    };
+
+    image_buffer.unwrap_or_else(|| ImageBuffer::new(1, 1))
 }
 
 /// Return the rotation in degrees from a file item
@@ -55,25 +59,77 @@ fn load_image_and_rotate(
     rotate: i32,
     max_width: u32,
     max_height: u32,
-) -> Result<ImageBuffer, image::ImageError> {
-    let cat_image = image::open(path)?;
+) -> Option<ImageBuffer> {
+    if let Ok(image) = image::open(path) {
+        resize_and_rotate(image.to_rgba8(), rotate, max_width, max_height)
+    } else {
+        None
+    }
+}
+
+fn resize_and_rotate(
+    cat_image: ImageBuffer,
+    rotate: i32,
+    max_width: u32,
+    max_height: u32,
+) -> Option<ImageBuffer> {
     let (new_width, new_height) = get_size(
         (cat_image.width(), cat_image.height()),
         (max_width, max_height),
     );
-    if let Ok(cat_image) = resize_image(cat_image.to_rgba8(), new_width, new_height) {
-        Ok(match rotate {
+    if let Ok(cat_image) = resize_image(cat_image, new_width, new_height) {
+        Some(match rotate {
             90 => image::imageops::rotate90(&cat_image),
             180 => image::imageops::rotate180(&cat_image),
             270 => image::imageops::rotate270(&cat_image),
             _ => cat_image,
         })
     } else {
-        Err(image::ImageError::IoError(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Could not load image",
-        )))
+        None
     }
+}
+
+/// Loads a raw image from a path and rotates it by a given angle in degrees
+fn load_raw_image_and_rotate(
+    path: &std::path::Path,
+    rotate: i32,
+    max_width: u32,
+    max_height: u32,
+) -> Option<ImageBuffer> {
+    let raw = match rawloader::decode_file(path) {
+        Ok(raw) => raw,
+        Err(_) => return None,
+    };
+
+    let width = raw.width;
+    let height = raw.height;
+    let source = imagepipe::ImageSource::Raw(raw);
+
+    let mut pipeline = match imagepipe::Pipeline::new_from_source(source, width, height, true) {
+        Ok(pipeline) => pipeline,
+        Err(_) => return None,
+    };
+
+    pipeline.run(None);
+    let image = match pipeline.output_8bit(None) {
+        Ok(image) => image,
+        Err(_) => return None,
+    };
+
+    let image = image::ImageBuffer::<image::Rgb<u8>, Vec<u8>>::from_raw(
+        image.width as u32,
+        image.height as u32,
+        image.data,
+    );
+
+    let image = match image {
+        Some(image) => image,
+        None => return None,
+    };
+
+    let dyn_img = image::DynamicImage::ImageRgb8(image);
+    let rgba_image: ImageBuffer = dyn_img.into_rgba8();
+    resize_and_rotate(rgba_image, rotate, max_width, max_height)
 }
 
 /// Converts a byte buffer to an image buffer
