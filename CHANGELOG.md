@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - 
+ - Key commands are now working properly after switching tabs, also they have no effect on other tabs than the sort tab
 
 ## [0.4.2] - 2022-02-05
 

@@ -64,25 +64,68 @@ ImageSieve := Window {
     forward-focus: key-handler;
     key-handler:= FocusScope {  
         key-pressed(event) => {
-            if (event.text == "\u{000E}"){
-                if (current-list-item > 0) {
-                    sort-view.prev-clicked();
+            if (tabs.current-index == 0) {
+                if (event.text == Keys.LeftArrow) {
+                    if (current-list-item > 0) {
+                        sort-view.prev-clicked();
+                    }
                 }
-            }
-            if (event.text == "\u{000F}") {
-                if (list-model.length > 0 && current-list-item < list-model.length - 1) {
-                    sort-view.next-clicked();
+                if (event.text == Keys.RightArrow) {
+                    if (list-model.length > 0 && current-list-item < list-model.length - 1) {
+                        sort-view.next-clicked();
+                    }
                 }
+                // TODO: On up and down key, change current-image-index
+                // First waiting for https://github.com/sixtyfpsui/sixtyfps/issues/170 because we currently cannot get the up or down key...
+                // Then waiting for https://github.com/sixtyfpsui/sixtyfps/issues/98 to be implemented, otherwise it will get too complicated
+                // On key up, the next image-index shall be selected, on key down the previous one
+                if (event.text == " ") {
+                    sort-view.selected-clicked()
+                }
+                accept
             }
-            // TODO: On up and down key, change current-image-index
-            // First waiting for https://github.com/sixtyfpsui/sixtyfps/issues/170 because we currently cannot get the up or down key...
-            // Then waiting for https://github.com/sixtyfpsui/sixtyfps/issues/98 to be implemented, otherwise it will get too complicated
-            // On key up, the next image-index shall be selected, on key down the previous one
-            if (event.text == " ") {
-                sort-view.selected-clicked()
+            else {
+                reject
             }
-            accept
         }
+                
+        tabs := TabWidget { 
+            visible: !loading;
+            Tab {
+                title: "📷 📹  Images";
+                
+                sort-view := SortView {
+                }
+            }
+
+            Tab {
+                title: "📅  Events";
+
+                events-view := EventsView {
+                }
+            }
+
+            Tab {
+                title: "💾  Sieve";
+                
+                sieve-view := SieveView {
+                }
+            }
+
+            Tab {
+                title: "⚙  Settings";
+                
+                settings-view := SettingsView {                
+                }
+            }
+
+            Tab {
+                title: "❓  Help";
+                help-view := HelpView {
+                }
+            }
+        }
+
     }
     VerticalLayout { 
         alignment: center;
@@ -111,45 +154,6 @@ ImageSieve := Window {
                 clicked => {
                     cancel-loading();
                 }
-            }
-        }
-    }
-    
-    
-
-    TabWidget { 
-        visible: !loading;
-        Tab {
-            title: "📷 📹  Images";
-            
-            sort-view := SortView {
-            }
-        }
-
-        Tab {
-            title: "📅  Events";
-
-            events-view := EventsView {
-            }
-        }
-
-        Tab {
-            title: "💾  Sieve";
-            
-            sieve-view := SieveView {
-            }
-        }
-
-        Tab {
-            title: "⚙  Settings";
-            
-            settings-view := SettingsView {                
-            }
-        }
-
-        Tab {
-            title: "❓  Help";
-            help-view := HelpView {
             }
         }
     }
