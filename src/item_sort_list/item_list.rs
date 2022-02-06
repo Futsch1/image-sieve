@@ -233,7 +233,7 @@ mod tests {
         let mut items: Vec<file_item::FileItem> = vec![];
         for _ in 0..6 {
             items.push(file_item::FileItem::new(
-                PathBuf::from(""),
+                PathBuf::from("test.jpg"),
                 Box::new(MockResolver::new(call_count.clone())),
                 true,
                 "",
@@ -264,7 +264,7 @@ mod tests {
         for hash in hashes {
             let encoded = base64::encode(hash);
             items.push(file_item::FileItem::new(
-                PathBuf::from(""),
+                PathBuf::from("test.jpg"),
                 Box::new(MockResolver::new(call_count.clone())),
                 true,
                 &encoded,
@@ -301,7 +301,7 @@ mod tests {
         item_list.finish_synchronizing(Path::new("tests"));
         assert_eq!("tests", item_list.path.to_str().unwrap());
 
-        item_list.add_item(Path::new("tests/not_there"), true, "");
+        item_list.add_item(Path::new("tests/not_there.jpg"), true, "");
         assert_eq!(5, item_list.items.len());
         item_list.drain_missing();
         assert_eq!(4, item_list.items.len());
