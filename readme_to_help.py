@@ -36,7 +36,7 @@ for chapter in chapters:
         lambda x: not x.startswith('!['), chapter_lines)]))
     chapter_help[chapter] = '\\n'.join(chapter_content)
 
-with open('ui/help.60', 'r') as f:
+with open('ui/help.slint', 'r') as f:
     lines = f.readlines()
 
 for chapter in chapter_help:
@@ -51,5 +51,5 @@ for chapter in chapter_help:
                     break
             break
 
-with open('ui/help.60', 'w') as f:
+with open('ui/help.slint', 'w') as f:
     f.writelines(lines)

@@ -5,8 +5,8 @@ use img_hash::HashAlg;
 use img_hash::Hasher;
 use img_hash::HasherConfig;
 use img_hash::ImageHash;
-use sixtyfps::ComponentHandle;
-use sixtyfps::SharedString;
+use slint::ComponentHandle;
+use slint::SharedString;
 use walkdir::WalkDir;
 
 use crate::main_window::ImageSieve;
@@ -77,7 +77,7 @@ impl Drop for Synchronizer {
 fn synchronize_run(
     item_list: Arc<Mutex<ItemList>>,
     receiver: &Receiver<Command>,
-    image_sieve: sixtyfps::Weak<ImageSieve>,
+    image_sieve: slint::Weak<ImageSieve>,
 ) {
     for command in receiver {
         // In any case, reset similarities first
@@ -121,7 +121,7 @@ fn synchronize_run(
 }
 
 /// Tell the GUI that the similarities have been calculated
-fn similarities_calculated(image_sieve: &sixtyfps::Weak<ImageSieve>, finished: bool) {
+fn similarities_calculated(image_sieve: &slint::Weak<ImageSieve>, finished: bool) {
     image_sieve.clone().upgrade_in_event_loop({
         move |h| {
             h.invoke_similarities_calculated(finished);
@@ -133,7 +133,7 @@ fn similarities_calculated(image_sieve: &sixtyfps::Weak<ImageSieve>, finished: b
 fn scan_files(
     path: &Path,
     item_list: Arc<Mutex<ItemList>>,
-    image_sieve: &sixtyfps::Weak<ImageSieve>,
+    image_sieve: &slint::Weak<ImageSieve>,
     receiver: &Receiver<Command>,
 ) -> Result<(), ()> {
     let mut item_list_loc = item_list.lock().unwrap();
@@ -234,7 +234,7 @@ fn calculate_similar_hashes(item_list: Arc<Mutex<ItemList>>, settings: &Settings
 }
 
 /// Report a progress string back to the main window
-fn report_progress(image_sieve: &sixtyfps::Weak<ImageSieve>, progress: String) {
+fn report_progress(image_sieve: &slint::Weak<ImageSieve>, progress: String) {
     image_sieve.clone().upgrade_in_event_loop({
         move |h| {
             h.set_loading_progress(SharedString::from(progress));

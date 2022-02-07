@@ -3,9 +3,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 extern crate nfd;
-extern crate sixtyfps;
+extern crate slint;
 
-use sixtyfps::{Model, ModelHandle, SharedString};
+use slint::{Model, ModelRc, SharedString};
 use std::cell::RefCell;
 use std::fmt::Debug;
 use std::path::Path;
@@ -31,7 +31,7 @@ use crate::synchronize::Synchronizer;
     missing_debug_implementations
 )]
 mod generated_code {
-    sixtyfps::include_modules!();
+    slint::include_modules!();
 }
 pub use generated_code::*;
 
@@ -41,7 +41,7 @@ pub struct MainWindow {
     item_list: Arc<Mutex<ItemList>>,
     items_controller: Rc<RefCell<ItemsController>>,
     events_controller: Rc<RefCell<EventsController>>,
-    sieve_result_model: Rc<sixtyfps::VecModel<SieveResult>>,
+    sieve_result_model: Rc<slint::VecModel<SieveResult>>,
     synchronizer: Rc<Synchronizer>,
 }
 
@@ -73,7 +73,7 @@ impl MainWindow {
 
         let events_controller = Rc::new(RefCell::new(EventsController::new(item_list.clone())));
         let items_controller = Rc::new(RefCell::new(ItemsController::new(item_list.clone())));
-        let sieve_result_model = Rc::new(sixtyfps::VecModel::<SieveResult>::default());
+        let sieve_result_model = Rc::new(slint::VecModel::<SieveResult>::default());
 
         // Construct main window
         let image_sieve = ImageSieve::new();
@@ -105,29 +105,26 @@ impl MainWindow {
         }
 
         // Set model references
+        main_window.window.set_list_model(
+            main_window
+                .items_controller
+                .borrow()
+                .get_list_model()
+                .into(),
+        );
+        main_window.window.set_similar_images_model(
+            main_window
+                .items_controller
+                .borrow()
+                .get_similar_items_model()
+                .into(),
+        );
         main_window
             .window
-            .set_list_model(sixtyfps::ModelHandle::new(
-                main_window.items_controller.borrow().get_list_model(),
-            ));
+            .set_events_model(main_window.events_controller.borrow().get_model().into());
         main_window
             .window
-            .set_similar_images_model(sixtyfps::ModelHandle::new(
-                main_window
-                    .items_controller
-                    .borrow()
-                    .get_similar_items_model(),
-            ));
-        main_window
-            .window
-            .set_events_model(sixtyfps::ModelHandle::new(
-                main_window.events_controller.borrow().get_model(),
-            ));
-        main_window
-            .window
-            .set_sieve_result_model(sixtyfps::ModelHandle::new(
-                main_window.sieve_result_model.clone(),
-            ));
+            .set_sieve_result_model(main_window.sieve_result_model.clone().into());
 
         main_window.setup_callbacks();
 
@@ -406,17 +403,17 @@ impl MainWindow {
 /// Sieves the item list in a background thread
 pub fn sieve(
     item_list: &ItemList,
-    window_weak: sixtyfps::Weak<ImageSieve>,
-    sieve_result_model: Rc<sixtyfps::VecModel<SieveResult>>,
+    window_weak: slint::Weak<ImageSieve>,
+    sieve_result_model: Rc<slint::VecModel<SieveResult>>,
 ) {
     let item_list_copy = item_list.to_owned();
     let target_path = window_weak.unwrap().get_target_directory().to_string();
-    let methods: ModelHandle<SharedString> = window_weak
+    let methods: ModelRc<SharedString> = window_weak
         .unwrap()
         .global::<SieveComboValues>()
         .get_methods();
     let sieve_method = model_to_enum(&methods, &window_weak.unwrap().get_sieve_method());
-    let directory_names: ModelHandle<SharedString> = window_weak
+    let directory_names: ModelRc<SharedString> = window_weak
         .unwrap()
         .global::<SieveComboValues>()
         .get_directory_names();
@@ -445,7 +442,7 @@ pub fn sieve(
                 let sieve_result_model = handle.get_sieve_result_model();
                 let sieve_result_model = sieve_result_model
                     .as_any()
-                    .downcast_ref::<sixtyfps::VecModel<SieveResult>>()
+                    .downcast_ref::<slint::VecModel<SieveResult>>()
                     .unwrap();
                 let color = if progress == "Done" {
                     SharedString::from("green")
