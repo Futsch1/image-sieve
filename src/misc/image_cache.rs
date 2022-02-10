@@ -8,13 +8,13 @@ use std::{
 use super::lru_map::LruMap;
 use crate::item_sort_list::FileItem;
 use crate::misc::images::ImageBuffer;
-use sixtyfps::Image;
+use slint::Image;
 
 /// The least recently used map used to store the images protected by a mutex.
 type ImagesMapMutex = Mutex<LruMap<ImageBuffer, String, 64>>;
 /// The queue with images to load protected by a mutex.
 type LoadQueue = Mutex<VecDeque<LoadImageCommand>>;
-/// The callback which is executed when an image was loaded (is no sixtyfps::Image because that is not "Send")
+/// The callback which is executed when an image was loaded (is no slint::Image because that is not "Send")
 pub type DoneCallback = Box<dyn Fn(ImageBuffer) + Send + 'static>;
 
 const HOURGLASS_PNG: &[u8; 5533] = include_bytes!("hourglass.png");

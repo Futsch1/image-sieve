@@ -3,7 +3,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use sixtyfps::Model;
+use slint::Model;
 
 use crate::{
     item_sort_list::{FileItem, ItemList},
@@ -15,8 +15,8 @@ use super::helper;
 
 pub struct ItemsController {
     item_list: Arc<Mutex<ItemList>>,
-    list_model: Rc<sixtyfps::VecModel<main_window::ListItem>>,
-    similar_items_model: Rc<sixtyfps::VecModel<main_window::SortItem>>,
+    list_model: Rc<slint::VecModel<main_window::ListItem>>,
+    similar_items_model: Rc<slint::VecModel<main_window::SortItem>>,
     image_cache: image_cache::ImageCache,
 }
 
@@ -28,19 +28,19 @@ impl ItemsController {
 
         Self {
             item_list,
-            list_model: Rc::new(sixtyfps::VecModel::<main_window::ListItem>::default()),
-            similar_items_model: Rc::new(sixtyfps::VecModel::<main_window::SortItem>::default()),
+            list_model: Rc::new(slint::VecModel::<main_window::ListItem>::default()),
+            similar_items_model: Rc::new(slint::VecModel::<main_window::SortItem>::default()),
             image_cache,
         }
     }
 
     /// Gets the sixtyfps vec model for the item list
-    pub fn get_list_model(&self) -> Rc<sixtyfps::VecModel<main_window::ListItem>> {
+    pub fn get_list_model(&self) -> Rc<slint::VecModel<main_window::ListItem>> {
         self.list_model.clone()
     }
 
     /// Gets the sixtyfps vec model for the similar items
-    pub fn get_similar_items_model(&self) -> Rc<sixtyfps::VecModel<main_window::SortItem>> {
+    pub fn get_similar_items_model(&self) -> Rc<slint::VecModel<main_window::SortItem>> {
         self.similar_items_model.clone()
     }
 
@@ -59,13 +59,17 @@ impl ItemsController {
     pub fn selected_list_item(
         &mut self,
         list_model_index: usize,
-        window: sixtyfps::Weak<main_window::ImageSieve>,
+        window: slint::Weak<main_window::ImageSieve>,
     ) {
         {
             // Clear images model
             self.clear_similar_items();
 
-            let items_index = self.list_model.row_data(list_model_index).local_index as usize;
+            let items_index = self
+                .list_model
+                .row_data(list_model_index)
+                .unwrap()
+                .local_index as usize;
             let item_list = self.item_list.lock().unwrap();
             let similars = item_list.items[items_index].get_similars();
 
@@ -106,7 +110,7 @@ impl ItemsController {
         // Set the data of the current image
         window
             .unwrap()
-            .set_current_image(self.similar_items_model.row_data(0));
+            .set_current_image(self.similar_items_model.row_data(0).unwrap());
 
         // And prefetch the next images
         self.prefetch_images(list_model_index);
@@ -123,7 +127,7 @@ impl ItemsController {
         self.update_list_model();
         // And update the take over state in the similar items model
         for count in 0..self.similar_items_model.row_count() {
-            let mut item: main_window::SortItem = self.similar_items_model.row_data(count);
+            let mut item: main_window::SortItem = self.similar_items_model.row_data(count).unwrap();
             if item.local_index == local_index {
                 item.take_over = take_over;
                 self.similar_items_model.set_row_data(count, item);
@@ -137,7 +141,7 @@ impl ItemsController {
     pub fn update_list_model(&mut self) -> bool {
         let item_list = self.item_list.lock().unwrap();
         for count in 0..self.list_model.row_count() {
-            let mut list_item = self.list_model.row_data(count);
+            let mut list_item = self.list_model.row_data(count).unwrap();
             let file_item = &item_list.items[list_item.local_index as usize];
             list_item.text = list_item_title(file_item, &item_list);
             self.list_model.set_row_data(count, list_item);
@@ -177,8 +181,8 @@ impl ItemsController {
         current_item_local_index: i32,
         is_current_image: bool,
         has_similars: bool,
-        window_weak: sixtyfps::Weak<main_window::ImageSieve>,
-    ) -> sixtyfps::Image {
+        window_weak: slint::Weak<main_window::ImageSieve>,
+    ) -> slint::Image {
         let image = self.image_cache.get(item);
         if let Some(image) = image {
             image
@@ -187,7 +191,10 @@ impl ItemsController {
                 window_weak.clone().upgrade_in_event_loop(move |handle| {
                     // Check if still the image is visible that caused the image loads
                     if handle.get_current_image().local_index == current_item_local_index {
-                        let mut row_data = handle.get_similar_images_model().row_data(model_index);
+                        let mut row_data = handle
+                            .get_similar_images_model()
+                            .row_data(model_index)
+                            .unwrap();
                         if has_similars {
                             row_data.image = crate::misc::images::get_sixtyfps_image(&image_buffer);
                             handle
@@ -223,7 +230,7 @@ impl ItemsController {
         for i in list_model_index + 1..list_model_index + 3 {
             if i < self.list_model.row_count() {
                 let item_list = self.item_list.lock().unwrap();
-                let list_item = &self.list_model.row_data(i);
+                let list_item = &self.list_model.row_data(i).unwrap();
                 let file_item = &item_list.items[list_item.local_index as usize];
                 if file_item.is_image() {
                     self.image_cache
@@ -276,14 +283,14 @@ fn compare_file_items(
 fn sort_item_from_file_item(
     file_item: &FileItem,
     item_list: &ItemList,
-    image: sixtyfps::Image,
+    image: slint::Image,
 ) -> main_window::SortItem {
     let mut description = format!("{}", file_item);
     if let Some(event) = item_list.get_event(file_item) {
         description = description + ", 📅 " + &event.name;
     }
     main_window::SortItem {
-        text: sixtyfps::SharedString::from(description),
+        text: slint::SharedString::from(description),
         image,
         take_over: file_item.get_take_over(),
         local_index: item_list.index_of_item(file_item).unwrap() as i32,
@@ -291,12 +298,12 @@ fn sort_item_from_file_item(
 }
 
 /// Get the list item title for the GUI from a file item
-fn list_item_title(file_item: &FileItem, item_list: &ItemList) -> sixtyfps::SharedString {
+fn list_item_title(file_item: &FileItem, item_list: &ItemList) -> slint::SharedString {
     let mut title = file_item.get_item_string(&item_list.path);
     if item_list.get_event(file_item).is_some() {
         title = String::from("📅 ") + &title;
     }
-    sixtyfps::SharedString::from(title)
+    slint::SharedString::from(title)
 }
 
 /// Create a list item for the GUI from a file item
@@ -310,7 +317,7 @@ fn list_item_from_file_item(file_item: &FileItem, item_list: &ItemList) -> main_
 #[cfg(test)]
 mod tests {
     use crate::main_window::ImageSieve;
-    use sixtyfps::{ComponentHandle, SharedString};
+    use slint::{ComponentHandle, SharedString};
 
     use super::*;
 
@@ -339,38 +346,38 @@ mod tests {
         items_controller.populate_list_model(&filters);
         let list_model = items_controller.get_list_model();
         assert_eq!(list_model.row_count(), 2);
-        assert_eq!(list_model.row_data(0).local_index, 1);
-        assert_eq!(list_model.row_data(0).text, "🔀 📷 🗑 test1.jpg");
-        assert_eq!(list_model.row_data(1).local_index, 0);
-        assert_eq!(list_model.row_data(1).text, "📹 test2.mov");
+        assert_eq!(list_model.row_data(0).unwrap().local_index, 1);
+        assert_eq!(list_model.row_data(0).unwrap().text, "🔀 📷 🗑 test1.jpg");
+        assert_eq!(list_model.row_data(1).unwrap().local_index, 0);
+        assert_eq!(list_model.row_data(1).unwrap().text, "📹 test2.mov");
 
         filters.direction = SharedString::from("Desc");
         items_controller.populate_list_model(&filters);
         assert_eq!(list_model.row_count(), 2);
-        assert_eq!(list_model.row_data(1).local_index, 1);
-        assert_eq!(list_model.row_data(1).text, "🔀 📷 🗑 test1.jpg");
-        assert_eq!(list_model.row_data(0).local_index, 0);
-        assert_eq!(list_model.row_data(0).text, "📹 test2.mov");
+        assert_eq!(list_model.row_data(1).unwrap().local_index, 1);
+        assert_eq!(list_model.row_data(1).unwrap().text, "🔀 📷 🗑 test1.jpg");
+        assert_eq!(list_model.row_data(0).unwrap().local_index, 0);
+        assert_eq!(list_model.row_data(0).unwrap().text, "📹 test2.mov");
 
         filters.images = false;
         items_controller.populate_list_model(&filters);
         assert_eq!(list_model.row_count(), 1);
-        assert_eq!(list_model.row_data(0).local_index, 0);
-        assert_eq!(list_model.row_data(0).text, "📹 test2.mov");
+        assert_eq!(list_model.row_data(0).unwrap().local_index, 0);
+        assert_eq!(list_model.row_data(0).unwrap().text, "📹 test2.mov");
 
         filters.images = true;
         filters.videos = false;
         items_controller.populate_list_model(&filters);
         assert_eq!(list_model.row_count(), 1);
-        assert_eq!(list_model.row_data(0).local_index, 1);
-        assert_eq!(list_model.row_data(0).text, "🔀 📷 🗑 test1.jpg");
+        assert_eq!(list_model.row_data(0).unwrap().local_index, 1);
+        assert_eq!(list_model.row_data(0).unwrap().text, "🔀 📷 🗑 test1.jpg");
 
         filters.videos = true;
         filters.sorted_out = false;
         items_controller.populate_list_model(&filters);
         assert_eq!(list_model.row_count(), 1);
-        assert_eq!(list_model.row_data(0).local_index, 0);
-        assert_eq!(list_model.row_data(0).text, "📹 test2.mov");
+        assert_eq!(list_model.row_data(0).unwrap().local_index, 0);
+        assert_eq!(list_model.row_data(0).unwrap().text, "📹 test2.mov");
 
         items_controller.clear_list();
         assert_eq!(items_controller.get_list_model().row_count(), 0);
@@ -400,17 +407,17 @@ mod tests {
         }
         let list_model = items_controller.get_list_model();
         let similar_items_model = items_controller.get_similar_items_model();
-        assert_eq!(list_model.row_data(1).text, "📹 🗑 test2.mov");
-        assert!(!similar_items_model.row_data(0).take_over);
+        assert_eq!(list_model.row_data(1).unwrap().text, "📹 🗑 test2.mov");
+        assert!(!similar_items_model.row_data(0).unwrap().take_over);
 
         items_controller.set_take_over(0, true);
         {
             let item_list = item_list.lock().unwrap();
             assert!(item_list.items[0].get_take_over());
         }
-        assert_eq!(list_model.row_data(1).text, "📹 test2.mov");
+        assert_eq!(list_model.row_data(1).unwrap().text, "📹 test2.mov");
         assert!(window.get_current_image().take_over);
-        assert!(similar_items_model.row_data(0).take_over);
+        assert!(similar_items_model.row_data(0).unwrap().take_over);
     }
 
     #[test]
@@ -434,15 +441,15 @@ mod tests {
         items_controller.selected_list_item(0, window_weak.clone());
         assert_eq!(similar_items_model.row_count(), 2);
         assert_eq!(
-            similar_items_model.row_data(0).text,
+            similar_items_model.row_data(0).unwrap().text,
             "🔀 📷 🗑 test1.jpg - 1970-01-01 00:00:00, 0 KB"
         );
         assert_eq!(
-            similar_items_model.row_data(1).text,
+            similar_items_model.row_data(1).unwrap().text,
             "📹 test2.mov - 1970-01-01 00:00:01, 0 KB"
         );
         assert_eq!(
-            similar_items_model.row_data(0).image.size().width as i32,
+            similar_items_model.row_data(0).unwrap().image.size().width as i32,
             256
         );
         assert_eq!(window.get_current_image().image.size().height as i32, 256);
@@ -479,7 +486,7 @@ mod tests {
         assert!(items_controller.update_list_model());
         let list_model = items_controller.get_list_model();
         assert_eq!(list_model.row_count(), 2);
-        assert_eq!(list_model.row_data(0).text, "📅 🔀 📷 🗑 test1.jpg");
-        assert_eq!(list_model.row_data(1).text, "📅 📹 test2.mov");
+        assert_eq!(list_model.row_data(0).unwrap().text, "📅 🔀 📷 🗑 test1.jpg");
+        assert_eq!(list_model.row_data(1).unwrap().text, "📅 📹 test2.mov");
     }
 }

@@ -3,7 +3,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use sixtyfps::{Model, SharedString};
+use slint::{Model, SharedString};
 
 use crate::{
     item_sort_list::{self, parse_date, ItemList},
@@ -14,14 +14,14 @@ use super::helper;
 
 pub struct EventsController {
     item_list: Arc<Mutex<ItemList>>,
-    events_model: Rc<sixtyfps::VecModel<main_window::Event>>,
+    events_model: Rc<slint::VecModel<main_window::Event>>,
 }
 
 impl EventsController {
     pub fn new(item_list: Arc<Mutex<ItemList>>) -> Self {
         Self {
             item_list,
-            events_model: Rc::new(sixtyfps::VecModel::<main_window::Event>::default()),
+            events_model: Rc::new(slint::VecModel::<main_window::Event>::default()),
         }
     }
 
@@ -90,7 +90,7 @@ impl EventsController {
     }
 
     /// Returns the contained sixtyfps VecModel
-    pub fn get_model(&self) -> Rc<sixtyfps::VecModel<main_window::Event>> {
+    pub fn get_model(&self) -> Rc<slint::VecModel<main_window::Event>> {
         self.events_model.clone()
     }
 
@@ -163,12 +163,24 @@ mod tests {
         events_controller.synchronize();
         let events_model = events_controller.get_model();
         assert_eq!(events_model.row_count(), 2);
-        assert_eq!(events_model.row_data(0).name.as_str(), "Event 1");
-        assert_eq!(events_model.row_data(0).start_date.as_str(), "2020-01-01");
-        assert_eq!(events_model.row_data(0).end_date.as_str(), "2020-01-02");
-        assert_eq!(events_model.row_data(1).name.as_str(), "Event 2");
-        assert_eq!(events_model.row_data(1).start_date.as_str(), "2020-02-01");
-        assert_eq!(events_model.row_data(1).end_date.as_str(), "2020-02-02");
+        assert_eq!(events_model.row_data(0).unwrap().name.as_str(), "Event 1");
+        assert_eq!(
+            events_model.row_data(0).unwrap().start_date.as_str(),
+            "2020-01-01"
+        );
+        assert_eq!(
+            events_model.row_data(0).unwrap().end_date.as_str(),
+            "2020-01-02"
+        );
+        assert_eq!(events_model.row_data(1).unwrap().name.as_str(), "Event 2");
+        assert_eq!(
+            events_model.row_data(1).unwrap().start_date.as_str(),
+            "2020-02-01"
+        );
+        assert_eq!(
+            events_model.row_data(1).unwrap().end_date.as_str(),
+            "2020-02-02"
+        );
     }
 
     #[test]
@@ -197,9 +209,15 @@ mod tests {
         );
         let events_model = events_controller.get_model();
         assert_eq!(events_model.row_count(), 1);
-        assert_eq!(events_model.row_data(0).name.as_str(), "Event 13");
-        assert_eq!(events_model.row_data(0).start_date.as_str(), "2020-01-03");
-        assert_eq!(events_model.row_data(0).end_date.as_str(), "2020-01-04");
+        assert_eq!(events_model.row_data(0).unwrap().name.as_str(), "Event 13");
+        assert_eq!(
+            events_model.row_data(0).unwrap().start_date.as_str(),
+            "2020-01-03"
+        );
+        assert_eq!(
+            events_model.row_data(0).unwrap().end_date.as_str(),
+            "2020-01-04"
+        );
         {
             let item_list = item_list.lock().unwrap();
             assert_eq!(item_list.events[0].name.as_str(), "Event 13");
@@ -236,8 +254,8 @@ mod tests {
         );
         let events_model = events_controller.get_model();
         assert_eq!(events_model.row_count(), 2);
-        assert_eq!(events_model.row_data(0).name.as_str(), "Event 2");
-        assert_eq!(events_model.row_data(1).name.as_str(), "Event 13");
+        assert_eq!(events_model.row_data(0).unwrap().name.as_str(), "Event 2");
+        assert_eq!(events_model.row_data(1).unwrap().name.as_str(), "Event 13");
         {
             let item_list = item_list.lock().unwrap();
             assert_eq!(item_list.events[0].name.as_str(), "Event 2");
@@ -258,9 +276,15 @@ mod tests {
         );
         let events_model = events_controller.get_model();
         assert_eq!(events_model.row_count(), 1);
-        assert_eq!(events_model.row_data(0).name.as_str(), "Event 1");
-        assert_eq!(events_model.row_data(0).start_date.as_str(), "2020-01-01");
-        assert_eq!(events_model.row_data(0).end_date.as_str(), "2020-01-02");
+        assert_eq!(events_model.row_data(0).unwrap().name.as_str(), "Event 1");
+        assert_eq!(
+            events_model.row_data(0).unwrap().start_date.as_str(),
+            "2020-01-01"
+        );
+        assert_eq!(
+            events_model.row_data(0).unwrap().end_date.as_str(),
+            "2020-01-02"
+        );
         {
             let item_list = item_list.lock().unwrap();
             assert_eq!(item_list.events[0].name.as_str(), "Event 1");
@@ -276,9 +300,15 @@ mod tests {
         );
         let events_model = events_controller.get_model();
         assert_eq!(events_model.row_count(), 2);
-        assert_eq!(events_model.row_data(0).name.as_str(), "Event 2");
-        assert_eq!(events_model.row_data(0).start_date.as_str(), "2019-01-03");
-        assert_eq!(events_model.row_data(0).end_date.as_str(), "2019-01-04");
+        assert_eq!(events_model.row_data(0).unwrap().name.as_str(), "Event 2");
+        assert_eq!(
+            events_model.row_data(0).unwrap().start_date.as_str(),
+            "2019-01-03"
+        );
+        assert_eq!(
+            events_model.row_data(0).unwrap().end_date.as_str(),
+            "2019-01-04"
+        );
         {
             let item_list = item_list.lock().unwrap();
             assert_eq!(item_list.events[0].name.as_str(), "Event 2");
@@ -300,7 +330,7 @@ mod tests {
         events_controller.remove_event(1);
         let events_model = events_controller.get_model();
         assert_eq!(events_model.row_count(), 1);
-        assert_eq!(events_model.row_data(0).name.as_str(), "Event 2");
+        assert_eq!(events_model.row_data(0).unwrap().name.as_str(), "Event 2");
 
         events_controller.clear();
         assert_eq!(events_controller.get_model().row_count(), 0);

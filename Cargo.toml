@@ -11,7 +11,7 @@ edition = "2021"
 readme = "README.md"
 
 [dependencies]
-sixtyfps = "=0.1.6"
+slint = "=0.2.0"
 nfd = "0.0.4"
 image = "0.23.14"
 kamadak-exif = "0.5"
@@ -34,5 +34,5 @@ imagepipe = "0.4.0"
 base64 = "0.13"
 
 [build-dependencies]
-sixtyfps-build = "=0.1.6"
+slint-build = "=0.2.0"
 winres = "0.1"

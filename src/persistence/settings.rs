@@ -1,7 +1,7 @@
 use crate::item_sort_list::{DirectoryNames, SieveMethod};
 use crate::main_window::{ImageSieve, SieveComboValues};
 use serde::{Deserialize, Serialize};
-use sixtyfps::{ComponentHandle, ModelHandle, SharedString};
+use slint::{ComponentHandle, ModelRc, SharedString};
 
 use super::model_to_enum::{enum_to_model, model_to_enum};
 
@@ -33,8 +33,8 @@ impl Settings {
 
     pub fn from_window(window: &ImageSieve) -> Self {
         //TODO: Also save last selected image and restart there
-        let methods: ModelHandle<SharedString> = window.global::<SieveComboValues>().get_methods();
-        let directory_names: ModelHandle<SharedString> =
+        let methods: ModelRc<SharedString> = window.global::<SieveComboValues>().get_methods();
+        let directory_names: ModelRc<SharedString> =
             window.global::<SieveComboValues>().get_directory_names();
         Settings {
             source_directory: window.get_source_directory().to_string(),
@@ -59,7 +59,7 @@ impl Settings {
     pub fn to_window(&self, window: &ImageSieve) {
         window.set_source_directory(SharedString::from(self.source_directory.clone()));
         window.set_target_directory(SharedString::from(self.target_directory.clone()));
-        let methods: ModelHandle<SharedString> = window.global::<SieveComboValues>().get_methods();
+        let methods: ModelRc<SharedString> = window.global::<SieveComboValues>().get_methods();
         window.set_sieve_method(enum_to_model(&methods, &self.sieve_method));
         window.set_use_timestamps(self.use_timestamps);
         window.set_timestamp_difference(SharedString::from(self.timestamp_max_diff.to_string()));
@@ -67,7 +67,7 @@ impl Settings {
         window.set_similarity_sensitivity(SharedString::from(convert_u32_to_sensitivity(
             self.hash_max_diff,
         )));
-        let directory_names: ModelHandle<SharedString> =
+        let directory_names: ModelRc<SharedString> =
             window.global::<SieveComboValues>().get_directory_names();
         let directory_name = self
             .sieve_directory_names

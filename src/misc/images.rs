@@ -1,5 +1,5 @@
 extern crate image;
-extern crate sixtyfps;
+extern crate slint;
 
 use super::resize::resize_image;
 use crate::item_sort_list::FileItem;
@@ -34,20 +34,20 @@ pub fn get_rotation(item: &FileItem) -> i32 {
 }
 
 /// Get an empty image of the size 1x1
-pub fn get_empty_image() -> sixtyfps::Image {
-    let buffer = sixtyfps::SharedPixelBuffer::new(1, 1);
-    sixtyfps::Image::from_rgba8(buffer)
+pub fn get_empty_image() -> slint::Image {
+    let buffer = slint::SharedPixelBuffer::new(1, 1);
+    slint::Image::from_rgba8(buffer)
 }
 
 /// Convert an image buffer to an image suitable for the sixtyfps library
-pub fn get_sixtyfps_image(buffer: &ImageBuffer) -> sixtyfps::Image {
+pub fn get_sixtyfps_image(buffer: &ImageBuffer) -> slint::Image {
     if buffer.width() > 0 && buffer.height() > 0 {
-        let buffer = sixtyfps::SharedPixelBuffer::<sixtyfps::Rgba8Pixel>::clone_from_slice(
+        let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(
             buffer.as_raw(),
-            buffer.width() as _,
-            buffer.height() as _,
+            buffer.width(),
+            buffer.height(),
         );
-        sixtyfps::Image::from_rgba8(buffer)
+        slint::Image::from_rgba8(buffer)
     } else {
         get_empty_image()
     }
