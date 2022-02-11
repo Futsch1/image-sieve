@@ -39,8 +39,8 @@ pub fn get_empty_image() -> slint::Image {
     slint::Image::from_rgba8(buffer)
 }
 
-/// Convert an image buffer to an image suitable for the sixtyfps library
-pub fn get_sixtyfps_image(buffer: &ImageBuffer) -> slint::Image {
+/// Convert an image buffer to an image suitable for the slint library
+pub fn get_slint_image(buffer: &ImageBuffer) -> slint::Image {
     if buffer.width() > 0 && buffer.height() > 0 {
         let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(
             buffer.as_raw(),

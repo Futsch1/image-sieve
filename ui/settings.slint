@@ -1,4 +1,4 @@
-import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSixtyFPS } from "std-widgets.slint";
+import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSlint } from "std-widgets.slint";
 
 export SettingsView := VerticalBox { 
     property use-timestamps <=> use-timestamps-checkbox.checked;
@@ -81,9 +81,9 @@ export SettingsView := VerticalBox {
         TouchArea { 
             width: 256px;
             height: 128px;
-            AboutSixtyFPS {  }
+            AboutSlint {  }
             clicked => { 
-                open-url("https://www.github.com/sixtyfpsui/sixtyfps");
+                open-url("https://github.com/slint-ui/slint");
             }
         }
     }

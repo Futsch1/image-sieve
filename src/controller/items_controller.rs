@@ -34,12 +34,12 @@ impl ItemsController {
         }
     }
 
-    /// Gets the sixtyfps vec model for the item list
+    /// Gets the slint vec model for the item list
     pub fn get_list_model(&self) -> Rc<slint::VecModel<main_window::ListItem>> {
         self.list_model.clone()
     }
 
-    /// Gets the sixtyfps vec model for the similar items
+    /// Gets the slint vec model for the similar items
     pub fn get_similar_items_model(&self) -> Rc<slint::VecModel<main_window::SortItem>> {
         self.similar_items_model.clone()
     }
@@ -149,7 +149,7 @@ impl ItemsController {
         !item_list.items.is_empty()
     }
 
-    /// Fills the list of found items from the internal data structure to the sixtyfps VecModel
+    /// Fills the list of found items from the internal data structure to the slint VecModel
     pub fn populate_list_model(&mut self, filters: &main_window::Filters) -> usize {
         self.clear_list();
 
@@ -196,7 +196,7 @@ impl ItemsController {
                             .row_data(model_index)
                             .unwrap();
                         if has_similars {
-                            row_data.image = crate::misc::images::get_sixtyfps_image(&image_buffer);
+                            row_data.image = crate::misc::images::get_slint_image(&image_buffer);
                             handle
                                 .get_similar_images_model()
                                 .set_row_data(model_index, row_data);
@@ -205,7 +205,7 @@ impl ItemsController {
                         if is_current_image {
                             let mut current_image = handle.get_current_image();
                             current_image.image =
-                                crate::misc::images::get_sixtyfps_image(&image_buffer);
+                                crate::misc::images::get_slint_image(&image_buffer);
                             handle.set_current_image(current_image);
                         }
                     }

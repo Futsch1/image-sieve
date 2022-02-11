@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - 
+ - Renamed all sixtyfps instances to slint
 
 ### Added
 

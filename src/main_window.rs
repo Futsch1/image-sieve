@@ -35,7 +35,7 @@ mod generated_code {
 }
 pub use generated_code::*;
 
-/// Main window container of the image sorter, contains the sixtyfps window, models and internal data structures
+/// Main window container of the image sorter, contains the slint window, models and internal data structures
 pub struct MainWindow {
     window: ImageSieve,
     item_list: Arc<Mutex<ItemList>>,
@@ -148,7 +148,7 @@ impl MainWindow {
         }
     }
 
-    /// Setup sixtyfps GUI callbacks
+    /// Setup slint GUI callbacks
     fn setup_callbacks(&self) {
         self.window.on_item_selected({
             // New item selected on the list of images or next/previous clicked

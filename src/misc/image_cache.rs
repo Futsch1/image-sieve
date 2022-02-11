@@ -100,7 +100,7 @@ impl ImageCache {
     /// Gets the hourglass image to indicate waiting
     /// The image is compiled into the binary
     fn get_hourglass() -> Image {
-        crate::misc::images::get_sixtyfps_image(
+        crate::misc::images::get_slint_image(
             &crate::misc::images::image_from_buffer(HOURGLASS_PNG).unwrap(),
         )
     }
@@ -125,7 +125,7 @@ impl ImageCache {
         let item_path = item.path.to_str().unwrap();
         let mut map = self.images.lock().unwrap();
         map.get(String::from(item_path))
-            .map(|image| crate::misc::images::get_sixtyfps_image(image))
+            .map(|image| crate::misc::images::get_slint_image(image))
     }
 
     /// Gets the waiting image

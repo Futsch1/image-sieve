@@ -89,7 +89,7 @@ impl EventsController {
         self.events_model.remove(index as usize);
     }
 
-    /// Returns the contained sixtyfps VecModel
+    /// Returns the contained slint VecModel
     pub fn get_model(&self) -> Rc<slint::VecModel<main_window::Event>> {
         self.events_model.clone()
     }
