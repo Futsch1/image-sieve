@@ -77,6 +77,7 @@ jobs:
         $env:Path += ";$sdkToolsPath"
         & makeappx.exe pack /m installer\appmanifest_$version.xml /f installer\mapping.txt /p ImageSieve.msix
     - name: Signing packages
+      if: github.event_name != 'pull_request'
       shell: pwsh
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}")
