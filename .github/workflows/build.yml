@@ -56,6 +56,18 @@ jobs:
           Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
     - name: Build release
       run: cargo build --release
+    - name: Zip executable files
+      uses: papeloto/action-zip@v1
+      with:
+        files: target\release\image_sieve.exe ffmpeg\bin\avcodec-58.dll ffmpeg\bin\avutil-56.dll 
+        ffmpeg\bin\avformat-58.dll ffmpeg\bin\avdevice-58.dll ffmpeg\bin\avfilter-7.dll ffmpeg\bin\swresample-3.dll 
+        ffmpeg\bin\swscale-5.dll ffmpeg\bin\postproc-55.dll
+        dest: image_sieve_Windows_portable.zip
+    - name: Archive zip for portable installation
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-portable
+        path: image_sieve_Windows_portable.zip
     - name: Create install package
       run: |
         $env:PATH += ";$env:WIX\bin"
