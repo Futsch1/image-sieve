@@ -22,7 +22,7 @@ The idea of working with ImageSieve is as follows: Copy all the images and video
 - Sieve the images by either deleting discarded ones, copying or moving kept images to a target folder
 
 ## Installation
-A Windows installer is available for every release for [download](https://github.com/Futsch1/image-sieve/releases) or the app can be installed via the [Microsoft Store](https://www.microsoft.com/en-us/p/imagesieve/9nwlt9phl39d). For Linux, ImageSieve is
+A Windows installer or a portable zip is available for every release for [download](https://github.com/Futsch1/image-sieve/releases) or the app can be installed via the [Microsoft Store](https://www.microsoft.com/en-us/p/imagesieve/9nwlt9phl39d). For Linux, ImageSieve is
 available on the [Snap Store](https://snapcraft.io/image-sieve).
 
 On Windows, Linux or macOS, it is also possible to install [Rust](https://rustup.rs/), clone the repository and run
