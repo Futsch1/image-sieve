@@ -157,7 +157,7 @@ fn frame_to_buffer(
         output_frame.data(0).to_vec(),
     )
     .unwrap();
-    imageops::overlay(buffer, &frame_buffer, position.0, position.1);
+    imageops::overlay(buffer, &frame_buffer, position.0 as i64, position.1 as i64);
 }
 
 #[cfg(test)]

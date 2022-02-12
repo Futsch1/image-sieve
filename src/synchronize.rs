@@ -1,6 +1,6 @@
 use crate::item_sort_list::ItemList;
 use crate::persistence::settings::Settings;
-use image::GenericImageView;
+use img_hash::image::GenericImageView;
 use img_hash::HashAlg;
 use img_hash::Hasher;
 use img_hash::HasherConfig;
@@ -204,7 +204,7 @@ fn calculate_similar_hashes(item_list: Arc<Mutex<ItemList>>, settings: &Settings
     // Now calculate the hashes
     let mut hashes: HashMap<PathBuf, ImageHash<Vec<u8>>> = HashMap::new();
     for image_file_name in image_file_names {
-        if let Ok(image) = image::open(&image_file_name) {
+        if let Ok(image) = img_hash::image::open(&image_file_name) {
             // The hash size is dependent on the image orientation to increase the result quality
             let (hash_width, hash_height) = if image.width() > image.height() {
                 (16, 8)
