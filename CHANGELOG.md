@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
  - Support for many raw formats
+ - Up and down keys navigate in similar images
+ - Enter key opens item
 
 ### Fixed
 

@@ -75,10 +75,27 @@ ImageSieve := Window {
                         sort-view.next-clicked();
                     }
                 }
-                // TODO: On up and down key, change current-image-index
-                // First waiting for https://github.com/sixtyfpsui/sixtyfps/issues/170 because we currently cannot get the up or down key...
-                // Then waiting for https://github.com/sixtyfpsui/sixtyfps/issues/98 to be implemented, otherwise it will get too complicated
-                // On key up, the next image-index shall be selected, on key down the previous one
+                if (event.text == Keys.UpArrow) {
+                    if (sort-view.current-similar-image < similar-images-model.length - 1) {
+                        sort-view.current-similar-image = sort-view.current-similar-image + 1;
+                        sort-view.current-image.image = similar-images-model[sort-view.current-similar-image].image;
+                        sort-view.current-image.take-over = similar-images-model[sort-view.current-similar-image].take-over;
+                        sort-view.current-image.text = similar-images-model[sort-view.current-similar-image].text;
+                        sort-view.current-image.local-index = similar-images-model[sort-view.current-similar-image].local-index;                        
+                    }
+                }
+                if (event.text == Keys.DownArrow) {
+                    if (sort-view.current-similar-image > 0) {
+                        sort-view.current-similar-image = sort-view.current-similar-image - 1;
+                        sort-view.current-image.image = similar-images-model[sort-view.current-similar-image].image;
+                        sort-view.current-image.take-over = similar-images-model[sort-view.current-similar-image].take-over;
+                        sort-view.current-image.text = similar-images-model[sort-view.current-similar-image].text;
+                        sort-view.current-image.local-index = similar-images-model[sort-view.current-similar-image].local-index;                        
+                    }
+                }
+                if (event.text == Keys.Return) {
+                    sort-view.open(current-image.local-index);
+                }
                 if (event.text == " ") {
                     sort-view.selected-clicked()
                 }

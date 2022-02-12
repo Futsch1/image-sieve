@@ -47,6 +47,9 @@ export SortView := HorizontalBox {
     // Visibility of filter setup
     property <bool> filter-visible: false;
 
+    // Index of currently selected simiar image
+    property <int> current-similar-image;
+
     // Filters
     property <Filters> filters : {
         sorted-out: true,
@@ -113,13 +116,14 @@ export SortView := HorizontalBox {
                     opacity: item.take-over ? 1.0 : 0.2;
                     image-fit: contain;
                     width: 180px;
-                    height: 100%;
+                    height: 100px;
                     TouchArea { 
                         clicked => {
                             current-image.image = item.image;
                             current-image.take-over = item.take-over;
                             current-image.text = item.text;
                             current-image.local-index = item.local-index;
+                            current-similar-image = i;
                         }
                     }
                     if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: blue;}
@@ -241,6 +245,7 @@ export SortView := HorizontalBox {
                 TouchArea { 
                     clicked => {
                         image-list.current-item = i;
+                        current-similar-image = 0;
                         item-selected(i);
                     }
                 }
