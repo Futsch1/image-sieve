@@ -5,15 +5,15 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - 
+ - Changed trash icon
 
 ### Added
 
- - 
+ - Similars icon in similar images list
 
 ### Fixed
 
- - 
+ - Removed animated gif from README.md due to size constraints of cargo.io
 
 ## [0.5.0] - 2022-02-13
 
