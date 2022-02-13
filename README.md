@@ -48,8 +48,8 @@ The following icons are used (exact rendering depends on platform/font):
 - 🔀: There are similar files to this one
 - 📅: File is in the date range of an event
 
-To select a file, click it and it will be shown in the image area. Below the image, some details about the file are listed. In order to discard an image, just click it and it will be displayed in a translucent way. As an alternative, you can hit the space bar to toggle between discarded and kept state. To navigate between images, you can use the "⬅ Previous" and "Next ➡"  buttons or hit the left and right key on your keyboard.
-If you want to open an image or a video with the default application in your OS, click the "📂 Open" button or press the "Enter" key.
+To select a file, click it and it will be shown in the image area. Below the image, some details about the file are listed. In order to discard an image, just click the upper part of it and it will be displayed in a translucent way. As an alternative, you can hit the space bar to toggle between discarded and kept state. To navigate between images, click on the left or right side of the image or hit the left and right key on your keyboard.
+If you want to open an image or a video with the default application in your OS, click the lower part of the image or press the "Enter" key.
 
 If an image belongs to a group of similar images, all these similar images are displayed below the current image. The currently selected one is highlighted in blue. To navigate between similar images, you can use the up and down key.
 

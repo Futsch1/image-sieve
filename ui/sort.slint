@@ -59,8 +59,8 @@ export SortView := HorizontalBox {
         direction: "Asc"
     };
 
-    callback next-clicked <=> next-button.clicked;
-    callback prev-clicked <=> previous-button.clicked;
+    callback next-clicked <=> touch-next.clicked;
+    callback prev-clicked <=> touch-prev.clicked;
     callback selected-clicked <=> selected-image-touch.clicked;
 
     // Called when an item from the list of image files has been selected or next/previous have been pressed (parameter is index in images-list-model)
@@ -83,15 +83,139 @@ export SortView := HorizontalBox {
         selected := Image {
             source: current-image.image;
             opacity: current-image.take-over ? 1.0 : 0.2;
+            animate opacity {
+                duration: 200ms;
+            }
             image-fit: contain;
-            selected-image-touch := TouchArea { 
-                clicked => {
-                    if (list-model.length > 0) {
-                        current-image.take-over = !current-image.take-over;
-                        set-take-over(current-image.local-index, current-image.take-over);
+
+            Rectangle {
+                x: parent.width * 20%;
+                width: 60%;
+                height: 40%;
+                Rectangle {
+                    border-radius: 10px;
+                    background: @linear-gradient(180deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
+                    opacity: selected-image-touch.has_hover ? 0.1 : 0;
+                    animate opacity {
+                        duration: 200ms;
                     }
                 }
-            }                        
+                selected-image-touch := TouchArea { 
+                    enabled: list-model.length > 0;
+                    clicked => {
+                        if (list-model.length > 0) {
+                            current-image.take-over = !current-image.take-over;
+                            set-take-over(current-image.local-index, current-image.take-over);
+                        }
+                    }
+                }
+                HorizontalLayout {
+                    alignment: center;
+                    padding: 10px;
+                    Image {
+                        source: @image-url("trash-fill.svg");
+                        visible: selected-image-touch.has_hover;
+                        opacity: 0.6;
+                        width: selected.width * 60%;
+                    }
+                }
+            }
+            Rectangle {
+                x: parent.width * 20%;
+                y: parent.height * 80%;
+                width: 60%;
+                height: 20%;
+                Rectangle {
+                    border-radius: 10px;
+                    background: @linear-gradient(0deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
+                    opacity: touch-open.has_hover ? 0.1 : 0;
+                    animate opacity {
+                        duration: 200ms;
+                    }
+                }
+                touch-open := TouchArea { 
+                    enabled: list-model.length > 0;
+                    clicked => { 
+                        open(current-image.local-index);
+                    }
+                }
+                HorizontalLayout {
+                    alignment: center;
+                    padding: 10px;
+                    Image {
+                        source: @image-url("folder-fill.svg");
+                        visible: touch-open.has_hover;
+                        opacity: 0.6;
+                        width: selected.width * 60%;
+                    }
+                }
+            }
+            Rectangle {
+                width: 20%;
+                Rectangle {
+                    border-radius: 10px;
+                    background: @linear-gradient(90deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
+                    opacity: touch-prev.has_hover ? 0.1 : 0;
+                    animate opacity {
+                        duration: 200ms;
+                    }
+                }
+                touch-prev := TouchArea {
+                    enabled: current-list-item > 0;
+                    clicked => { 
+                        if (current-list-item >= list-model.length) {
+                            current-list-item = 0;
+                        } else {
+                            current-list-item -= 1;
+                        }
+                        current-similar-image = 0;
+                        item-selected(current-list-item);
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    padding: 10px;
+                    Image {
+                        source: @image-url("arrow-left-circle-fill.svg");
+                        visible: touch-prev.has_hover;
+                        opacity: 0.6;
+                    }
+                }
+            }
+            Rectangle {
+                x: parent.width * 80%;
+                width: 20%;
+                Rectangle {
+                    border-radius: 10px;
+                    background: @linear-gradient(270deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
+                    opacity: touch-next.has_hover ? 0.1 : 0;
+                    animate opacity {
+                        duration: 200ms;
+                    }
+                }
+                touch-next := TouchArea {
+                    enabled: list-model.length > 0 && current-list-item < list-model.length - 1;
+                    clicked => { 
+                        if (current-list-item >= list-model.length) {
+                            current-list-item = list-model.length - 1;
+                        } else {
+                            current-list-item += 1;
+                        }
+                        current-similar-image = 0;
+                        item-selected(current-list-item);
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    padding: 10px;
+                    Image {
+                        source: @image-url("arrow-right-circle-fill.svg");
+                        visible: touch-next.has_hover;
+                        opacity: 0.6;
+                    }
+
+                }
+            }              
         }
         HorizontalLayout { 
             Text {
@@ -107,6 +231,10 @@ export SortView := HorizontalBox {
             viewport-height: 100px;
             height: similar-images-model.length > 1 ? 125px : 0px;
             visible: similar-images-model.length > 1;
+
+            animate height {
+                duration: 200ms;
+            }
 
             HorizontalBox { 
                 alignment: start;
@@ -127,42 +255,6 @@ export SortView := HorizontalBox {
                         }
                     }
                     if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: blue;}
-                }
-            }
-        }                
-
-        HorizontalLayout { 
-            spacing: 5px;
-
-            previous-button := Button {                
-                text: "⬅ Previous";
-                enabled: current-list-item > 0;
-                clicked => { 
-                    if (current-list-item >= list-model.length) {
-                        current-list-item = 0;
-                    } else {
-                        current-list-item -= 1;
-                    }
-                    item-selected(current-list-item);
-                }
-            }
-            open-button := Button {
-                text: "📂 Open";
-                enabled: list-model.length > 0;
-                clicked => { 
-                    open(current-image.local-index);
-                }
-            }
-            next-button := Button {
-                text: "Next ➡";
-                enabled: list-model.length > 0 && current-list-item < list-model.length - 1;
-                clicked => { 
-                    if (current-list-item >= list-model.length) {
-                        current-list-item = list-model.length - 1;
-                    } else {
-                        current-list-item += 1;
-                    }
-                    item-selected(current-list-item);
                 }
             }
         }
