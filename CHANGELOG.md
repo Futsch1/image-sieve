@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+ - 
+
+### Added
+
+ - 
+
+### Fixed
+
+ - 
+
+## [0.5.0] - 2022-02-13
+
+### Changed
+
  - Renamed all sixtyfps instances to slint
  - Reworked UI and replaced next, open and previous button with on-image buttons
 
