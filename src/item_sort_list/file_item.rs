@@ -44,7 +44,7 @@ pub struct FileItem {
     #[serde(deserialize_with = "deserialize_hash")]
     hash: Option<HashType>,
     /// File item type
-    item_type: ItemType,
+    item_type: Option<ItemType>,
 }
 
 pub fn serialize_hash<S>(hash: &Option<HashType>, s: S) -> Result<S::Ok, S::Error>
@@ -98,7 +98,7 @@ impl FileItem {
             similar: Vec::new(),
             orientation,
             hash,
-            item_type,
+            item_type: Some(item_type),
         }
     }
 
@@ -114,8 +114,13 @@ impl FileItem {
             take_over,
             similar: Vec::new(),
             hash: None,
-            item_type,
+            item_type: Some(item_type),
         }
+    }
+
+    /// Called after deserialization to setup all option fields
+    pub fn deserialized(&mut self) {
+        self.item_type = Some(get_item_type(&self.path));
     }
 
     /// Set the take over property to make a file item be discarded or taken over in the sieving process
@@ -207,17 +212,17 @@ impl FileItem {
 
     /// Check if the item is an image
     pub fn is_image(&self) -> bool {
-        self.item_type == ItemType::Image
+        *self.item_type.as_ref().unwrap() == ItemType::Image
     }
 
     /// Check if the item is a raw image
     pub fn is_raw_image(&self) -> bool {
-        self.item_type == ItemType::RawImage
+        *self.item_type.as_ref().unwrap() == ItemType::RawImage
     }
 
     /// Check if the item is a video
     pub fn is_video(&self) -> bool {
-        self.item_type == ItemType::Video
+        *self.item_type.as_ref().unwrap() == ItemType::Video
     }
 
     /// Get the unicode icon for the extension

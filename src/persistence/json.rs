@@ -65,7 +65,10 @@ impl JsonPersistence for ItemList {
         let item_list = fs::read_to_string(file_name).unwrap_or_default();
 
         let contents = serde_json::from_str::<ItemList>(&item_list);
-        if let Ok(item_list) = contents {
+        if let Ok(mut item_list) = contents {
+            for file_item in &mut item_list.items {
+                file_item.deserialized();
+            }
             Some(item_list)
         } else {
             None
