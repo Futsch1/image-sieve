@@ -120,7 +120,9 @@ impl FileItem {
 
     /// Called after deserialization to setup all option fields
     pub fn deserialized(&mut self) {
-        self.item_type = Some(get_item_type(&self.path));
+        if self.item_type.is_none() {
+            self.item_type = Some(get_item_type(&self.path));
+        }
     }
 
     /// Set the take over property to make a file item be discarded or taken over in the sieving process
