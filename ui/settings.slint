@@ -66,8 +66,11 @@ export SettingsView := VerticalBox {
         TouchArea { 
             VerticalBox {             
                 alignment: start;
-                Image {
-                    source: @image-url("ImageSieve.png");
+                HorizontalBox {                 
+                    alignment: start;
+                    Image {
+                        source: @image-url("ImageSieve.png");
+                    }
                 }
                 Text {
                     text: "💻 Developed by Florian Fetz";
