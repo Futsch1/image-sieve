@@ -2,13 +2,13 @@
 [![Crates.io](https://img.shields.io/crates/v/image_sieve.svg)](https://crates.io/crates/image_sieve)
 
 # ImageSieve
-GUI based tool to sort images based on similarity, categorize them according to their creation date and archive them in a target folder.
+GUI based tool to sort images based on taken date and similarity, categorize them according to their creation date and archive them in a target folder.
 
 ![Screenshot](doc/screenshot.png?raw=true "ImageSieve")
 
-ImageSieve aims to help in the process of sorting through images and videos taken with several devices and collect the images worth keeping in a folder structure suitable for archiving or to eliminate potential duplicates or irrelevant images from a folder structure.
+ImageSieve aims to help in the process of sorting through images and videos taken with several devices and collect the images and videos worth keeping in a folder structure suitable for archiving or to eliminate potential duplicates or irrelevant images .
 
-ImageSieve also includes a mechanism to sort images according to user defined events based on their taken dates. The sorting progress is stored on a per-folder basis, so that it can be resumed later. Images can be analyzed for similarity either depending on the taken date or an image similarity algorithm.
+ImageSieve also includes a mechanism to automatically categorize images according to user defined events based on their taken dates. The sorting progress is stored on a per-folder basis, so that it can be resumed later. Images can be analyzed for similarity based on the taken date and on an image similarity algorithm.
 
 The idea of working with ImageSieve is as follows: Copy all the images and videos taken in a period of time with various devices to a single folder or folder structure. Open this folder with ImageSieve and select which items to discard. Create events for the sorting period and finally move the selected items to your image archive folder.
 
