@@ -113,7 +113,7 @@ export SortView := HorizontalBox {
                     alignment: center;
                     padding: 10px;
                     Image {
-                        source: @image-url("trash-fill.svg");
+                        source: @image-url("trash3-fill.svg");
                         visible: selected-image-touch.has_hover && selected-image-touch.enabled;
                         opacity: 0.6;
                         width: selected.width * 60%;
@@ -234,6 +234,11 @@ export SortView := HorizontalBox {
 
             HorizontalBox { 
                 alignment: start;
+                Image {
+                    source: @image-url("shuffle.svg");
+                    height: 100px;
+                }
+
             for item[i] in similar-images-model: 
                 Image {
                     source: item.image;
