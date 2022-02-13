@@ -8,7 +8,10 @@ use std::{
 use super::lru_map::LruMap;
 use crate::item_sort_list::FileItem;
 use crate::misc::images::ImageBuffer;
-use slint::Image;
+use slint::{
+    re_exports::{ImageInner, Slice},
+    Image,
+};
 
 /// The least recently used map used to store the images protected by a mutex.
 type ImagesMapMutex = Mutex<LruMap<ImageBuffer, String, 64>>;
@@ -17,7 +20,7 @@ type LoadQueue = Mutex<VecDeque<LoadImageCommand>>;
 /// The callback which is executed when an image was loaded (is no slint::Image because that is not "Send")
 pub type DoneCallback = Box<dyn Fn(ImageBuffer) + Send + 'static>;
 
-const HOURGLASS_PNG: &[u8; 5533] = include_bytes!("hourglass.png");
+const HOURGLASS_SVG: &[u8; 704] = include_bytes!("hourglass.svg");
 
 /// Purpose of the image to load from the cache
 pub enum Purpose {
@@ -100,9 +103,10 @@ impl ImageCache {
     /// Gets the hourglass image to indicate waiting
     /// The image is compiled into the binary
     fn get_hourglass() -> Image {
-        crate::misc::images::get_slint_image(
-            &crate::misc::images::image_from_buffer(HOURGLASS_PNG).unwrap(),
-        )
+        Image::from(ImageInner::EmbeddedData {
+            data: Slice::from_slice(HOURGLASS_SVG),
+            format: Slice::from_slice(b"svg"),
+        })
     }
 
     /// Purge all running commands
