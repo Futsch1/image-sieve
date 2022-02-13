@@ -452,7 +452,7 @@ mod tests {
             similar_items_model.row_data(0).unwrap().image.size().width as i32,
             16
         );
-        assert_eq!(window.get_current_image().image.size().height as i32, 256);
+        assert_eq!(window.get_current_image().image.size().height as i32, 16);
         assert_eq!(window.get_current_image().local_index, 1);
 
         items_controller.selected_list_item(1, window_weak);
