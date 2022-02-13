@@ -94,10 +94,14 @@ ImageSieve := Window {
                     }
                 }
                 if (event.text == Keys.Return) {
-                    sort-view.open(current-image.local-index);
+                    if (list-model.length > 0) {
+                        sort-view.open(current-image.local-index);
+                    }
                 }
                 if (event.text == " ") {
-                    sort-view.selected-clicked()
+                    if (list-model.length > 0) {
+                        sort-view.selected-clicked()
+                    }
                 }
                 accept
             }

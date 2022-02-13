@@ -61,6 +61,9 @@ impl ItemsController {
         list_model_index: usize,
         window: slint::Weak<main_window::ImageSieve>,
     ) {
+        if list_model_index >= self.list_model.row_count() {
+            return;
+        }
         {
             // Clear images model
             self.clear_similar_items();
@@ -247,7 +250,7 @@ impl ItemsController {
 /// Filter file items to display in the item list
 fn filter_file_items(file_item: &FileItem, filters: &main_window::Filters) -> bool {
     let mut visible = true;
-    if !filters.images && file_item.is_image() {
+    if !filters.images && (file_item.is_image() || file_item.is_raw_image()) {
         visible = false;
     }
     if !filters.videos && file_item.is_video() {
