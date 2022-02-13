@@ -31,6 +31,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
  - Key commands are now working properly after switching tabs, also they have no effect on other tabs than the sort tab
+ - Several crashes or weird behavior when images list is empty
+ - Discarded status is now properly updated in image caption
 
 ## [0.4.2] - 2022-02-05
 
