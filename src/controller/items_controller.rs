@@ -117,12 +117,13 @@ impl ItemsController {
     }
 
     /// Sets the take over state of an item
-    pub fn set_take_over(&mut self, local_index: i32, take_over: bool) {
-        {
+    pub fn set_take_over(&mut self, local_index: i32, take_over: bool) -> slint::SharedString {
+        let description = {
             // Change the item_list state
             let mut item_list = self.item_list.lock().unwrap();
             item_list.items[local_index as usize].set_take_over(take_over);
-        }
+            sort_item_description(&item_list.items[local_index as usize], &item_list)
+        };
         // Update item list model to reflect change in icons in list
         self.update_list_model();
         // And update the take over state in the similar items model
@@ -130,10 +131,12 @@ impl ItemsController {
             let mut item: main_window::SortItem = self.similar_items_model.row_data(count).unwrap();
             if item.local_index == local_index {
                 item.take_over = take_over;
+                item.text = description.clone();
                 self.similar_items_model.set_row_data(count, item);
                 break;
             }
         }
+        description
     }
 
     /// Update the texts for all entries in the list model and returns true if the list contains more than one item
@@ -285,16 +288,21 @@ fn sort_item_from_file_item(
     item_list: &ItemList,
     image: slint::Image,
 ) -> main_window::SortItem {
-    let mut description = format!("{}", file_item);
-    if let Some(event) = item_list.get_event(file_item) {
-        description = description + ", 📅 " + &event.name;
-    }
     main_window::SortItem {
-        text: slint::SharedString::from(description),
+        text: sort_item_description(file_item, item_list),
         image,
         take_over: file_item.get_take_over(),
         local_index: item_list.index_of_item(file_item).unwrap() as i32,
     }
+}
+
+/// Gets the description of a sort item from a file item
+fn sort_item_description(file_item: &FileItem, item_list: &ItemList) -> slint::SharedString {
+    let mut description = format!("{}", file_item);
+    if let Some(event) = item_list.get_event(file_item) {
+        description = description + ", 📅 " + &event.name;
+    }
+    slint::SharedString::from(description)
 }
 
 /// Get the list item title for the GUI from a file item

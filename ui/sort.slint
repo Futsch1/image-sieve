@@ -66,7 +66,7 @@ export SortView := HorizontalBox {
     // Called when an item from the list of image files has been selected or next/previous have been pressed (parameter is index in images-list-model)
     callback item-selected(int);
     // Called when the current image was pressed (parameter is local-index and take over state)
-    callback set-take-over(int, bool);
+    callback set-take-over(int, bool) -> string;
     // Called when browse button was pressed
     callback browse-source;
     // Called when the open button was pressed
@@ -95,7 +95,7 @@ export SortView := HorizontalBox {
                 Rectangle {
                     border-radius: 10px;
                     background: @linear-gradient(180deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
-                    opacity: selected-image-touch.has_hover ? 0.1 : 0;
+                    opacity: selected-image-touch.has_hover && selected-image-touch.enabled ? 0.1 : 0;
                     animate opacity {
                         duration: 200ms;
                     }
@@ -105,7 +105,7 @@ export SortView := HorizontalBox {
                     clicked => {
                         if (list-model.length > 0) {
                             current-image.take-over = !current-image.take-over;
-                            set-take-over(current-image.local-index, current-image.take-over);
+                            current-image.text = set-take-over(current-image.local-index, current-image.take-over);
                         }
                     }
                 }
@@ -114,7 +114,7 @@ export SortView := HorizontalBox {
                     padding: 10px;
                     Image {
                         source: @image-url("trash-fill.svg");
-                        visible: selected-image-touch.has_hover;
+                        visible: selected-image-touch.has_hover && selected-image-touch.enabled;
                         opacity: 0.6;
                         width: selected.width * 60%;
                     }
@@ -128,7 +128,7 @@ export SortView := HorizontalBox {
                 Rectangle {
                     border-radius: 10px;
                     background: @linear-gradient(0deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
-                    opacity: touch-open.has_hover ? 0.1 : 0;
+                    opacity: touch-open.has_hover && touch-open.enabled ? 0.1 : 0;
                     animate opacity {
                         duration: 200ms;
                     }
@@ -144,7 +144,7 @@ export SortView := HorizontalBox {
                     padding: 10px;
                     Image {
                         source: @image-url("folder-fill.svg");
-                        visible: touch-open.has_hover;
+                        visible: touch-open.has_hover && touch-open.enabled;
                         opacity: 0.6;
                         width: selected.width * 60%;
                     }
@@ -155,7 +155,7 @@ export SortView := HorizontalBox {
                 Rectangle {
                     border-radius: 10px;
                     background: @linear-gradient(90deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
-                    opacity: touch-prev.has_hover ? 0.1 : 0;
+                    opacity: touch-prev.has_hover && touch-prev.enabled ? 0.1 : 0;
                     animate opacity {
                         duration: 200ms;
                     }
@@ -177,7 +177,7 @@ export SortView := HorizontalBox {
                     padding: 10px;
                     Image {
                         source: @image-url("arrow-left-circle-fill.svg");
-                        visible: touch-prev.has_hover;
+                        visible: touch-prev.has_hover && touch-prev.enabled;
                         opacity: 0.6;
                     }
                 }
@@ -188,7 +188,7 @@ export SortView := HorizontalBox {
                 Rectangle {
                     border-radius: 10px;
                     background: @linear-gradient(270deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
-                    opacity: touch-next.has_hover ? 0.1 : 0;
+                    opacity: touch-next.has_hover && touch-next.enabled ? 0.1 : 0;
                     animate opacity {
                         duration: 200ms;
                     }
@@ -196,11 +196,7 @@ export SortView := HorizontalBox {
                 touch-next := TouchArea {
                     enabled: list-model.length > 0 && current-list-item < list-model.length - 1;
                     clicked => { 
-                        if (current-list-item >= list-model.length) {
-                            current-list-item = list-model.length - 1;
-                        } else {
-                            current-list-item += 1;
-                        }
+                        current-list-item += 1;
                         current-similar-image = 0;
                         item-selected(current-list-item);
                     }
@@ -210,7 +206,7 @@ export SortView := HorizontalBox {
                     padding: 10px;
                     Image {
                         source: @image-url("arrow-right-circle-fill.svg");
-                        visible: touch-next.has_hover;
+                        visible: touch-next.has_hover && touch-next.enabled;
                         opacity: 0.6;
                     }
 

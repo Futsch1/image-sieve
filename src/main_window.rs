@@ -181,10 +181,9 @@ impl MainWindow {
             // Image was clicked, toggle take over state
             let items_controller = self.items_controller.clone();
 
-            move |i: i32, take_over: bool| {
+            move |i: i32, take_over: bool| -> SharedString {
                 // Change the state of the SortImage in the items_model
-
-                items_controller.borrow_mut().set_take_over(i, take_over);
+                items_controller.borrow_mut().set_take_over(i, take_over)
             }
         });
 
@@ -391,8 +390,7 @@ impl MainWindow {
 
             move |filters| {
                 let rows = items_controller.borrow_mut().populate_list_model(&filters) as i32;
-
-                if rows >= window_weak.unwrap().get_current_list_item() {
+                if rows <= window_weak.unwrap().get_current_list_item() {
                     window_weak.unwrap().set_current_list_item(rows - 1);
                 }
             }
