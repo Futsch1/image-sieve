@@ -38,6 +38,8 @@ pub enum DirectoryNames {
     YearMonthAndDay,
     /// Directories are named by year and quarter
     YearAndQuarter,
+    /// Directories are named by year and subdirectory by month
+    YearAndMonthInSubdirectory,
 }
 
 /// Item list containing all file items and all events

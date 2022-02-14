@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
  - Support for mpeg video files
+ - Option to sort as year and month in subdirectories
 
 ### Fixed
 

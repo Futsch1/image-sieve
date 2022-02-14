@@ -77,7 +77,11 @@ pub fn sieve<T>(
 
         for item in &item_list.items {
             if item.get_take_over() {
-                let full_path = path.join(get_sub_path(item_list, item, &sieve_directory_names));
+                let sub_path: std::path::PathBuf =
+                    get_sub_path(item_list, item, &sieve_directory_names)
+                        .iter()
+                        .collect();
+                let full_path = path.join(sub_path);
                 prepare_path(&full_path, sieve_io);
                 let source = &item.path;
                 let target = full_path.join(source.file_name().unwrap());
@@ -126,30 +130,68 @@ fn get_sub_path(
     item_list: &ItemList,
     item: &file_item::FileItem,
     directory_names: &DirectoryNames,
-) -> String {
+) -> Vec<String> {
+    // TODO: This is a bit ugly.
+
+    let mut directories = Vec::<String>::new();
     let event = item_list.get_event(item);
     if let Some(event) = event {
-        if event.start_date != event.end_date {
-            return format!(
+        if *directory_names == DirectoryNames::YearAndMonthInSubdirectory {
+            directories.push(event.start_date.format("%Y").to_string());
+            if event.start_date != event.end_date {
+                directories.push(format!(
+                    "{} - {} {}",
+                    event.start_date.format("%m-%d"),
+                    event
+                        .end_date
+                        .format(if event.start_date.year() != event.end_date.year() {
+                            "%Y-%m-%d"
+                        } else {
+                            "%m-%d"
+                        }),
+                    event.name
+                ));
+            } else {
+                directories.push(format!(
+                    "{} {}",
+                    event.start_date.format("%m-%d"),
+                    event.name
+                ));
+            }
+        } else if event.start_date != event.end_date {
+            directories.push(format!(
                 "{} - {} {}",
                 event.start_date.format("%Y-%m-%d"),
                 event.end_date.format("%Y-%m-%d"),
                 event.name
-            );
+            ));
         } else {
-            return format!("{} {}", event.start_date.format("%Y-%m-%d"), event.name);
+            directories.push(format!(
+                "{} {}",
+                event.start_date.format("%Y-%m-%d"),
+                event.name
+            ));
         }
+    } else {
+        let timestamp = NaiveDateTime::from_timestamp(item.get_timestamp(), 0);
+        match directory_names {
+            DirectoryNames::YearAndMonth => directories.push(timestamp.format("%Y-%m").to_string()),
+            DirectoryNames::Year => directories.push(timestamp.format("%Y").to_string()),
+            DirectoryNames::YearMonthAndDay => {
+                directories.push(timestamp.format("%Y-%m-%d").to_string())
+            }
+            DirectoryNames::YearAndQuarter => directories.push(
+                timestamp.format("%Y-Q").to_string()
+                    + &format!("{}", (timestamp.date().month() - 1) / 3 + 1),
+            ),
+            DirectoryNames::YearAndMonthInSubdirectory => {
+                directories.push(timestamp.format("%Y").to_string());
+                directories.push(timestamp.format("%m").to_string());
+            }
+        };
     }
-    let timestamp = NaiveDateTime::from_timestamp(item.get_timestamp(), 0);
-    match directory_names {
-        DirectoryNames::YearAndMonth => timestamp.format("%Y-%m").to_string(),
-        DirectoryNames::Year => timestamp.format("%Y").to_string(),
-        DirectoryNames::YearMonthAndDay => timestamp.format("%Y-%m-%d").to_string(),
-        DirectoryNames::YearAndQuarter => {
-            timestamp.format("%Y-Q").to_string()
-                + &format!("{}", (timestamp.date().month() - 1) / 3 + 1)
-        }
-    }
+
+    directories
 }
 
 /// Prepares the path by creating it if it does not exist
@@ -246,7 +288,7 @@ mod test {
                 Event {
                     name: String::from("Test3"),
                     start_date: NaiveDate::from_ymd(2021, 9, 24),
-                    end_date: NaiveDate::from_ymd(2021, 9, 27),
+                    end_date: NaiveDate::from_ymd(2022, 9, 27),
                 },
             ],
             path: PathBuf::from(""),
@@ -259,15 +301,16 @@ mod test {
                     "2021-09-14 Test1",
                     "2021-09-14 Test1",
                     "2021-09-14 Test1",
+                    "202109-14 Test1",
                 ],
             ),
             (
                 "2021-09-13 23:59",
-                ["2021-09", "2021", "2021-09-13", "2021-Q3"],
+                ["2021-09", "2021", "2021-09-13", "2021-Q3", "202109"],
             ),
             (
                 "2021-09-15 00:00",
-                ["2021-09", "2021", "2021-09-15", "2021-Q3"],
+                ["2021-09", "2021", "2021-09-15", "2021-Q3", "202109"],
             ),
             (
                 "2021-09-20 00:00",
@@ -276,6 +319,7 @@ mod test {
                     "2021-09-20 - 2021-09-21 Test2",
                     "2021-09-20 - 2021-09-21 Test2",
                     "2021-09-20 - 2021-09-21 Test2",
+                    "202109-20 - 09-21 Test2",
                 ],
             ),
             (
@@ -285,43 +329,44 @@ mod test {
                     "2021-09-20 - 2021-09-21 Test2",
                     "2021-09-20 - 2021-09-21 Test2",
                     "2021-09-20 - 2021-09-21 Test2",
+                    "202109-20 - 09-21 Test2",
                 ],
             ),
             (
                 "2021-09-25 16:00",
                 [
-                    "2021-09-24 - 2021-09-27 Test3",
-                    "2021-09-24 - 2021-09-27 Test3",
-                    "2021-09-24 - 2021-09-27 Test3",
-                    "2021-09-24 - 2021-09-27 Test3",
+                    "2021-09-24 - 2022-09-27 Test3",
+                    "2021-09-24 - 2022-09-27 Test3",
+                    "2021-09-24 - 2022-09-27 Test3",
+                    "2021-09-24 - 2022-09-27 Test3",
+                    "202109-24 - 2022-09-27 Test3",
                 ],
             ),
             (
                 "2020-01-13 23:59",
-                ["2020-01", "2020", "2020-01-13", "2020-Q1"],
+                ["2020-01", "2020", "2020-01-13", "2020-Q1", "202001"],
             ),
             (
                 "2021-04-15 00:00",
-                ["2021-04", "2021", "2021-04-15", "2021-Q2"],
+                ["2021-04", "2021", "2021-04-15", "2021-Q2", "202104"],
             ),
         ];
 
         for (input, results) in test_cases {
             for (i, result) in results.into_iter().enumerate() {
-                assert_eq!(
-                    get_sub_path(
-                        &item_list,
-                        &FileItem::dummy(
-                            "test.jpg",
-                            NaiveDateTime::parse_from_str(input, "%Y-%m-%d %H:%M")
-                                .unwrap()
-                                .timestamp(),
-                            false
-                        ),
-                        &FromPrimitive::from_usize(i).unwrap()
+                let sub_path: String = get_sub_path(
+                    &item_list,
+                    &FileItem::dummy(
+                        "test.jpg",
+                        NaiveDateTime::parse_from_str(input, "%Y-%m-%d %H:%M")
+                            .unwrap()
+                            .timestamp(),
+                        false,
                     ),
-                    result
-                );
+                    &FromPrimitive::from_usize(i).unwrap(),
+                )
+                .join("");
+                assert_eq!(sub_path, result);
             }
         }
     }
