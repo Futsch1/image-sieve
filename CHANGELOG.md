@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+ - 
+
+### Added
+
+ - 
+
+### Fixed
+
+ - Compile issue on certain Linux distributions
+
+## [0.5.1] - 2022-02-13
+
+### Changed
+
  - Changed trash icon
 
 ### Added
