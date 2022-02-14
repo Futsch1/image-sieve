@@ -9,7 +9,9 @@ const RAW: &[&str] = &[
     "dng", "pef", "crw", "raw", "iiq", "3fr", "nrw", "nef", "mos", "cr2", "ari",
 ];
 
-const VIDEO: &[&str] = &["mp4", "avi", "mts", "mov"];
+const VIDEO: &[&str] = &[
+    "mp4", "mp4v", "mpeg4", "avi", "mts", "mov", "mpeg", "mpg", "mjpeg", "mjpg", "mjp", "mp2v",
+];
 
 pub fn is_image(path: &Path) -> bool {
     is_extension_in(path, IMAGE)
@@ -38,5 +40,30 @@ fn is_extension_in(path: &Path, extensions: &[&str]) -> bool {
         extensions.contains(&extension.to_ascii_lowercase().to_str().unwrap())
     } else {
         false
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_extensions() {
+        assert!(is_image(Path::new("/path/to/image.jpg")));
+        assert!(is_image(Path::new("/path/to/image.PNG")));
+        assert!(!is_image(Path::new("/path/to/image")));
+
+        assert!(is_raw_image(Path::new("/path/to/image.mrw")));
+        assert!(is_raw_image(Path::new("/path/to/image.CR2")));
+        assert!(!is_raw_image(Path::new("/path/to/image.zip")));
+
+        assert!(is_video(Path::new("path/to/video.mpeg")));
+        assert!(is_video(Path::new("path/to/video.AVI")));
+        assert!(!is_video(Path::new("path/to/video.jpg")));
+
+        assert!(is_any(Path::new("/path/to/image.jpg")));
+        assert!(is_any(Path::new("/path/to/image.CR2")));
+        assert!(is_any(Path::new("/path/to/video.mov")));
+        assert!(!is_any(Path::new("/path/to/video.zip")));
     }
 }

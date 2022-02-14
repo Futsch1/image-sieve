@@ -11,7 +11,7 @@ Imagine all the images and videos taken by you and your family with your cameras
 To help with the process, ImageSieve will mark images as similar which are taken close to each other in time. This is useful to avoid duplicates and bad images. It can also try to find images which are similar to each other in terms of content.
 
 ## Features
-- Supports plenty of image formats (jpg, tiff, gif, bmp, webp, png), many raw image formats and videos in mp4, avi, mov and mts format
+- Supports plenty of image formats (jpg, tiff, gif, bmp, webp, png), many raw image formats and videos (mp4, avi, mov, mts, mpeg) format
 - Browse images and videos from a folder structure in the order of their creation
 - Select which images to discard
 - Images which resemble each other and images being taken within a customizable number of seconds are considered similar and are highlighted to support sorting
