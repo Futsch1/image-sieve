@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## [0.5.2] - 2022-02-14
 
 ### Changed
 
@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- - Compile issue on certain Linux distributions
+ - Always force fluent style to avoid issues with Qt backend
 
 ## [0.5.1] - 2022-02-13
 
