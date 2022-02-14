@@ -10,53 +10,57 @@ export SettingsView := VerticalBox {
     callback open-url(string);
 
     GroupBox { 
-        alignment: start;
         title: "Similar pictures";
-        HorizontalBox { 
+
+        VerticalBox { 
             alignment: start;
 
-            GridLayout {             
-                spacing: 5px;
-                use-timestamps-checkbox := CheckBox { 
-                    text: "Use timestamps";
-                    toggled => {
-                        recheck-similarities();
+            HorizontalBox { 
+                alignment: start;
+                
+                GridLayout {             
+                    spacing: 5px;
+                    use-timestamps-checkbox := CheckBox { 
+                        text: "Use timestamps";
+                        toggled => {
+                            recheck-similarities();
+                        }
                     }
-                }
-                Text {
-                    text: "⇔ Maximum timestamp difference (s): ";                
-                    vertical-alignment: center;
-                    horizontal-alignment: right;
-                    row: 2;
-                }
-                timestamp-difference-edit := LineEdit {
-                    text: "5";
-                    width: 50px;
-                    enabled: use-timestamps-checkbox.checked;
-                    accepted => { 
-                        recheck-similarities();
+                    Text {
+                        text: "⇔ Maximum timestamp difference (s): ";                
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                        row: 2;
                     }
-                }
+                    timestamp-difference-edit := LineEdit {
+                        text: "5";
+                        width: 50px;
+                        enabled: use-timestamps-checkbox.checked;
+                        accepted => { 
+                            recheck-similarities();
+                        }
+                    }
 
-                use-similarity-checkbox := CheckBox { 
-                    text: "Use image similarity";
-                    toggled => {
-                        recheck-similarities();
+                    use-similarity-checkbox := CheckBox { 
+                        text: "Use image similarity";
+                        toggled => {
+                            recheck-similarities();
+                        }
+                        row: 4;
                     }
-                    row: 4;
-                }
-                Text {
-                    text: "Sensitivity: ";
-                    vertical-alignment: center;
-                    horizontal-alignment: right;
-                    row: 5;
-                }
-                sensitivity-combobox := ComboBox {
-                    model: ["Very low", "Low", "Medium", "High", "Very high"];
-                    current-value: "Medium";                
-                    enabled: use-similarity-checkbox.checked;
-                    selected => { 
-                        recheck-similarities();
+                    Text {
+                        text: "Sensitivity: ";
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                        row: 5;
+                    }
+                    sensitivity-combobox := ComboBox {
+                        model: ["Very low", "Low", "Medium", "High", "Very high"];
+                        current-value: "Medium";                
+                        enabled: use-similarity-checkbox.checked;
+                        selected => { 
+                            recheck-similarities();
+                        }
                     }
                 }
             }
