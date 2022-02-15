@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+ - 
+
+### Added
+
+ - 
+
+### Fixed
+
+ - Fixed crash when reading file with invalid EXIF date
+
 ## [0.5.2] - 2022-02-14
 
 ### Changed

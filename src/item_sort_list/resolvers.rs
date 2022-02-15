@@ -96,10 +96,13 @@ impl PropertyResolver for ExifResolver {
                 match date_time_field {
                     Some(field) => {
                         let date_time_str = field.display_value().to_string();
-                        let date_time =
+                        if let Ok(date_time) =
                             NaiveDateTime::parse_from_str(&date_time_str, "%Y-%m-%d %H:%M:%S")
-                                .unwrap();
-                        date_time.timestamp()
+                        {
+                            date_time.timestamp()
+                        } else {
+                            file_resolver.get_timestamp()
+                        }
                     }
                     None => file_resolver.get_timestamp(),
                 }
@@ -261,6 +264,10 @@ mod tests {
         assert_eq!(
             get_file_timestamp("tests/test_invalid.jpg"),
             get_timestamp_from("tests/test_invalid.jpg")
+        );
+        assert_eq!(
+            get_file_timestamp("tests/test_invalid_date.jpg"),
+            get_timestamp_from("tests/test_invalid_date.jpg")
         );
 
         assert_eq!(0, get_timestamp_from("tests/test.png"));
