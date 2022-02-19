@@ -1,9 +1,8 @@
 extern crate image;
 extern crate slint;
 
-use super::resize::resize_image;
+use super::resize::{resize_image, restrict_size};
 use crate::item_sort_list::FileItem;
-use std::cmp::max;
 
 /// Image buffer from the image crate
 pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
@@ -73,7 +72,7 @@ fn resize_and_rotate(
     max_width: u32,
     max_height: u32,
 ) -> Option<ImageBuffer> {
-    let (new_width, new_height) = get_size(
+    let (new_width, new_height) = restrict_size(
         (cat_image.width(), cat_image.height()),
         (max_width, max_height),
     );
@@ -136,20 +135,4 @@ fn load_raw_image_and_rotate(
 pub fn image_from_buffer(bytes: &[u8]) -> Result<ImageBuffer, image::ImageError> {
     let cat_image = image::load_from_memory(bytes)?;
     Ok(cat_image.into_rgba8())
-}
-
-/// Get the actual size from the current size and the max size
-pub fn get_size((width, height): (u32, u32), (max_width, max_height): (u32, u32)) -> (u32, u32) {
-    if width > max_width && height > max_height && max_height != 0 && max_width != 0 {
-        let wratio = max_width as f32 / width as f32;
-        let hratio = max_height as f32 / height as f32;
-
-        let ratio = f32::min(wratio, hratio);
-
-        let new_width = max((width as f32 * ratio).round() as u32, 1);
-        let new_height = max((height as f32 * ratio).round() as u32, 1);
-        (new_width, new_height)
-    } else {
-        (width, height)
-    }
 }
