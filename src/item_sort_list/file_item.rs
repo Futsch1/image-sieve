@@ -316,3 +316,113 @@ fn process_encoded_hash(encoded_hash: &str) -> Option<ImageHash<Vec<u8>>> {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::item_sort_list::{item_traits::PropertyResolver, Orientation};
+
+    struct MockResolver {
+        timestamp: i64,
+        orientation: Option<Orientation>,
+    }
+
+    impl MockResolver {
+        fn new(timestamp: i64, orientation: Option<Orientation>) -> Self {
+            MockResolver {
+                timestamp,
+                orientation,
+            }
+        }
+    }
+
+    impl PropertyResolver for MockResolver {
+        fn get_timestamp(&self) -> i64 {
+            self.timestamp
+        }
+
+        fn get_orientation(&self) -> Option<Orientation> {
+            self.orientation.clone()
+        }
+    }
+
+    #[test]
+    fn test_new() {
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.jpg"), resolver, true, "");
+
+        assert_eq!(
+            Some(&Orientation::Landscape180),
+            file_item.get_orientation()
+        );
+        assert_eq!(10, file_item.get_timestamp());
+        assert!(file_item.get_take_over());
+        assert_eq!(7383, file_item.get_size());
+        assert_eq!("", file_item.get_encoded_hash());
+
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        FileItem::new(PathBuf::from("tests/not_existing.jpg"), resolver, true, "");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_new_invalid() {
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        FileItem::new(PathBuf::from("tests/test"), resolver, true, "");
+    }
+
+    #[test]
+    fn test_hashes() {
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let mut file_item = FileItem::new(
+            PathBuf::from("tests/test.jpg"),
+            resolver,
+            true,
+            "Wrong_hash",
+        );
+        assert_eq!("", file_item.get_encoded_hash());
+        assert!(!file_item.has_hash());
+
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let hash = HashType::from_bytes(&[0x61, 0x62, 0x63])
+            .unwrap()
+            .to_base64();
+        let mut file_item2 = FileItem::new(PathBuf::from("tests/test.jpg"), resolver, true, &hash);
+        assert_eq!(hash, file_item2.get_encoded_hash());
+        assert!(file_item2.has_hash());
+
+        let hash = HashType::from_bytes(&[0x64, 0x65, 0x66, 0x67])
+            .unwrap()
+            .to_base64();
+        file_item2.set_encoded_hash(&hash);
+        assert_eq!(hash, file_item2.get_encoded_hash());
+        assert!(file_item2.has_hash());
+
+        file_item2.set_hash(HashType::from_bytes(&[0x64, 0x65, 0x66, 0x67]).unwrap());
+        assert_eq!(hash, file_item2.get_encoded_hash());
+        assert!(file_item2.has_hash());
+
+        assert_eq!(file_item.get_hash_distance(&file_item2), u32::MAX);
+        file_item.set_hash(HashType::from_bytes(&[0x64, 0x65, 0x66, 0x67]).unwrap());
+
+        assert_eq!(
+            file_item.get_hash_distance(&file_item2),
+            file_item2.get_hash_distance(&file_item)
+        );
+        assert_eq!(file_item.get_hash_distance(&file_item2), 0);
+    }
+
+    #[test]
+    fn test_takeover() {
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let mut file_item = FileItem::new(
+            PathBuf::from("tests/test.jpg"),
+            resolver,
+            true,
+            "Wrong_hash",
+        );
+
+        file_item.set_take_over(false);
+        assert!(!file_item.get_take_over());
+    }
+}
