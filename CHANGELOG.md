@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - 
+ - Max image size for caching now depends on the resolution of the largest connected monitor
 
 ### Added
 
