@@ -114,30 +114,29 @@ impl ItemList {
         if self.items.is_empty() {
             return;
         }
-        let mut timestamp: i64 = 0;
+        let mut timestamp: i64 = self.items[0].get_timestamp();
         let mut start_similar_index: usize = 0;
-        for index in 0..self.items.len() + 1 {
-            if timestamp == 0 {
-                timestamp = self.items[index].get_timestamp();
+        for index in 0..self.items.len() {
+            if timestamp + max_diff_seconds < self.items[index].get_timestamp() {
+                // The item has a larger diff, so set all items between start_similar_index and index to be similar to each other
+                self.set_similar_range(start_similar_index..index);
+
                 start_similar_index = index;
-            } else {
-                if (index == self.items.len())
-                    || (timestamp + max_diff_seconds < self.items[index].get_timestamp())
-                {
-                    let similars = start_similar_index..index;
-                    // The item has a larger diff, so set all items between start_similar_index and index to be similar to each other
-                    for similar_index in start_similar_index..index {
-                        self.items[similar_index].add_similar_range(&similars);
-                    }
-                    start_similar_index = index;
-                }
-                if index < self.items.len() {
-                    timestamp = self.items[index].get_timestamp();
-                }
             }
+            timestamp = self.items[index].get_timestamp();
         }
+        // Set all the remaining indices
+        self.set_similar_range(start_similar_index..self.items.len());
+        // Now remove the own index from all items
         for index in 0..self.items.len() {
             self.items[index].clean_similars(index);
+        }
+    }
+
+    /// Sets a range of similar indices for all items in that range
+    fn set_similar_range(&mut self, index_range: std::ops::Range<usize>) {
+        for similar_index in index_range.clone() {
+            self.items[similar_index].add_similar_range(&index_range);
         }
     }
 
@@ -217,7 +216,7 @@ mod tests {
 
     impl PropertyResolver for MockResolver {
         fn get_timestamp(&self) -> i64 {
-            let return_values: [i64; 6] = [1, 4, 8, 14, 64, 65];
+            let return_values: [i64; 6] = [0, 4, 8, 14, 64, 65];
             let call_count = *self.call_count.borrow_mut();
             self.call_count.replace(call_count + 1);
             return_values[call_count]

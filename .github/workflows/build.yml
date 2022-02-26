@@ -15,6 +15,7 @@ env:
 jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v2
     - uses: ./.github/actions/prepare_ubuntu
@@ -38,8 +39,7 @@ jobs:
         snap: ${{ steps.snapcraft.outputs.snap }}
         release: stable
 
-  build-windows:
-    
+  build-windows:    
     runs-on: windows-latest
     
     steps:
@@ -128,3 +128,11 @@ jobs:
         asset_path: ImageSieve.msi
         asset_name: ImageSieve.msi
         asset_content_type: application/octet-stream
+
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build
