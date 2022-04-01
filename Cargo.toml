@@ -35,5 +35,5 @@ winit = "0.26"
 base64 = "0.13"
 
 [build-dependencies]
-slint-build = "=0.2.0"
+slint-build = "=0.2.1"
 winres = "0.1"
