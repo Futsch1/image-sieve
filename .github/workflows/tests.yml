@@ -17,5 +17,5 @@ jobs:
     - uses: ./.github/actions/prepare_ubuntu
     - name: Run tests
       run: cargo test
-      with:
+      env:
         RUST_MIN_STACK: 4000000
