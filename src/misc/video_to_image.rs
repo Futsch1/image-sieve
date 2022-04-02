@@ -2,7 +2,7 @@ extern crate ffmpeg_next as ffmpeg;
 
 use super::{
     images::ImageBuffer,
-    resize::{restrict_size, resize_image},
+    resize::{resize_image, restrict_size},
 };
 use crate::item_sort_list::{FileItem, Orientation};
 use image::imageops;
@@ -55,7 +55,10 @@ fn create_image_from_video(
     let mut input_context = ffmpeg::format::input(&item.path)?;
     if let Some(video_stream) = input_context.streams().best(ffmpeg::media::Type::Video) {
         let stream_index = video_stream.index();
-        let mut decoder = video_stream.codec().decoder().video()?;
+        let mut decoder = ffmpeg::codec::Context::from_parameters(video_stream.parameters())
+            .unwrap()
+            .decoder()
+            .video()?;
         let mut buffer = ImageBuffer::new(
             decoder.width() * SCREENSHOTS_X,
             decoder.height() * SCREENSHOTS_Y,

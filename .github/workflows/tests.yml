@@ -16,4 +16,6 @@ jobs:
     - uses: actions/checkout@v2
     - uses: ./.github/actions/prepare_ubuntu
     - name: Run tests
-      run: cargo test --release
+      run: cargo test
+      env:
+        RUST_MIN_STACK: 4000000
