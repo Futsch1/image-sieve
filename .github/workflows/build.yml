@@ -48,7 +48,7 @@ jobs:
       run: |
           $VCINSTALLDIR = $(& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath)
           Add-Content $env:GITHUB_ENV "LIBCLANG_PATH=${VCINSTALLDIR}\VC\Tools\LLVM\x64\bin`n"
-          Invoke-WebRequest "https://github.com/Futsch1/FFmpeg-Builds/releases/download/latest/ffmpeg-n5.0-latest-win64-lgpl-shared-5.0.zip" -OutFile ffmpeg-release-full-shared.zip
+          Invoke-WebRequest "https://github.com/Futsch1/FFmpeg-Builds/releases/download/latest/ffmpeg-n5.0-latest-win64-gpl-shared-5.0.zip" -OutFile ffmpeg-release-full-shared.zip
           7z x ffmpeg-release-full-shared.zip
           mkdir ffmpeg
           mv ffmpeg-*/* ffmpeg/
