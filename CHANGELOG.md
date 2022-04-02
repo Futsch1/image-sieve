@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
  - Max image size for caching now depends on the resolution of the largest connected monitor
+ - Updated to ffmpeg 5.0
+ - Updated to slint 0.2.1
 
 ### Added
 
