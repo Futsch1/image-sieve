@@ -59,7 +59,7 @@ jobs:
     - name: Zip executable files
       uses: papeloto/action-zip@v1
       with:
-        files: target\release\image_sieve.exe ffmpeg\bin\avcodec-59.dll ffmpeg\bin\avutil-57.dll ffmpeg\bin\avformat-59.dll ffmpeg\bin\avdevice-59.dll ffmpeg\bin\avfilter-8.dll ffmpeg\bin\swresample-4.dll ffmpeg\bin\swscale-6.dll
+        files: target\release\image_sieve.exe ffmpeg\bin\avcodec-59.dll ffmpeg\bin\avutil-57.dll ffmpeg\bin\avformat-59.dll ffmpeg\bin\avdevice-59.dll ffmpeg\bin\avfilter-8.dll ffmpeg\bin\swresample-4.dll ffmpeg\bin\swscale-6.dll ffmpeg\bin\postproc-56.dll
         dest: image_sieve_Windows_portable.zip
     - name: Archive zip for portable installation
       uses: actions/upload-artifact@v2

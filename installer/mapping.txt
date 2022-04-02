@@ -9,6 +9,7 @@
 "ffmpeg\bin\avfilter-8.dll"             "avfilter-8.dll"
 "ffmpeg\bin\swresample-4.dll"           "swresample-4.dll"
 "ffmpeg\bin\swscale-6.dll"              "swscale-6.dll"
+"ffmpeg\bin\postproc-56.dll"            "postproc-56.dll"
 
 [ResourceMetadata]
 "ResourceDimensions"                    "language-en-us"
