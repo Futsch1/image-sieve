@@ -48,7 +48,7 @@ jobs:
       run: |
           $VCINSTALLDIR = $(& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath)
           Add-Content $env:GITHUB_ENV "LIBCLANG_PATH=${VCINSTALLDIR}\VC\Tools\LLVM\x64\bin`n"
-          Invoke-WebRequest "https://github.com/Futsch1/FFmpeg-Builds/releases/download/latest/ffmpeg-n4.4-latest-win64-gpl-shared-4.4.zip" -OutFile ffmpeg-release-full-shared.zip
+          Invoke-WebRequest "https://github.com/Futsch1/FFmpeg-Builds/releases/download/latest/ffmpeg-n5.0-latest-win64-lgpl-shared-5.0.zip" -OutFile ffmpeg-release-full-shared.zip
           7z x ffmpeg-release-full-shared.zip
           mkdir ffmpeg
           mv ffmpeg-*/* ffmpeg/
@@ -59,7 +59,7 @@ jobs:
     - name: Zip executable files
       uses: papeloto/action-zip@v1
       with:
-        files: target\release\image_sieve.exe ffmpeg\bin\avcodec-58.dll ffmpeg\bin\avutil-56.dll ffmpeg\bin\avformat-58.dll ffmpeg\bin\avdevice-58.dll ffmpeg\bin\avfilter-7.dll ffmpeg\bin\swresample-3.dll ffmpeg\bin\swscale-5.dll ffmpeg\bin\postproc-55.dll
+        files: target\release\image_sieve.exe ffmpeg\bin\avcodec-59.dll ffmpeg\bin\avutil-57.dll ffmpeg\bin\avformat-59.dll ffmpeg\bin\avdevice-59.dll ffmpeg\bin\avfilter-8.dll ffmpeg\bin\swresample-4.dll ffmpeg\bin\swscale-6.dll
         dest: image_sieve_Windows_portable.zip
     - name: Archive zip for portable installation
       uses: actions/upload-artifact@v2

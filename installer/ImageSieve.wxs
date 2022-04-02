@@ -31,35 +31,31 @@
         <RemoveFolder Id="APPLICATIONROOTDIRECTORY" On="uninstall"/>
       </Component>
       <Component Id="avcodec_58.dll" Guid="68113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="avcodec_58.dll" Source="ffmpeg\bin\avcodec-58.dll" Checksum="yes"/>
+        <File Id="avcodec_58.dll" Source="ffmpeg\bin\avcodec-59.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avcodec" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
       <Component Id="avutil_56.dll" Guid="78113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="avutil_56.dll" Source="ffmpeg\bin\avutil-56.dll" Checksum="yes"/>
+        <File Id="avutil_56.dll" Source="ffmpeg\bin\avutil-57.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avutil" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
       <Component Id="avformat_58.dll" Guid="88113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="avformat_58.dll" Source="ffmpeg\bin\avformat-58.dll" Checksum="yes"/>
+        <File Id="avformat_58.dll" Source="ffmpeg\bin\avformat-59.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avformat" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
       <Component Id="swresample_3.dll" Guid="98113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="swresample_3.dll" Source="ffmpeg\bin\swresample-3.dll" Checksum="yes"/>
+        <File Id="swresample_3.dll" Source="ffmpeg\bin\swresample-4.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\SwResample" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
       <Component Id="avdevice_58.dll" Guid="a8113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="avdevice_58.dll" Source="ffmpeg\bin\avdevice-58.dll" Checksum="yes"/>
+        <File Id="avdevice_58.dll" Source="ffmpeg\bin\avdevice-59.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avformat" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
       <Component Id="avfilter_7.dll" Guid="b8113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="avfilter_7.dll" Source="ffmpeg\bin\avfilter-7.dll" Checksum="yes"/>
+        <File Id="avfilter_7.dll" Source="ffmpeg\bin\avfilter-8.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avformat" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
       <Component Id="swscale_5.dll" Guid="c8113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="swscale_5.dll" Source="ffmpeg\bin\swscale-5.dll" Checksum="yes"/>
-        <RegistryValue Root="HKCU" Key="Software\ImageSieve\SwResample" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
-      </Component>
-      <Component Id="postproc_55.dll" Guid="d8113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="postproc_55.dll" Source="ffmpeg\bin\postproc-55.dll" Checksum="yes"/>
+        <File Id="swscale_5.dll" Source="ffmpeg\bin\swscale-6.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\SwResample" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
@@ -78,14 +74,13 @@
 
     <Feature Id="MainApplication" Title="Main Application" Level="1">
       <ComponentRef Id="image_sieve.exe" />
-      <ComponentRef Id="avcodec_58.dll" />
-      <ComponentRef Id="avutil_56.dll" />
-      <ComponentRef Id="avformat_58.dll" />
-      <ComponentRef Id="swresample_3.dll" />
-      <ComponentRef Id="avdevice_58.dll" />
-      <ComponentRef Id="avfilter_7.dll" />
-      <ComponentRef Id="swscale_5.dll" />
-      <ComponentRef Id="postproc_55.dll" />
+      <ComponentRef Id="avcodec_59.dll" />
+      <ComponentRef Id="avutil_57.dll" />
+      <ComponentRef Id="avformat_59.dll" />
+      <ComponentRef Id="swresample_4.dll" />
+      <ComponentRef Id="avdevice_59.dll" />
+      <ComponentRef Id="avfilter_8.dll" />
+      <ComponentRef Id="swscale_6.dll" />
       <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 
