@@ -27,6 +27,8 @@ On Windows, Linux or macOS, it is also possible to install [Rust](https://rustup
 
 ``` cargo install image_sieve ```
 
+Consult the [build documentation](BUILD.md) for the necessary prerequisites.
+
 After the compilation, you can run the tool by typing
 
 ``` image_sieve ```
