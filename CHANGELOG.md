@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.4] - 2022-04-03
+
+### Changed
+
+ - 
+
+### Added
+
+ - 
+
+### Fixed
+
+ - Reverted getting max image size from largest connected monitor - this caused a crash in the Windows build
+
 ## [0.5.3] - 2022-04-02
 
 ### Changed
