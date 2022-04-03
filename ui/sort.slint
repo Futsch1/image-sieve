@@ -73,6 +73,8 @@ export SortView := HorizontalBox {
     callback open(int);
     // Called when a filter setting was changed
     callback filter(Filters);
+    // Called when a new event shall be created from the current image
+    callback fill-event(int);
 
     spacing: 5px;
 
@@ -224,9 +226,11 @@ export SortView := HorizontalBox {
         HorizontalLayout { 
             Text {
                 text: current-image.text;
+                font-size: 14px;
             }
             Text {
                 text: "⌛ Please wait, calculating similarities...";
+                font-size: 14px;
                 visible: calculating-similarities;
             }
         }
@@ -351,6 +355,10 @@ export SortView := HorizontalBox {
                     }
                 }
             }
-        }   
+        }
+        Button {
+            text: "📅 Create event from image";
+            clicked => { fill-event(current-image.local-index); }
+        }
     }  
 }

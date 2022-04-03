@@ -177,6 +177,16 @@ impl ItemsController {
         list_len
     }
 
+    /// Gets the date string for an image
+    pub fn get_date_string(&self, local_index: i32) -> slint::SharedString {
+        let item_list = self.item_list.lock().unwrap();
+        let item = &item_list.items[local_index as usize];
+        let date = chrono::NaiveDateTime::from_timestamp(item.get_timestamp(), 0)
+            .format("%Y-%m-%d")
+            .to_string();
+        slint::SharedString::from(date)
+    }
+
     /// Gets the image for an item
     /// This function returns either a cached image or a loading image while the real image is being loaded
     /// in the background. As soon as the process finishes, the image is displayed.

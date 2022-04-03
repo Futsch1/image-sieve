@@ -395,6 +395,16 @@ impl MainWindow {
                 }
             }
         });
+
+        self.window.on_fill_event_cb({
+            let items_controller = self.items_controller.clone();
+            let window_weak = self.window.as_weak();
+
+            move |local_index| {
+                let date_string = items_controller.borrow().get_date_string(local_index);
+                window_weak.unwrap().invoke_fill_event(date_string);
+            }
+        });
     }
 }
 

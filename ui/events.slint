@@ -9,6 +9,10 @@ struct Event := {
 
 EventsView := ScrollView { 
     property <[Event]> events-model;
+    property <string> new-name <=> new-name.text;
+    property <string> new-start-date <=> new-start-date.text;
+    property <string> new-end-date <=> new-end-date.text;
+    property <bool> highlight-new: false;
     callback add-event(string, string, string) -> string;
     callback remove-event(int);
     callback update-event(int, string, string, string) -> string;
@@ -50,6 +54,7 @@ EventsView := ScrollView {
                     min-width: 300px;
                 }
             }
+
             HorizontalLayout { 
                 spacing: 5px;
                 Button {
@@ -64,9 +69,9 @@ EventsView := ScrollView {
                     text: "🗑 Remove";
                     clicked => { remove-event(i) }
                 }
-            }
-            
+            }            
         }
+        
         GroupBox { 
             padding: 5px;
             title: "New event";
@@ -74,20 +79,37 @@ EventsView := ScrollView {
                 alignment: start;
                 new-name := LineEdit { 
                     placeholder-text: "Event name";
+                    background: highlight-new ? #aaddff : #ffffff;
+                    animate background {
+                        duration: 3s;
+                    }
                 }
                 new-start-date := LineEdit { 
                     min-width: 300px;
                     placeholder-text: "Start date (YYYY-MM-DD or DD-MM-YYYY)";
+                    background: highlight-new ? #aaddff : #ffffff;
+                    animate background {
+                        duration: 3s;
+                    }
                 }
                 new-end-date := LineEdit { 
                     min-width: 300px;
                     placeholder-text: "End date (YYYY-MM-DD or DD-MM-YYYY)";
+                    background: highlight-new ? #aaddff : #ffffff;
+                    animate background {
+                        duration: 3s;
+                    }
                 }
             }
             Button {
                 text: "➕ Add";
                 width: 300px;
+                background: highlight-new ? #aaddff : #ffffff;
+                animate background {
+                    duration: 3s;
+                }
                 clicked => { 
+                    highlight-new = false;
                     error-message.text = add-event(new-name.text, new-start-date.text, new-end-date.text);
                     if (error-message.text == "") {                            
                         new-name.text = "";

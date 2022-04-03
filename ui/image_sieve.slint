@@ -61,6 +61,17 @@ ImageSieve := Window {
     callback recheck-similarities <=> settings-view.recheck-similarities;
     callback open-url <=> settings-view.open-url;
 
+    // Inter-tab callbacks
+    callback fill-event-cb <=> sort-view.fill-event;
+    callback fill-event(string);
+    fill-event(image-date) => { 
+        tabs.current-index = 1;
+        events-view.new-name = "Event name";
+        events-view.new-start-date = image-date;
+        events-view.new-end-date = image-date;
+        events-view.highlight-new = true;
+    }
+
     forward-focus: key-handler;
     key-handler:= FocusScope {  
         key-pressed(event) => {
@@ -113,7 +124,7 @@ ImageSieve := Window {
         tabs := TabWidget { 
             visible: !loading;
             Tab {
-                title: "📷 📹  Images";
+                title: "📷 📹  Images & videos";
                 
                 sort-view := SortView {
                 }
@@ -155,7 +166,7 @@ ImageSieve := Window {
         HorizontalLayout { 
             alignment: center;
             Text {
-                text: "⌛ Please wait, searching for images...";
+                text: "⌛ Please wait, searching for images & videos...";
                 visible: loading;
                 font-size: 20px;
             }
