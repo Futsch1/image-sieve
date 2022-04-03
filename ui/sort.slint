@@ -114,8 +114,10 @@ export SortView := HorizontalBox {
                     padding: 10px;
                     Image {
                         source: @image-url("trash3-fill.svg");
-                        visible: selected-image-touch.has_hover && selected-image-touch.enabled;
-                        opacity: 0.6;
+                        opacity: selected-image-touch.has_hover && selected-image-touch.enabled ? 0.6: 0;
+                        animate opacity {
+                            duration: 200ms;
+                        }
                         width: selected.width * 60%;
                     }
                 }
@@ -144,8 +146,10 @@ export SortView := HorizontalBox {
                     padding: 10px;
                     Image {
                         source: @image-url("folder-fill.svg");
-                        visible: touch-open.has_hover && touch-open.enabled;
-                        opacity: 0.6;
+                        opacity: touch-open.has_hover && touch-open.enabled ? 0.6 : 0;
+                        animate opacity {
+                            duration: 200ms;
+                        }
                         width: selected.width * 60%;
                     }
                 }
@@ -177,8 +181,10 @@ export SortView := HorizontalBox {
                     padding: 10px;
                     Image {
                         source: @image-url("arrow-left-circle-fill.svg");
-                        visible: touch-prev.has_hover && touch-prev.enabled;
-                        opacity: 0.6;
+                        opacity: touch-prev.has_hover && touch-prev.enabled ? 0.6: 0;
+                        animate opacity {
+                            duration: 200ms;
+                        }
                     }
                 }
             }
@@ -206,8 +212,10 @@ export SortView := HorizontalBox {
                     padding: 10px;
                     Image {
                         source: @image-url("arrow-right-circle-fill.svg");
-                        visible: touch-next.has_hover && touch-next.enabled;
-                        opacity: 0.6;
+                        opacity: touch-next.has_hover && touch-next.enabled ? 0.6 : 0;
+                        animate opacity {
+                            duration: 200ms;
+                        }
                     }
 
                 }
