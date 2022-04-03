@@ -22,10 +22,9 @@ pub struct ItemsController {
 
 impl ItemsController {
     /// Create a new items controller instance
-    pub fn new(item_list: Arc<Mutex<ItemList>>, max_resolution: (u32, u32)) -> Self {
+    pub fn new(item_list: Arc<Mutex<ItemList>>) -> Self {
         let mut image_cache = image_cache::ImageCache::new();
-
-        image_cache.restrict_size(max_resolution.0, max_resolution.1);
+        image_cache.restrict_size(1600, 1000);
 
         Self {
             item_list,
@@ -346,7 +345,7 @@ mod tests {
     #[test]
     fn test_populate() {
         let item_list = Arc::new(Mutex::new(ItemList::new()));
-        let mut items_controller = ItemsController::new(item_list.clone(), (0, 0));
+        let mut items_controller = ItemsController::new(item_list.clone());
         let mut filters = build_filters();
         {
             let mut item_list = item_list.lock().unwrap();
@@ -398,7 +397,7 @@ mod tests {
     #[test]
     fn test_take_over() {
         let item_list = Arc::new(Mutex::new(ItemList::new()));
-        let mut items_controller = ItemsController::new(item_list.clone(), (0, 0));
+        let mut items_controller = ItemsController::new(item_list.clone());
         let window = ImageSieve::new();
         let window_weak = window.as_weak();
         let filters = build_filters();
@@ -435,7 +434,7 @@ mod tests {
     #[test]
     fn test_select_item() {
         let item_list = Arc::new(Mutex::new(ItemList::new()));
-        let mut items_controller = ItemsController::new(item_list.clone(), (0, 0));
+        let mut items_controller = ItemsController::new(item_list.clone());
         let window = ImageSieve::new();
         let window_weak = window.as_weak();
         let filters = build_filters();
@@ -475,7 +474,7 @@ mod tests {
     #[test]
     fn test_update_list() {
         let item_list = Arc::new(Mutex::new(ItemList::new()));
-        let mut items_controller = ItemsController::new(item_list.clone(), (0, 0));
+        let mut items_controller = ItemsController::new(item_list.clone());
         assert!(!items_controller.update_list_model());
         let filters = build_filters();
         {

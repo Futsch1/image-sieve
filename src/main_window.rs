@@ -47,7 +47,7 @@ pub struct MainWindow {
 
 impl Default for MainWindow {
     fn default() -> Self {
-        Self::new((0, 0))
+        Self::new()
     }
 }
 
@@ -62,7 +62,7 @@ impl Debug for MainWindow {
 
 impl MainWindow {
     /// Creates a new main window and initializes it from saved settings
-    pub fn new(max_resolution: (u32, u32)) -> Self {
+    pub fn new() -> Self {
         // Load settings and item list
         let settings: Settings =
             JsonPersistence::load(&get_settings_filename()).unwrap_or_else(Settings::new);
@@ -72,11 +72,7 @@ impl MainWindow {
         let item_list = Arc::new(Mutex::new(item_list));
 
         let events_controller = Rc::new(RefCell::new(EventsController::new(item_list.clone())));
-        // Use the determinted max resolution and substract the width and height of on-screen controls not available for images
-        let items_controller = Rc::new(RefCell::new(ItemsController::new(
-            item_list.clone(),
-            (max_resolution.0 - 320, max_resolution.1 - 240),
-        )));
+        let items_controller = Rc::new(RefCell::new(ItemsController::new(item_list.clone())));
         let sieve_result_model = Rc::new(slint::VecModel::<SieveResult>::default());
 
         // Construct main window
