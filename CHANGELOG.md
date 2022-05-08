@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.5] - Unreleased
+
+### Changed
+
+ - Updated to slint 0.2.2, supporting tab focus
+
+### Added
+
+ - Added a button to speed up creating an event from an image filling the event date to the image date.
+
+### Fixed
+
+ -
+
 ## [0.5.4] - 2022-04-03
 
 ### Changed

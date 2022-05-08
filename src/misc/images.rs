@@ -100,11 +100,9 @@ fn load_raw_image_and_rotate(
         Err(_) => return None,
     };
 
-    let width = raw.width;
-    let height = raw.height;
     let source = imagepipe::ImageSource::Raw(raw);
 
-    let mut pipeline = match imagepipe::Pipeline::new_from_source(source, width, height, true) {
+    let mut pipeline = match imagepipe::Pipeline::new_from_source(source) {
         Ok(pipeline) => pipeline,
         Err(_) => return None,
     };
