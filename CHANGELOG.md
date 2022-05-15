@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.6] - 2022-05-15
+
+### Changed
+
+ - Updated to slint 0.2.4
+
+### Added
+
+ - Added dark mode
+
+### Fixed
+
+ -
+
 ## [0.5.5] - 2022-05-08
 
 ### Changed
