@@ -7,13 +7,14 @@ export SettingsView := VerticalBox {
     property timestamp-difference <=> timestamp-difference-edit.text;
     property use-similarity <=> use-similarity-checkbox.checked;
     property similarity-sensitivity <=> sensitivity-combobox.current-value;
-    property dark-mode <=> dark-mode.checked;
+    property dark-mode <=> dark-mode.current-value;
+    property <bool> system-dark;
 
     callback recheck-similarities;
     callback open-url(string);
     callback apply-dark-mode();
     apply-dark-mode => { 
-        if (dark-mode.checked) {
+        if ( (dark-mode.current-value == "Automatic" && system-dark) || dark-mode.current-value == "On") {
             Palette.white = #0d1117;
             Palette.black = #ffffff;
             Palette.neutralDark = #edebe9;
@@ -25,8 +26,9 @@ export SettingsView := VerticalBox {
             Palette.neutralTertiaryAlt = #8a8886;
             Palette.neutralQuaternary = #323130;
             Palette.neutralQuaternaryAlt = #3b3a39;
-            Palette.neutralLight =  #3d3d3b;
-            Palette.neutralLighter = #030201;
+            Palette.neutralLight =  #201f1e;
+            Palette.neutralLighter = #131211;
+            Palette.neutralLighterAlt = #030201;
             Palette.themeDarker = #deecf9;
             Palette.themeDark = #c7e0f4;
             Palette.themeDarkAlt = #eff6fc;
@@ -50,6 +52,7 @@ export SettingsView := VerticalBox {
             Palette.neutralQuaternaryAlt = #e1dfdd;
             Palette.neutralLight = #edebe9;
             Palette.neutralLighter =  #f3f2f1;
+            Palette.neutralLighterAlt = #faf9f8;
             Palette.themeDarker = #004578;
             Palette.themeDark = #005a9e;
             Palette.themeDarkAlt = #106ebe;
@@ -119,12 +122,12 @@ export SettingsView := VerticalBox {
                         text: "Dark mode: ";
                         vertical-alignment: center;
                         horizontal-alignment: right;
-                        col: 0;
-                        row: 6;
+                        row: 7;
                     }
-                    dark-mode := CheckBox {
-                        text: "Dark mode";
-                        toggled => { 
+                    dark-mode := ComboBox {
+                        model: ["Automatic", "On", "Off"];
+                        current-value: "Automatic";
+                        selected => { 
                             apply-dark-mode();
                         }
                     } 

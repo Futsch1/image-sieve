@@ -29,6 +29,7 @@ ffmpeg-next = {version = "5.0", features = ["format", "codec", "software-scaling
 fast_image_resize = "0.9"
 rawloader = "0.37.0"
 imagepipe = "0.5.0"
+dark-light = "0.2"
 
 [dev-dependencies]
 base64 = "0.13"
