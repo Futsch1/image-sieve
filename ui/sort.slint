@@ -1,4 +1,6 @@
 import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView, CheckBox, ComboBox } from "std-widgets.slint";
+import { Palette } from "std-widgets-impl.slint";
+
 
 export struct SortItem := {
     image: image,
@@ -267,7 +269,7 @@ export SortView := HorizontalBox {
                             current-similar-image = i;
                         }
                     }
-                    if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: blue;}
+                    if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: Palette.themePrimary;}
                 }
             }
         }
@@ -341,7 +343,7 @@ export SortView := HorizontalBox {
                 padding: 2px;
                 height: 20px;
                 width: parent.width;
-                background: i == parent.current-item ? grey : white;
+                background: i == parent.current-item ? Palette.themePrimary : Palette.white;
                 HorizontalLayout { 
                     Text { 
                         text: item.text;
