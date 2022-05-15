@@ -15,6 +15,7 @@ pub struct Settings {
     pub use_hash: bool,
     pub hash_max_diff: u32,
     pub sieve_directory_names: Option<DirectoryNames>,
+    pub dark_mode: String,
 }
 
 impl Settings {
@@ -28,6 +29,7 @@ impl Settings {
             use_hash: false,
             hash_max_diff: 8,
             sieve_directory_names: Some(DirectoryNames::YearAndMonth),
+            dark_mode: String::from("Automatic"),
         }
     }
 
@@ -53,6 +55,7 @@ impl Settings {
                 &directory_names,
                 &window.get_sieve_directory_names(),
             )),
+            dark_mode: window.get_dark_mode().to_string(),
         }
     }
 
@@ -74,6 +77,7 @@ impl Settings {
             .as_ref()
             .unwrap_or(&DirectoryNames::YearAndMonth);
         window.set_sieve_directory_names(enum_to_model(&directory_names, directory_name));
+        window.set_dark_mode(SharedString::from(self.dark_mode.clone()))
     }
 }
 
