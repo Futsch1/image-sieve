@@ -1,5 +1,7 @@
 import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox, ScrollView } from "std-widgets.slint";
 
+import { Palette } from "std-widgets-impl.slint";
+
 export global SieveComboValues := {
     property <[string]> methods: ["Copy to target directory", 
                                   "Move to target directory", 
@@ -140,7 +142,7 @@ export SieveView := HorizontalBox {
         for item[i] in sieve-result-model:
             Text {
                 text: item.result;               
-                color: item.color == "red" ? red : (item.color == "green" ? green : black);
+                color: item.color == "red" ? red : (item.color == "green" ? green : Palette.black);
             }
         }
     }

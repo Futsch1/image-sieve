@@ -58,8 +58,11 @@ ImageSieve := Window {
     property timestamp-difference <=> settings-view.timestamp-difference;
     property use-similarity <=> settings-view.use-similarity;
     property similarity-sensitivity <=> settings-view.similarity-sensitivity;
+    property dark-mode <=> settings-view.dark-mode;
+    property system-dark <=> settings-view.system-dark;
     callback recheck-similarities <=> settings-view.recheck-similarities;
     callback open-url <=> settings-view.open-url;
+    callback apply-dark-mode <=> settings-view.apply-dark-mode;
 
     // Inter-tab callbacks
     callback fill-event-cb <=> sort-view.fill-event;
