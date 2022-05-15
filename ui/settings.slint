@@ -26,9 +26,9 @@ export SettingsView := VerticalBox {
             Palette.neutralTertiaryAlt = #8a8886;
             Palette.neutralQuaternary = #323130;
             Palette.neutralQuaternaryAlt = #3b3a39;
-            Palette.neutralLight =  #201f1e;
-            Palette.neutralLighter = #131211;
-            Palette.neutralLighterAlt = #030201;
+            Palette.neutralLight =  #504f4e;
+            Palette.neutralLighter = #333231;
+            Palette.neutralLighterAlt = #232221;
             Palette.themeDarker = #deecf9;
             Palette.themeDark = #c7e0f4;
             Palette.themeDarkAlt = #eff6fc;
@@ -86,7 +86,6 @@ export SettingsView := VerticalBox {
                         text: "⇔ Maximum timestamp difference (s): ";                
                         vertical-alignment: center;
                         horizontal-alignment: right;
-                        row: 2;
                     }
                     timestamp-difference-edit := LineEdit {
                         text: "5";
@@ -102,13 +101,12 @@ export SettingsView := VerticalBox {
                         toggled => {
                             recheck-similarities();
                         }
-                        row: 4;
+                        row: 1;
                     }
                     Text {
                         text: "Sensitivity: ";
                         vertical-alignment: center;
                         horizontal-alignment: right;
-                        row: 5;
                     }
                     sensitivity-combobox := ComboBox {
                         model: ["Very low", "Low", "Medium", "High", "Very high"];
@@ -122,7 +120,7 @@ export SettingsView := VerticalBox {
                         text: "Dark mode: ";
                         vertical-alignment: center;
                         horizontal-alignment: right;
-                        row: 7;
+                        row: 3;
                     }
                     dark-mode := ComboBox {
                         model: ["Automatic", "On", "Off"];
@@ -150,7 +148,7 @@ export SettingsView := VerticalBox {
                 }
                 Text {
                     text: "🔗 https://www.github.com/Futsch1/image-sieve";
-                    color: blue;
+                    color: Palette.themePrimary;
                 }
             }
             clicked => { 
