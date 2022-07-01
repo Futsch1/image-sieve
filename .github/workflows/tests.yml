@@ -15,7 +15,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: ./.github/actions/prepare_ubuntu
-    - name: Run tests
-      run: cargo test
+    - name: Install prerequisites
+      run: rustup component add llvm-tools-preview
+    - name: Install cargo-llvm-cov
+      uses: taiki-e/install-action@cargo-llvm-cov
+    - name: Generate code coverage
       env:
         RUST_MIN_STACK: 4000000
+      run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: lcov.info
+        fail_ci_if_error: true

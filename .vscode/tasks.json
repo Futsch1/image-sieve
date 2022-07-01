@@ -13,15 +13,17 @@
 			"label": "rust: cargo clippy"
 		},
 		{
-			"type": "cargo",
-			"command": "test",
-			"args": [
-				"-j1"
-			],
+			"type": "shell",
+			"command": "cargo llvm-cov --html --release",
+			"options": {
+				"env": {
+					"RUST_MIN_STACK": "4000000"
+				}
+			},
 			"problemMatcher": [
 				"$rustc"
 			],
-			"label": "rust: cargo clippy"
+			"label": "rust: cargo test"
 		},
 		{
 			"type": "cargo",
