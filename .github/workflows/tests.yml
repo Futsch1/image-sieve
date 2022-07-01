@@ -17,7 +17,7 @@ jobs:
     - uses: ./.github/actions/prepare_ubuntu
     - name: Install prerequisites
       run: rustup component add llvm-tools-preview
-           sudo apt install jq
+           sudo apt-get install jq
     - name: Install cargo-llvm-cov
       uses: taiki-e/install-action@cargo-llvm-cov
     - name: Generate code coverage
