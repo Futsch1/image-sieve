@@ -14,10 +14,9 @@
 		},
 		{
 			"type": "shell",
-			"command": "cargo test -j4",
+			"command": "cargo llvm-cov --html --release",
 			"options": {
 				"env": {
-					"RUSTFLAGS": "-C instrument-coverage",
 					"RUST_MIN_STACK": "4000000"
 				}
 			},
