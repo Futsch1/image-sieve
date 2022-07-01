@@ -482,4 +482,43 @@ mod test {
             "test/test2.jpg"
         );
     }
+
+    #[test]
+    fn test_duplicate_files() {
+        let item_list = ItemList {
+            items: vec![
+                FileItem::dummy("test/test1.jpg", 0, true),
+                FileItem::dummy("test2/test1.jpg", 0, true),
+            ],
+            events: vec![],
+            path: PathBuf::from(""),
+        };
+        let sieve_io = TestSieveIO::new();
+
+        sieve(
+            &item_list,
+            Path::new("target"),
+            SieveMethod::Copy,
+            DirectoryNames::YearAndMonth,
+            &sieve_io,
+            |_: String| {},
+        );
+        assert_eq!(sieve_io.copies.borrow().len(), 2);
+        assert_eq!(
+            sieve_io.copies.borrow()[0].0.to_str().unwrap(),
+            "test/test1.jpg"
+        );
+        assert_eq!(
+            sieve_io.copies.borrow()[0].1.to_str().unwrap(),
+            "target/1970-01/test1.jpg"
+        );
+        assert_eq!(
+            sieve_io.copies.borrow()[1].0.to_str().unwrap(),
+            "test2/test1.jpg"
+        );
+        assert_eq!(
+            sieve_io.copies.borrow()[1].1.to_str().unwrap(),
+            "target/1970-01/test1_2.jpg"
+        );
+    }
 }
