@@ -1,7 +1,7 @@
 use std::{
-    fs::{copy, create_dir_all, remove_file, rename},
-    io::{Error, ErrorKind},
-    path::Path,
+    fs::{copy, create_dir_all, metadata, remove_file, rename, File},
+    io::{Error, ErrorKind, Read},
+    path::{Path, PathBuf},
 };
 
 use chrono::{Datelike, NaiveDateTime};
@@ -10,9 +10,9 @@ use super::{file_item, DirectoryNames, ItemList, SieveMethod};
 
 /// Trait to encapsulate sieve file IO operations
 pub trait SieveIO {
-    fn copy(&self, src: &Path, dest: &Path) -> Result<(), Error>;
+    fn copy(&self, src: &Path, dest: &mut PathBuf) -> Result<(), Error>;
     fn remove_file(&self, path: &Path) -> Result<(), Error>;
-    fn r#move(&self, src: &Path, dest: &Path) -> Result<(), Error>;
+    fn r#move(&self, src: &Path, dest: &mut PathBuf) -> Result<(), Error>;
     fn create_dir_all(&self, path: &Path) -> Result<(), Error>;
 }
 
@@ -20,13 +20,39 @@ pub trait SieveIO {
 pub struct FileSieveIO;
 
 impl FileSieveIO {
-    fn assert_not_exists(&self, path: &Path) -> Result<(), Error> {
-        if path.exists() {
-            let e = Error::new(
-                ErrorKind::AlreadyExists,
-                format!("Destination file already exists: {}", path.display()),
-            );
-            Err(e)
+    fn different(&self, f1: &Path, f2: &Path) -> Result<bool, Error> {
+        if metadata(f1)?.len() == metadata(f2)?.len() {
+            let mut content1 = vec![];
+            let mut fh1 = File::open(f1)?;
+            fh1.read_to_end(&mut content1)?;
+            let mut content2 = vec![];
+            let mut fh2 = File::open(f2)?;
+            fh2.read_to_end(&mut content2)?;
+            Ok(content1 != content2)
+        } else {
+            Ok(true)
+        }
+    }
+
+    fn check_target(&self, src: &Path, dest: &mut PathBuf) -> Result<(), Error> {
+        if dest.exists() {
+            if self.different(src, dest)? {
+                let mut new_file_name = dest.file_stem().unwrap().to_os_string();
+                new_file_name.push("_.");
+                new_file_name.push(dest.extension().unwrap());
+                let parent = dest.parent().unwrap().to_path_buf();
+                dest.clear();
+                dest.push(parent);
+                dest.push(new_file_name);
+
+                self.check_target(src, dest)
+            } else {
+                let e = Error::new(
+                    ErrorKind::AlreadyExists,
+                    format!("Destination file already exists: {}", dest.display()),
+                );
+                Err(e)
+            }
         } else {
             Ok(())
         }
@@ -34,8 +60,8 @@ impl FileSieveIO {
 }
 
 impl SieveIO for FileSieveIO {
-    fn copy(&self, src: &Path, dest: &Path) -> Result<(), Error> {
-        self.assert_not_exists(dest)?;
+    fn copy(&self, src: &Path, dest: &mut PathBuf) -> Result<(), Error> {
+        self.check_target(src, dest)?;
         copy(src, dest)?;
         Ok(())
     }
@@ -44,9 +70,9 @@ impl SieveIO for FileSieveIO {
         remove_file(path)
     }
 
-    fn r#move(&self, src: &Path, dest: &Path) -> Result<(), Error> {
-        self.assert_not_exists(dest)?;
-        match rename(src, dest) {
+    fn r#move(&self, src: &Path, dest: &mut PathBuf) -> Result<(), Error> {
+        self.check_target(src, dest)?;
+        match rename(src, dest.clone()) {
             Ok(_) => Ok(()),
             Err(_) => {
                 self.copy(src, dest)?;
@@ -77,27 +103,26 @@ pub fn sieve<T>(
 
         for item in &item_list.items {
             if item.get_take_over() {
-                let sub_path: std::path::PathBuf =
-                    get_sub_path(item_list, item, &sieve_directory_names)
-                        .iter()
-                        .collect();
+                let sub_path: PathBuf = get_sub_path(item_list, item, &sieve_directory_names)
+                    .iter()
+                    .collect();
                 let full_path = path.join(sub_path);
                 prepare_path(&full_path, sieve_io);
                 let source = &item.path;
-                let target = full_path.join(source.file_name().unwrap());
-                progress_callback(format!("{:?} -> {:?}", source, target));
+                let mut target = full_path.join(source.file_name().unwrap());
 
                 if sieve_method == SieveMethod::Copy {
-                    match sieve_io.copy(source, &target) {
+                    match sieve_io.copy(source, &mut target) {
                         Ok(_) => (),
                         Err(e) => progress_callback(format!("Error copying {}: {}", item, e)),
                     }
                 } else {
-                    match sieve_io.r#move(source, &target) {
+                    match sieve_io.r#move(source, &mut target) {
                         Ok(_) => (),
                         Err(e) => progress_callback(format!("Error moving {}: {}", item, e)),
                     }
                 };
+                progress_callback(format!("{:?} -> {:?}", source, target));
             } else if sieve_method == SieveMethod::MoveAndDelete {
                 let source = &item.path;
                 progress_callback(format!("Delete {:?}", source));
@@ -242,7 +267,7 @@ mod test {
     }
 
     impl SieveIO for TestSieveIO {
-        fn copy(&self, src: &Path, dest: &Path) -> Result<(), Error> {
+        fn copy(&self, src: &Path, dest: &mut PathBuf) -> Result<(), Error> {
             self.copies
                 .borrow_mut()
                 .push((src.to_path_buf(), dest.to_path_buf()));
@@ -254,7 +279,7 @@ mod test {
             Ok(())
         }
 
-        fn r#move(&self, src: &Path, dest: &Path) -> Result<(), Error> {
+        fn r#move(&self, src: &Path, dest: &mut PathBuf) -> Result<(), Error> {
             self.renames
                 .borrow_mut()
                 .push((src.to_path_buf(), dest.to_path_buf()));
@@ -481,5 +506,38 @@ mod test {
             sieve_io.removes.borrow()[0].to_str().unwrap(),
             "test/test2.jpg"
         );
+    }
+
+    #[test]
+    fn test_duplicate_files() {
+        let item_list = ItemList {
+            items: vec![
+                FileItem::dummy("tests/test.jpg", 0, true),
+                FileItem::dummy("tests/test2.JPG", 0, true),
+                FileItem::dummy("tests/test3.jpg", 0, true),
+                FileItem::dummy("tests/subdir/test.jpg", 0, true),
+                FileItem::dummy("tests/subdir/test2.JPG", 0, true),
+                FileItem::dummy("tests/subdir/test3.jpg", 0, true),
+            ],
+            events: vec![],
+            path: PathBuf::from(""),
+        };
+        let file_io = FileSieveIO {};
+
+        sieve(
+            &item_list,
+            Path::new("tests/target"),
+            SieveMethod::Copy,
+            DirectoryNames::YearAndMonth,
+            &file_io,
+            |_: String| {},
+        );
+
+        assert!(Path::new("tests/target/1970-01/test.jpg").exists());
+        assert!(!Path::new("tests/target/1970-01/test_.jpg").exists());
+        assert!(Path::new("tests/target/1970-01/test2.JPG").exists());
+        assert!(Path::new("tests/target/1970-01/test2_.JPG").exists());
+        assert!(Path::new("tests/target/1970-01/test3.jpg").exists());
+        assert!(Path::new("tests/target/1970-01/test3_.jpg").exists());
     }
 }

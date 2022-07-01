@@ -127,7 +127,7 @@ impl ImageCache {
         let item_path = item.path.to_str().unwrap();
         let mut map = self.images.lock().unwrap();
         map.get(String::from(item_path))
-            .map(|image| crate::misc::images::get_slint_image(image))
+            .map(crate::misc::images::get_slint_image)
     }
 
     /// Gets the waiting image
