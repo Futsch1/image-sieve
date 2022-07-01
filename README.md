@@ -1,5 +1,6 @@
 ![Build](https://github.com/Futsch1/image-sieve/workflows/Build/badge.svg)
 [![Crates.io](https://img.shields.io/crates/v/image_sieve.svg)](https://crates.io/crates/image_sieve)
+[![codecov](https://codecov.io/gh/Futsch1/image-sieve/branch/main/graph/badge.svg?token=JJ6ZVFSSVB)](https://codecov.io/gh/Futsch1/image-sieve)
 
 # ImageSieve
 ImageSieve is a GUI based tool to assist in sorting images based on taken date and similarity, categorize them according to their creation date and archive them in a target folder.

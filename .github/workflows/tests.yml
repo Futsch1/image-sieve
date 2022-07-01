@@ -18,12 +18,15 @@ jobs:
     - name: Install prerequisites
       run: rustup component add llvm-tools-preview
            sudo apt install jq
-    - name: Run tests
-      run: cargo test
+    - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+    - name: Generate code coverage
       env:
         RUST_MIN_STACK: 4000000
-        RUSTFLAGS: -C instrument-coverage
-        RUSTDOCFLAGS: -C instrument-coverage -Z unstable-options --persist-doctests target/debug/doctestbins
-    - name: Generate coverage report
-      run: \
-      coverage.sh
+      run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+        files: lcov.info
+        fail_ci_if_error: true
