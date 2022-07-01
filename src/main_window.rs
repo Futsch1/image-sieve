@@ -1,7 +1,5 @@
 //! Module containing the main window of image_sieve
 
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
 extern crate nfd;
 extern crate slint;
 
