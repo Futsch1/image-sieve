@@ -15,7 +15,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: ./.github/actions/prepare_ubuntu
+    - name: Install prerequisites
+      run: rustup component add llvm-tools-preview
+           sudo apt install jq
     - name: Run tests
       run: cargo test
       env:
         RUST_MIN_STACK: 4000000
+        RUSTFLAGS: -C instrument-coverage
+        RUSTDOCFLAGS: -C instrument-coverage -Z unstable-options --persist-doctests target/debug/doctestbins
+    - name: Generate coverage report
+      run: \
+      coverage.sh
