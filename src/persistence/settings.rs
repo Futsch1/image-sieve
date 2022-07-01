@@ -5,7 +5,7 @@ use slint::{ComponentHandle, ModelRc, SharedString};
 
 use super::model_to_enum::{enum_to_model, model_to_enum};
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, std::fmt::Debug, PartialEq)]
 pub struct Settings {
     pub source_directory: String,
     pub target_directory: String,
@@ -27,7 +27,7 @@ impl Settings {
             use_timestamps: true,
             timestamp_max_diff: 5,
             use_hash: false,
-            hash_max_diff: 8,
+            hash_max_diff: 14,
             sieve_directory_names: Some(DirectoryNames::YearAndMonth),
             dark_mode: String::from("Automatic"),
         }

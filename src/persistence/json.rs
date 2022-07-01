@@ -80,3 +80,30 @@ impl JsonPersistence for ItemList {
         fs::write(file_name, item_list).ok();
     }
 }
+
+mod tests {
+    #[cfg(test)]
+    use super::*;
+    #[cfg(test)]
+    use crate::item_sort_list::{DirectoryNames, SieveMethod};
+
+    #[test]
+    fn test_load_save() {
+        let mut settings = Settings::new();
+        settings.source_directory += "source";
+        settings.target_directory += "target";
+        settings.sieve_method = SieveMethod::MoveAndDelete;
+        settings.use_timestamps = !settings.use_timestamps;
+        settings.timestamp_max_diff += 1;
+        settings.use_hash = !settings.use_hash;
+        settings.hash_max_diff = 12;
+        settings.sieve_directory_names = Some(DirectoryNames::YearAndQuarter);
+        settings.dark_mode = String::from("On");
+
+        JsonPersistence::save(Path::new("test.json"), &settings);
+
+        let loaded_settings = JsonPersistence::load(Path::new("test.json")).unwrap();
+
+        assert_eq!(settings, loaded_settings);
+    }
+}
