@@ -1,6 +1,21 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.7] - 2022-07-01
+
+### Changed
+
+ - 
+
+### Added
+
+ - 
+
+### Fixed
+
+ - When an file name would exist twice in the sieve target directory but the files are different, the files are now automatically
+   renamed instead of not copied.
+
 ## [0.5.6] - 2022-05-15
 
 ### Changed
