@@ -81,16 +81,12 @@ impl JsonPersistence for ItemList {
     }
 }
 
+#[cfg(test)]
 mod tests {
-    #[cfg(test)]
     use super::*;
-    #[cfg(test)]
     use crate::item_sort_list::Event;
-    #[cfg(test)]
     use crate::item_sort_list::FileItem;
-    #[cfg(test)]
     use crate::item_sort_list::{DirectoryNames, SieveMethod};
-    #[cfg(test)]
     use chrono::NaiveDate;
 
     #[test]
