@@ -85,10 +85,51 @@ mod tests {
     #[cfg(test)]
     use super::*;
     #[cfg(test)]
+    use crate::item_sort_list::Event;
+    #[cfg(test)]
+    use crate::item_sort_list::FileItem;
+    #[cfg(test)]
     use crate::item_sort_list::{DirectoryNames, SieveMethod};
+    #[cfg(test)]
+    use chrono::NaiveDate;
 
     #[test]
-    fn test_load_save() {
+    fn test_get_names() {
+        assert!(!get_settings_filename().as_os_str().is_empty());
+        let project_filename = get_project_filename(Path::new("test"));
+        let project_filename_str = project_filename.to_str().unwrap();
+        assert!(project_filename_str.contains("test"));
+        assert!(project_filename_str.contains(ITEM_LIST_FILE));
+    }
+
+    #[test]
+    fn test_load_save_item_list() {
+        let item_list = ItemList {
+            items: vec![
+                FileItem::dummy("test/test1.jpg", 0, true),
+                FileItem::dummy("test/test2.jpg", 0, false),
+            ],
+            events: vec![Event {
+                name: String::from("Test1"),
+                start_date: NaiveDate::from_ymd(2021, 9, 14),
+                end_date: NaiveDate::from_ymd(2021, 9, 14),
+            }],
+            path: PathBuf::from("test"),
+        };
+
+        JsonPersistence::save(Path::new("test_il.json"), &item_list);
+
+        let loaded_item_list: ItemList = JsonPersistence::load(Path::new("test_il.json")).unwrap();
+        assert_eq!(loaded_item_list.path, item_list.path);
+        assert_eq!(loaded_item_list.events, item_list.events);
+        assert_eq!(loaded_item_list.items, item_list.items);
+
+        let loaded_item_list: Option<ItemList> = JsonPersistence::load(Path::new("invalid.json"));
+        assert!(loaded_item_list.is_none());
+    }
+
+    #[test]
+    fn test_load_save_settings() {
         let mut settings = Settings::new();
         settings.source_directory += "source";
         settings.target_directory += "target";
@@ -103,7 +144,9 @@ mod tests {
         JsonPersistence::save(Path::new("test.json"), &settings);
 
         let loaded_settings = JsonPersistence::load(Path::new("test.json")).unwrap();
-
         assert_eq!(settings, loaded_settings);
+
+        let loaded_settings: Option<Settings> = JsonPersistence::load(Path::new("invalid.json"));
+        assert!(loaded_settings.is_none());
     }
 }
