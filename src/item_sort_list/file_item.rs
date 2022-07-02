@@ -110,7 +110,7 @@ impl FileItem {
         Self {
             path,
             timestamp,
-            orientation: None,
+            orientation: Some(Orientation::Landscape),
             take_over,
             similar: Vec::new(),
             hash: None,

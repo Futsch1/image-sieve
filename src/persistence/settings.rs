@@ -5,7 +5,7 @@ use slint::{ComponentHandle, ModelRc, SharedString};
 
 use super::model_to_enum::{enum_to_model, model_to_enum};
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, std::fmt::Debug, PartialEq)]
 pub struct Settings {
     pub source_directory: String,
     pub target_directory: String,
@@ -27,7 +27,7 @@ impl Settings {
             use_timestamps: true,
             timestamp_max_diff: 5,
             use_hash: false,
-            hash_max_diff: 8,
+            hash_max_diff: 14,
             sieve_directory_names: Some(DirectoryNames::YearAndMonth),
             dark_mode: String::from("Automatic"),
         }
@@ -102,11 +102,47 @@ fn convert_sensitivity_to_u32(sensitivity: &str) -> u32 {
 
 fn convert_u32_to_sensitivity(sensitivity: u32) -> &'static str {
     match sensitivity {
-        20 => "Very low",
-        16 => "Low",
-        14 => "Medium",
-        12 => "High",
-        10 => "Very high",
-        _ => "Medium",
+        17.. => "Very low",
+        15..=16 => "Low",
+        13..=14 => "Medium",
+        11..=12 => "High",
+        0..=10 => "Very high",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn helpers() {
+        assert_eq!(convert_timestamp_difference("5"), Some(5));
+        assert_eq!(convert_timestamp_difference("x"), None);
+
+        assert_eq!(convert_sensitivity_to_u32("Very low"), 20);
+        assert_eq!(convert_sensitivity_to_u32("Very high"), 10);
+        assert_eq!(
+            convert_sensitivity_to_u32("Something"),
+            convert_sensitivity_to_u32("Medium")
+        );
+
+        assert_eq!(convert_u32_to_sensitivity(20), "Very low");
+        assert_eq!(convert_u32_to_sensitivity(40), "Very low");
+        assert_eq!(convert_u32_to_sensitivity(10), "Very high");
+        assert_eq!(convert_u32_to_sensitivity(0), "Very high");
+        assert_eq!(convert_u32_to_sensitivity(11), "High");
+    }
+
+    #[test]
+    fn from_to_window() {
+        let window = ImageSieve::new();
+
+        let settings = Settings::new();
+        let settings2 = Settings::from_window(&window);
+        assert_ne!(settings, settings2);
+
+        settings.to_window(&window);
+        let settings3 = Settings::from_window(&window);
+        assert_eq!(settings, settings3);
     }
 }
