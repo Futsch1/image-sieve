@@ -23,3 +23,66 @@ where
     let enum_value: u32 = ToPrimitive::to_u32(value).unwrap();
     model.row_data(enum_value as usize).unwrap()
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use num_derive::{FromPrimitive, ToPrimitive};
+    use slint::VecModel;
+
+    #[derive(PartialEq, FromPrimitive, ToPrimitive, std::fmt::Debug)]
+    enum Test {
+        A = 0,
+        B,
+        C,
+    }
+
+    #[test]
+    fn test_model_to_enum() {
+        let model = VecModel::from(vec![
+            SharedString::from("A"),
+            SharedString::from("B"),
+            SharedString::from("C"),
+        ]);
+        let model_rc = ModelRc::new(model);
+        assert_eq!(
+            model_to_enum::<Test>(&model_rc, &SharedString::from("A")),
+            Test::A
+        );
+        assert_eq!(
+            model_to_enum::<Test>(&model_rc, &SharedString::from("B")),
+            Test::B
+        );
+        assert_eq!(
+            model_to_enum::<Test>(&model_rc, &SharedString::from("C")),
+            Test::C
+        );
+        assert_eq!(
+            model_to_enum::<Test>(&model_rc, &SharedString::from("X")),
+            Test::A
+        );
+    }
+
+    #[test]
+    fn test_enum_to_model() {
+        let model = VecModel::from(vec![
+            SharedString::from("A"),
+            SharedString::from("B"),
+            SharedString::from("C"),
+        ]);
+        let model_rc = ModelRc::new(model);
+        assert_eq!(
+            enum_to_model::<Test>(&model_rc, &Test::A),
+            &SharedString::from("A")
+        );
+        assert_eq!(
+            enum_to_model::<Test>(&model_rc, &Test::B),
+            &SharedString::from("B")
+        );
+        assert_eq!(
+            enum_to_model::<Test>(&model_rc, &Test::C),
+            SharedString::from("C")
+        );
+    }
+}
