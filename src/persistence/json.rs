@@ -88,6 +88,7 @@ mod tests {
     use crate::item_sort_list::FileItem;
     use crate::item_sort_list::{DirectoryNames, SieveMethod};
     use chrono::NaiveDate;
+    use img_hash::ImageHash;
 
     #[test]
     fn test_get_names() {
@@ -100,7 +101,7 @@ mod tests {
 
     #[test]
     fn test_load_save_item_list() {
-        let item_list = ItemList {
+        let mut item_list = ItemList {
             items: vec![
                 FileItem::dummy("test/test1.jpg", 0, true),
                 FileItem::dummy("test/test2.jpg", 0, false),
@@ -112,6 +113,10 @@ mod tests {
             }],
             path: PathBuf::from("test"),
         };
+        let hash = ImageHash::<Vec<u8>>::from_bytes(&[0x64, 0x65, 0x66, 0x67])
+            .unwrap()
+            .to_base64();
+        item_list.items[0].set_encoded_hash(&hash);
 
         JsonPersistence::save(Path::new("test_il.json"), &item_list);
 
