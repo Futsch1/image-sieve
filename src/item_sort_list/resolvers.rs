@@ -291,6 +291,9 @@ mod tests {
             get_timestamp_from("tests/test_invalid.mp4")
         );
 
+        assert_eq!(974638910, get_timestamp_from("tests/test.nef"));
+        assert_eq!(None, get_orientation_from("tests/test.nef"));
+
         assert_eq!(-1, get_timestamp_from("not_there"));
         assert_eq!(get_file_timestamp("LICENSE"), get_timestamp_from("LICENSE"));
     }

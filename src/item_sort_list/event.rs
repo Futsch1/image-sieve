@@ -177,4 +177,23 @@ mod tests {
         assert_eq!(event1.cmp(&event3), Ordering::Greater);
         assert_eq!(event3.cmp(&event1), Ordering::Less);
     }
+
+    #[test]
+    fn test_is_date_valid() {
+        assert!(Event::is_date_valid("2021-09-14"));
+        assert!(Event::is_date_valid("2021-9-14"));
+        assert!(Event::is_date_valid("2021-9-4"));
+        assert!(Event::is_date_valid("21-9-4"));
+        assert!(Event::is_date_valid("1.1.21"));
+        assert!(Event::is_date_valid("1.1.2021"));
+        assert!(Event::is_date_valid("01.01.2021"));
+        assert!(Event::is_date_valid("01.01.2021"));
+
+        assert!(!Event::is_date_valid("2021-09-14-"));
+        assert!(!Event::is_date_valid("2021-09-14-00"));
+        assert!(!Event::is_date_valid("21-09.14"));
+        assert!(!Event::is_date_valid("21.09-14"));
+        assert!(!Event::is_date_valid("41.09.2014"));
+        assert!(!Event::is_date_valid("11.13.2014"));
+    }
 }

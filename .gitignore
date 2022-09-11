@@ -2,5 +2,7 @@
 Cargo.lock
 settings.json
 image_sieve.json
+test.json
 *.profraw
 *.profdata
+test_il.json

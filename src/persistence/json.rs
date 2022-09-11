@@ -80,3 +80,74 @@ impl JsonPersistence for ItemList {
         fs::write(file_name, item_list).ok();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::item_sort_list::Event;
+    use crate::item_sort_list::FileItem;
+    use crate::item_sort_list::{DirectoryNames, SieveMethod};
+    use chrono::NaiveDate;
+    use img_hash::ImageHash;
+
+    #[test]
+    fn test_get_names() {
+        assert!(!get_settings_filename().as_os_str().is_empty());
+        let project_filename = get_project_filename(Path::new("test"));
+        let project_filename_str = project_filename.to_str().unwrap();
+        assert!(project_filename_str.contains("test"));
+        assert!(project_filename_str.contains(ITEM_LIST_FILE));
+    }
+
+    #[test]
+    fn test_load_save_item_list() {
+        let mut item_list = ItemList {
+            items: vec![
+                FileItem::dummy("test/test1.jpg", 0, true),
+                FileItem::dummy("test/test2.jpg", 0, false),
+            ],
+            events: vec![Event {
+                name: String::from("Test1"),
+                start_date: NaiveDate::from_ymd(2021, 9, 14),
+                end_date: NaiveDate::from_ymd(2021, 9, 14),
+            }],
+            path: PathBuf::from("test"),
+        };
+        let hash = ImageHash::<Vec<u8>>::from_bytes(&[0x64, 0x65, 0x66, 0x67])
+            .unwrap()
+            .to_base64();
+        item_list.items[0].set_encoded_hash(&hash);
+
+        JsonPersistence::save(Path::new("test_il.json"), &item_list);
+
+        let loaded_item_list: ItemList = JsonPersistence::load(Path::new("test_il.json")).unwrap();
+        assert_eq!(loaded_item_list.path, item_list.path);
+        assert_eq!(loaded_item_list.events, item_list.events);
+        assert_eq!(loaded_item_list.items, item_list.items);
+
+        let loaded_item_list: Option<ItemList> = JsonPersistence::load(Path::new("invalid.json"));
+        assert!(loaded_item_list.is_none());
+    }
+
+    #[test]
+    fn test_load_save_settings() {
+        let mut settings = Settings::new();
+        settings.source_directory += "source";
+        settings.target_directory += "target";
+        settings.sieve_method = SieveMethod::MoveAndDelete;
+        settings.use_timestamps = !settings.use_timestamps;
+        settings.timestamp_max_diff += 1;
+        settings.use_hash = !settings.use_hash;
+        settings.hash_max_diff = 12;
+        settings.sieve_directory_names = Some(DirectoryNames::YearAndQuarter);
+        settings.dark_mode = String::from("On");
+
+        JsonPersistence::save(Path::new("test.json"), &settings);
+
+        let loaded_settings = JsonPersistence::load(Path::new("test.json")).unwrap();
+        assert_eq!(settings, loaded_settings);
+
+        let loaded_settings: Option<Settings> = JsonPersistence::load(Path::new("invalid.json"));
+        assert!(loaded_settings.is_none());
+    }
+}
