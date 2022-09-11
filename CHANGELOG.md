@@ -1,15 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.5.7] - 2022-07-01
+## [0.5.8] - 2022-09-10
 
 ### Changed
 
- - 
+ - Updated to slint 0.2.5
+ - Updated snap package
+ - Minor GUI tweaks
 
-### Added
-
- - 
+## [0.5.7] - 2022-07-01
 
 ### Fixed
 
@@ -26,10 +26,6 @@ All notable changes to this project will be documented in this file.
 
  - Added dark mode
 
-### Fixed
-
- -
-
 ## [0.5.5] - 2022-05-08
 
 ### Changed
@@ -40,19 +36,7 @@ All notable changes to this project will be documented in this file.
 
  - Added a button to speed up creating an event from an image filling the event date to the image date.
 
-### Fixed
-
- -
-
 ## [0.5.4] - 2022-04-03
-
-### Changed
-
- - 
-
-### Added
-
- - 
 
 ### Fixed
 
@@ -66,19 +50,11 @@ All notable changes to this project will be documented in this file.
  - Updated to ffmpeg 5.0
  - Updated to slint 0.2.1
 
-### Added
-
- - 
-
 ### Fixed
 
  - Fixed crash when reading file with invalid EXIF date
 
 ## [0.5.2] - 2022-02-14
-
-### Changed
-
- - 
 
 ### Added
 
@@ -151,19 +127,11 @@ All notable changes to this project will be documented in this file.
  - Filters and sort options to the item list
  - Some symbols in the GUI
 
-### Fixed
-
- - 
-
 ## [0.4.1] - 2022-01-05
 
 ### Changed
 
  - Target directory input field is now always disabled
-
-### Added
-
- - 
 
 ### Fixed
 
@@ -251,10 +219,6 @@ All notable changes to this project will be documented in this file.
 
 
 ## [0.2.4] - 2021-11-27
-
-### Changed
-
- - 
 
 ### Added
 
