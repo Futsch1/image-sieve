@@ -45,35 +45,41 @@ export SieveView := HorizontalBox {
         GroupBox { 
             title: "🎯 Target directory";
             enabled: sieve-method-combo-box.current-index != 3;
-            VerticalBox { 
-                HorizontalBox { 
-                    spacing: 5px;
-                    target-directory-edit := LineEdit { 
-                        width: 400px;
-                        enabled: false;
-                        placeholder-text: "Select target directory";
-                    }
-                    Button {
-                        text: "📂 Browse...";
-                        width: 200px;
-                        enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
-                        clicked => { 
-                            browse-target();
+
+            Rectangle { 
+                border-width: 1px;
+                border-color: Palette.neutralPrimary;
+                
+                VerticalBox { 
+                    HorizontalBox { 
+                        spacing: 5px;
+                        target-directory-edit := LineEdit { 
+                            width: 400px;
+                            enabled: false;
+                            placeholder-text: "Select target directory";
+                        }
+                        Button {
+                            text: "📂 Browse...";
+                            width: 200px;
+                            enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                            clicked => { 
+                                browse-target();
+                            }
                         }
                     }
-                }
 
-                HorizontalBox { 
-                    spacing: 5px;
-                    Text {
-                        text: "Directory names";
-                        vertical-alignment: center;
-                    }
-                    ComboBox {
-                        enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
-                        width: 400px;
-                        model: SieveComboValues.directory_names;
-                        current-value <=> sieve-directory-names;
+                    HorizontalBox { 
+                        spacing: 5px;
+                        Text {
+                            text: "Directory names";
+                            vertical-alignment: center;
+                        }
+                        ComboBox {
+                            enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                            width: 400px;
+                            model: SieveComboValues.directory_names;
+                            current-value <=> sieve-directory-names;
+                        }
                     }
                 }
             }

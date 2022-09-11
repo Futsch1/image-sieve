@@ -64,74 +64,79 @@ export SettingsView := VerticalBox {
             Palette.themeLighterAlt = #eff6fc;
         }
     }
+    VerticalBox { 
+        alignment: start;
 
-    GroupBox { 
-        title: "Similar pictures";
-
-        VerticalBox { 
-            alignment: start;
+        GroupBox { 
+            title: "Similar pictures";
 
             HorizontalBox { 
                 alignment: start;
-                
-                GridLayout {             
-                    spacing: 5px;
-                    use-timestamps-checkbox := CheckBox { 
-                        text: "Use timestamps";
-                        toggled => {
-                            recheck-similarities();
-                        }
-                    }
-                    Text {
-                        text: "⇔ Maximum timestamp difference (s): ";                
-                        vertical-alignment: center;
-                        horizontal-alignment: right;
-                    }
-                    timestamp-difference-edit := LineEdit {
-                        text: "5";
-                        width: 50px;
-                        enabled: use-timestamps-checkbox.checked;
-                        accepted => { 
-                            recheck-similarities();
-                        }
-                    }
 
-                    use-similarity-checkbox := CheckBox { 
-                        text: "Use image similarity";
-                        toggled => {
-                            recheck-similarities();
+                Rectangle { 
+                    border-width: 1px;
+                    border-color: Palette.neutralPrimary;            
+                    
+                    GridLayout {
+                        padding: 10px;             
+                        spacing: 5px;
+                        use-timestamps-checkbox := CheckBox { 
+                            text: "Use timestamps";
+                            toggled => {
+                                recheck-similarities();
+                            }
                         }
-                        row: 1;
-                    }
-                    Text {
-                        text: "Sensitivity: ";
-                        vertical-alignment: center;
-                        horizontal-alignment: right;
-                    }
-                    sensitivity-combobox := ComboBox {
-                        model: ["Very low", "Low", "Medium", "High", "Very high"];
-                        current-value: "Medium";                
-                        enabled: use-similarity-checkbox.checked;
-                        selected => { 
-                            recheck-similarities();
+                        Text {
+                            text: "⇔ Maximum timestamp difference (s): ";                
+                            vertical-alignment: center;
+                            horizontal-alignment: right;
                         }
-                    }
-                    Text {
-                        text: "Dark mode: ";
-                        vertical-alignment: center;
-                        horizontal-alignment: right;
-                        row: 3;
-                    }
-                    dark-mode := ComboBox {
-                        model: ["Automatic", "On", "Off"];
-                        current-value: "Automatic";
-                        selected => { 
-                            apply-dark-mode();
+                        timestamp-difference-edit := LineEdit {
+                            text: "5";
+                            width: 50px;
+                            enabled: use-timestamps-checkbox.checked;
+                            accepted => { 
+                                recheck-similarities();
+                            }
                         }
-                    } 
+
+                        use-similarity-checkbox := CheckBox { 
+                            text: "Use image similarity";
+                            toggled => {
+                                recheck-similarities();
+                            }
+                            row: 1;
+                        }
+                        Text {
+                            text: "Sensitivity: ";
+                            vertical-alignment: center;
+                            horizontal-alignment: right;
+                        }
+                        sensitivity-combobox := ComboBox {
+                            model: ["Very low", "Low", "Medium", "High", "Very high"];
+                            current-value: "Medium";                
+                            enabled: use-similarity-checkbox.checked;
+                            selected => { 
+                                recheck-similarities();
+                            }
+                        }
+                        Text {
+                            text: "Dark mode: ";
+                            vertical-alignment: center;
+                            horizontal-alignment: right;
+                            row: 3;
+                        }
+                        dark-mode := ComboBox {
+                            model: ["Automatic", "On", "Off"];
+                            current-value: "Automatic";
+                            selected => { 
+                                apply-dark-mode();
+                            }
+                        } 
+                    }
                 }
-            }
-        }            
+            }            
+        }
     }
     HorizontalBox { 
         TouchArea { 
