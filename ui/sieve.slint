@@ -24,7 +24,9 @@ export SieveView := HorizontalBox {
     property <[SieveResult]> sieve-result-model;
     property target-directory <=> target-directory-edit.text;
     property <string> sieve-method;
+    sieve-method: SieveComboValues.methods[0];
     property <string> sieve-directory-names;
+    sieve-directory-names: SieveComboValues.directory_names[0];
 
     // sieve
     property <bool> sieve-running: false;
