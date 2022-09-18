@@ -445,28 +445,30 @@ pub fn sieve(
     thread::spawn(move || {
         let progress_callback = |progress: String| {
             let window_weak_copy = window_weak.clone();
-            window_weak_copy.upgrade_in_event_loop(move |handle| {
-                if progress == "Done" {
-                    handle.set_sieve_running(false);
-                }
-                let sieve_result_model = handle.get_sieve_result_model();
-                let sieve_result_model = sieve_result_model
-                    .as_any()
-                    .downcast_ref::<slint::VecModel<SieveResult>>()
-                    .unwrap();
-                let color = if progress == "Done" {
-                    SharedString::from("green")
-                } else if progress.starts_with("Error") {
-                    SharedString::from("red")
-                } else {
-                    SharedString::from("black")
-                };
-                let sieve_result = SieveResult {
-                    result: SharedString::from(progress),
-                    color,
-                };
-                sieve_result_model.push(sieve_result);
-            });
+            window_weak_copy
+                .upgrade_in_event_loop(move |handle| {
+                    if progress == "Done" {
+                        handle.set_sieve_running(false);
+                    }
+                    let sieve_result_model = handle.get_sieve_result_model();
+                    let sieve_result_model = sieve_result_model
+                        .as_any()
+                        .downcast_ref::<slint::VecModel<SieveResult>>()
+                        .unwrap();
+                    let color = if progress == "Done" {
+                        SharedString::from("green")
+                    } else if progress.starts_with("Error") {
+                        SharedString::from("red")
+                    } else {
+                        SharedString::from("black")
+                    };
+                    let sieve_result = SieveResult {
+                        result: SharedString::from(progress),
+                        color,
+                    };
+                    sieve_result_model.push(sieve_result);
+                })
+                .ok();
         };
         item_list_copy.sieve(
             Path::new(&target_path),
