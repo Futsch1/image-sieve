@@ -5,7 +5,7 @@ use slint::{ComponentHandle, ModelRc, SharedString};
 
 use super::model_to_enum::{enum_to_model, model_to_enum};
 
-#[derive(Serialize, Deserialize, std::fmt::Debug, PartialEq)]
+#[derive(Serialize, Deserialize, std::fmt::Debug, PartialEq, Eq)]
 pub struct Settings {
     pub source_directory: String,
     pub target_directory: String,
@@ -43,14 +43,10 @@ impl Settings {
             target_directory: window.get_target_directory().to_string(),
             sieve_method: model_to_enum(&methods, &window.get_sieve_method()),
             use_timestamps: window.get_use_timestamps(),
-            timestamp_max_diff: convert_timestamp_difference(
-                &window.get_timestamp_difference().to_string(),
-            )
-            .unwrap_or(5),
+            timestamp_max_diff: convert_timestamp_difference(&window.get_timestamp_difference())
+                .unwrap_or(5),
             use_hash: window.get_use_similarity(),
-            hash_max_diff: convert_sensitivity_to_u32(
-                &window.get_similarity_sensitivity().to_string(),
-            ),
+            hash_max_diff: convert_sensitivity_to_u32(&window.get_similarity_sensitivity()),
             sieve_directory_names: Some(model_to_enum(
                 &directory_names,
                 &window.get_sieve_directory_names(),
