@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - Pending
+
+### Changed
+
+ - Save and restore window position and size on certain platforms
+
 ## [0.5.8] - 2022-09-10
 
 ### Changed
