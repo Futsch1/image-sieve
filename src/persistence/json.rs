@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use super::settings::Settings;
+use super::settings::{Settings, SettingsV05, SettingsV06};
 use crate::item_sort_list::ItemList;
 use home;
 
@@ -31,6 +31,12 @@ pub fn get_project_filename(path: &Path) -> PathBuf {
     Path::new(path).to_path_buf().join(ITEM_LIST_FILE)
 }
 
+fn join_json(json1: String, json2: String) -> String {
+    let mut json1: String = json1.chars().take(json1.len() - 2).collect();
+    json1.push(',');
+    json1 + json2.as_str().strip_prefix('{').unwrap()
+}
+
 /// Trait to load and save data from/to a file
 pub trait JsonPersistence
 where
@@ -45,9 +51,14 @@ impl JsonPersistence for Settings {
     fn load(file_name: &Path) -> Option<Settings> {
         let settings = fs::read_to_string(file_name).unwrap_or_default();
 
-        let contents = serde_json::from_str::<Settings>(&settings);
-        if let Ok(settings) = contents {
-            Some(settings)
+        let contents_v05 = serde_json::from_str::<SettingsV05>(&settings);
+        let contents_v06 = serde_json::from_str::<SettingsV06>(&settings);
+        if let Ok(settings_v05) = contents_v05 {
+            let settings_v06 = contents_v06.unwrap_or_else(|_| SettingsV06::new());
+            Some(Settings {
+                settings_v05,
+                settings_v06,
+            })
         } else {
             None
         }
@@ -55,7 +66,11 @@ impl JsonPersistence for Settings {
 
     /// Try saving the settings to a json file
     fn save(file_name: &Path, settings: &Settings) {
-        let settings = serde_json::to_string_pretty(settings).unwrap_or_default();
+        let settings_v05 = serde_json::to_string_pretty(&settings.settings_v05).unwrap_or_default();
+        let settings_v06 = serde_json::to_string_pretty(&settings.settings_v06).unwrap_or_default();
+
+        let settings = join_json(settings_v05, settings_v06);
+
         fs::write(file_name, settings).ok();
     }
 }
@@ -132,15 +147,19 @@ mod tests {
     #[test]
     fn test_load_save_settings() {
         let mut settings = Settings::new();
-        settings.source_directory += "source";
-        settings.target_directory += "target";
-        settings.sieve_method = SieveMethod::MoveAndDelete;
-        settings.use_timestamps = !settings.use_timestamps;
-        settings.timestamp_max_diff += 1;
-        settings.use_hash = !settings.use_hash;
-        settings.hash_max_diff = 12;
-        settings.sieve_directory_names = Some(DirectoryNames::YearAndQuarter);
-        settings.dark_mode = String::from("On");
+        settings.settings_v05.source_directory += "source";
+        settings.settings_v05.target_directory += "target";
+        settings.settings_v05.sieve_method = SieveMethod::MoveAndDelete;
+        settings.settings_v05.use_timestamps = !settings.settings_v05.use_timestamps;
+        settings.settings_v05.timestamp_max_diff += 1;
+        settings.settings_v05.use_hash = !settings.settings_v05.use_hash;
+        settings.settings_v05.hash_max_diff = 12;
+        settings.settings_v05.sieve_directory_names = Some(DirectoryNames::YearAndQuarter);
+        settings.settings_v05.dark_mode = String::from("On");
+        settings.settings_v06.height = 1;
+        settings.settings_v06.width = 2;
+        settings.settings_v06.left = 3;
+        settings.settings_v06.top = 4;
 
         JsonPersistence::save(Path::new("test.json"), &settings);
 

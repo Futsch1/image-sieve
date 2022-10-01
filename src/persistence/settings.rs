@@ -6,7 +6,7 @@ use slint::{ComponentHandle, ModelRc, SharedString};
 use super::model_to_enum::{enum_to_model, model_to_enum};
 
 #[derive(Serialize, Deserialize, std::fmt::Debug, PartialEq, Eq)]
-pub struct Settings {
+pub struct SettingsV05 {
     pub source_directory: String,
     pub target_directory: String,
     pub sieve_method: SieveMethod,
@@ -18,7 +18,21 @@ pub struct Settings {
     pub dark_mode: String,
 }
 
-impl Settings {
+#[derive(Serialize, Deserialize, std::fmt::Debug, PartialEq, Eq)]
+pub struct SettingsV06 {
+    pub width: u32,
+    pub height: u32,
+    pub left: i32,
+    pub top: i32,
+}
+
+#[derive(std::fmt::Debug, PartialEq, Eq)]
+pub struct Settings {
+    pub settings_v05: SettingsV05,
+    pub settings_v06: SettingsV06,
+}
+
+impl SettingsV05 {
     pub fn new() -> Self {
         Self {
             source_directory: String::new(),
@@ -32,13 +46,33 @@ impl Settings {
             dark_mode: String::from("Automatic"),
         }
     }
+}
+
+impl SettingsV06 {
+    pub fn new() -> Self {
+        Self {
+            height: 0,
+            width: 0,
+            left: 0,
+            top: 0,
+        }
+    }
+}
+
+impl Settings {
+    pub fn new() -> Self {
+        Self {
+            settings_v05: SettingsV05::new(),
+            settings_v06: SettingsV06::new(),
+        }
+    }
 
     pub fn from_window(window: &ImageSieve) -> Self {
         //TODO: Also save last selected image and restart there
         let methods: ModelRc<SharedString> = window.global::<SieveComboValues>().get_methods();
         let directory_names: ModelRc<SharedString> =
             window.global::<SieveComboValues>().get_directory_names();
-        Settings {
+        let settings_v05 = SettingsV05 {
             source_directory: window.get_source_directory().to_string(),
             target_directory: window.get_target_directory().to_string(),
             sieve_method: model_to_enum(&methods, &window.get_sieve_method()),
@@ -52,28 +86,39 @@ impl Settings {
                 &window.get_sieve_directory_names(),
             )),
             dark_mode: window.get_dark_mode().to_string(),
+        };
+        Settings {
+            settings_v05,
+            settings_v06: SettingsV06::new(),
         }
     }
 
     pub fn to_window(&self, window: &ImageSieve) {
-        window.set_source_directory(SharedString::from(self.source_directory.clone()));
-        window.set_target_directory(SharedString::from(self.target_directory.clone()));
+        window.set_source_directory(SharedString::from(
+            self.settings_v05.source_directory.clone(),
+        ));
+        window.set_target_directory(SharedString::from(
+            self.settings_v05.target_directory.clone(),
+        ));
         let methods: ModelRc<SharedString> = window.global::<SieveComboValues>().get_methods();
-        window.set_sieve_method(enum_to_model(&methods, &self.sieve_method));
-        window.set_use_timestamps(self.use_timestamps);
-        window.set_timestamp_difference(SharedString::from(self.timestamp_max_diff.to_string()));
-        window.set_use_similarity(self.use_hash);
+        window.set_sieve_method(enum_to_model(&methods, &self.settings_v05.sieve_method));
+        window.set_use_timestamps(self.settings_v05.use_timestamps);
+        window.set_timestamp_difference(SharedString::from(
+            self.settings_v05.timestamp_max_diff.to_string(),
+        ));
+        window.set_use_similarity(self.settings_v05.use_hash);
         window.set_similarity_sensitivity(SharedString::from(convert_u32_to_sensitivity(
-            self.hash_max_diff,
+            self.settings_v05.hash_max_diff,
         )));
         let directory_names: ModelRc<SharedString> =
             window.global::<SieveComboValues>().get_directory_names();
         let directory_name = self
+            .settings_v05
             .sieve_directory_names
             .as_ref()
             .unwrap_or(&DirectoryNames::YearAndMonth);
         window.set_sieve_directory_names(enum_to_model(&directory_names, directory_name));
-        window.set_dark_mode(SharedString::from(self.dark_mode.clone()))
+        window.set_dark_mode(SharedString::from(self.settings_v05.dark_mode.clone()))
     }
 }
 

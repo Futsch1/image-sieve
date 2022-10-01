@@ -77,9 +77,9 @@ impl MainWindow {
         let image_sieve = ImageSieve::new();
 
         let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve);
-        if !settings.source_directory.is_empty() {
+        if !settings.settings_v05.source_directory.is_empty() {
             // Start synchronization in a background thread
-            synchronizer.scan_path(Path::new(&settings.source_directory));
+            synchronizer.scan_path(Path::new(&settings.settings_v05.source_directory));
         }
 
         let main_window = Self {
@@ -97,7 +97,7 @@ impl MainWindow {
             .window
             .set_window_title(SharedString::from("ImageSieve v") + version);
         settings.to_window(&main_window.window);
-        if settings.source_directory.is_empty() {
+        if settings.settings_v05.source_directory.is_empty() {
             main_window.window.set_loading(false);
             main_window.window.set_calculating_similarities(false);
         }

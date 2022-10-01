@@ -106,14 +106,14 @@ fn synchronize_run(
             }
             Command::Similarities(settings) => {
                 // First, find similars based on times, this is usually quick
-                if settings.use_timestamps {
+                if settings.settings_v05.use_timestamps {
                     calculate_similar_timestamps(item_list.clone(), &settings);
                 }
                 // Tell the GUI that this is done
-                similarities_calculated(&image_sieve, !settings.use_hash);
+                similarities_calculated(&image_sieve, !settings.settings_v05.use_hash);
 
                 // Then, if enabled, find similars based on hashes. This takes some time.
-                if settings.use_hash {
+                if settings.settings_v05.use_hash {
                     calculate_similar_hashes(item_list.clone(), &settings);
                     // Finally, update the GUI again with the new found similarities
                     similarities_calculated(&image_sieve, true);
@@ -190,7 +190,7 @@ fn check_abort(receiver: &Receiver<Command>) -> Result<(), ()> {
 fn calculate_similar_timestamps(item_list: Arc<Mutex<ItemList>>, settings: &Settings) {
     {
         let mut item_list_loc = item_list.lock().unwrap();
-        item_list_loc.find_similar(settings.timestamp_max_diff);
+        item_list_loc.find_similar(settings.settings_v05.timestamp_max_diff);
     }
 }
 
@@ -235,7 +235,7 @@ fn calculate_similar_hashes(item_list: Arc<Mutex<ItemList>>, settings: &Settings
                 item.set_hash(hash);
             }
         }
-        item_list_loc.find_similar_hashes(settings.hash_max_diff);
+        item_list_loc.find_similar_hashes(settings.settings_v05.hash_max_diff);
     }
 }
 
