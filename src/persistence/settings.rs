@@ -1,7 +1,7 @@
 use crate::item_sort_list::{DirectoryNames, SieveMethod};
 use crate::main_window::{ImageSieve, SieveComboValues};
 use serde::{Deserialize, Serialize};
-use slint::{ComponentHandle, ModelRc, SharedString};
+use slint::{ComponentHandle, ModelRc, PhysicalPosition, PhysicalSize, SharedString};
 
 use super::model_to_enum::{enum_to_model, model_to_enum};
 
@@ -51,10 +51,10 @@ impl SettingsV05 {
 impl SettingsV06 {
     pub fn new() -> Self {
         Self {
-            height: 0,
-            width: 0,
-            left: 0,
-            top: 0,
+            width: 1600,
+            height: 800,
+            left: 100,
+            top: 100,
         }
     }
 }
@@ -87,9 +87,17 @@ impl Settings {
             )),
             dark_mode: window.get_dark_mode().to_string(),
         };
+        let position = window.window().position();
+        let size = window.window().size();
+        let settings_v06 = SettingsV06 {
+            width: size.width,
+            height: size.height,
+            left: position.x,
+            top: position.y,
+        };
         Settings {
             settings_v05,
-            settings_v06: SettingsV06::new(),
+            settings_v06,
         }
     }
 
@@ -118,7 +126,15 @@ impl Settings {
             .as_ref()
             .unwrap_or(&DirectoryNames::YearAndMonth);
         window.set_sieve_directory_names(enum_to_model(&directory_names, directory_name));
-        window.set_dark_mode(SharedString::from(self.settings_v05.dark_mode.clone()))
+        window.set_dark_mode(SharedString::from(self.settings_v05.dark_mode.clone()));
+        window.window().set_position(PhysicalPosition::new(
+            self.settings_v06.left,
+            self.settings_v06.top,
+        ));
+        window.window().set_size(PhysicalSize::new(
+            self.settings_v06.width,
+            self.settings_v06.height,
+        ))
     }
 }
 
