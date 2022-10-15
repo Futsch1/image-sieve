@@ -17,6 +17,8 @@ jobs:
     - uses: ./.github/actions/prepare_ubuntu
     - name: Install prerequisites
       run: rustup component add llvm-tools-preview
+    - name: Use rust nightly (temp fix because of E0554)
+      run: rustup install nightly
     - name: Install cargo-llvm-cov
       uses: taiki-e/install-action@cargo-llvm-cov
     - name: Generate code coverage
