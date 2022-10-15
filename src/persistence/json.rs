@@ -169,4 +169,15 @@ mod tests {
         let loaded_settings: Option<Settings> = JsonPersistence::load(Path::new("invalid.json"));
         assert!(loaded_settings.is_none());
     }
+
+    #[test]
+    fn test_load_v05_settings() {
+        let mut settings_v05 = SettingsV05::new();
+        settings_v05.hash_max_diff = 42;
+        let settings_v05 = serde_json::to_string_pretty(&settings_v05).unwrap_or_default();
+
+        fs::write(Path::new("test.json"), settings_v05).ok();
+        let loaded_settings: Settings = JsonPersistence::load(Path::new("test.json")).unwrap();
+        assert_eq!(loaded_settings.settings_v05.hash_max_diff, 42);
+    }
 }
