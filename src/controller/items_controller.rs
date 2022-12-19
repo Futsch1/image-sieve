@@ -204,28 +204,32 @@ impl ItemsController {
             image
         } else {
             let f: image_cache::DoneCallback = Box::new(move |image_buffer| {
-                window_weak.clone().upgrade_in_event_loop(move |handle| {
-                    // Check if still the image is visible that caused the image loads
-                    if handle.get_current_image().local_index == current_item_local_index {
-                        let mut row_data = handle
-                            .get_similar_images_model()
-                            .row_data(model_index)
-                            .unwrap();
-                        if has_similars {
-                            row_data.image = crate::misc::images::get_slint_image(&image_buffer);
-                            handle
+                window_weak
+                    .clone()
+                    .upgrade_in_event_loop(move |handle| {
+                        // Check if still the image is visible that caused the image loads
+                        if handle.get_current_image().local_index == current_item_local_index {
+                            let mut row_data = handle
                                 .get_similar_images_model()
-                                .set_row_data(model_index, row_data);
+                                .row_data(model_index)
+                                .unwrap();
+                            if has_similars {
+                                row_data.image =
+                                    crate::misc::images::get_slint_image(&image_buffer);
+                                handle
+                                    .get_similar_images_model()
+                                    .set_row_data(model_index, row_data);
+                            }
+                            // If the image is the current image, then we need to also update the current image SortImage
+                            if is_current_image {
+                                let mut current_image = handle.get_current_image();
+                                current_image.image =
+                                    crate::misc::images::get_slint_image(&image_buffer);
+                                handle.set_current_image(current_image);
+                            }
                         }
-                        // If the image is the current image, then we need to also update the current image SortImage
-                        if is_current_image {
-                            let mut current_image = handle.get_current_image();
-                            current_image.image =
-                                crate::misc::images::get_slint_image(&image_buffer);
-                            handle.set_current_image(current_image);
-                        }
-                    }
-                })
+                    })
+                    .unwrap()
             });
             self.image_cache.load(
                 item,

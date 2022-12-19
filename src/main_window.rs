@@ -101,10 +101,10 @@ impl MainWindow {
             main_window.window.set_loading(false);
             main_window.window.set_calculating_similarities(false);
         }
-        main_window
+        /*main_window
             .window
             .set_system_dark(dark_light::detect() == dark_light::Mode::Dark);
-        main_window.window.invoke_apply_dark_mode();
+        /main_window.window.invoke_apply_dark_mode();*/
 
         // Set model references
         main_window.window.set_list_model(
