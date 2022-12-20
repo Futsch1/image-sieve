@@ -1,7 +1,7 @@
 use chrono::Datelike;
 use strum_macros::Display;
 
-#[derive(Display, PartialEq)]
+#[derive(Display, PartialEq, Eq)]
 pub enum Format {
     #[strum(serialize = "%Y-%m-%d")]
     Date,

@@ -5,7 +5,7 @@ use slint::{ComponentHandle, ModelRc, SharedString};
 
 use super::model_to_enum::{enum_to_model, model_to_enum};
 
-#[derive(Serialize, Deserialize, std::fmt::Debug, PartialEq)]
+#[derive(Serialize, Deserialize, std::fmt::Debug, PartialEq, Eq)]
 pub struct Settings {
     pub source_directory: String,
     pub target_directory: String,
