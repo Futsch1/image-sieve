@@ -338,6 +338,8 @@ fn list_item_from_file_item(file_item: &FileItem, item_list: &ItemList) -> main_
 
 #[cfg(test)]
 mod tests {
+    use std::sync::MutexGuard;
+
     use crate::main_window::ImageSieve;
     use slint::{ComponentHandle, SharedString};
 
@@ -353,6 +355,15 @@ mod tests {
         }
     }
 
+    fn fill_item_list(item_list: &mut MutexGuard<ItemList>) {
+        item_list
+            .items
+            .push(FileItem::dummy("test2.mov", 86400, true));
+        let mut file_item = FileItem::dummy("test1.jpg", 1, false);
+        file_item.add_similar_range(&(0..1));
+        item_list.items.push(file_item);
+    }
+
     #[test]
     fn test_populate() {
         let item_list = Arc::new(Mutex::new(ItemList::new()));
@@ -360,10 +371,7 @@ mod tests {
         let mut filters = build_filters();
         {
             let mut item_list = item_list.lock().unwrap();
-            item_list.items.push(FileItem::dummy("test2.mov", 1, true));
-            let mut file_item = FileItem::dummy("test1.jpg", 0, false);
-            file_item.add_similar_range(&(1..2));
-            item_list.items.push(file_item);
+            fill_item_list(&mut item_list);
         }
         items_controller.populate_list_model(&filters);
         let list_model = items_controller.get_list_model();
@@ -414,10 +422,7 @@ mod tests {
         let filters = build_filters();
         {
             let mut item_list = item_list.lock().unwrap();
-            item_list.items.push(FileItem::dummy("test2.mov", 1, true));
-            let mut file_item = FileItem::dummy("test1.jpg", 0, false);
-            file_item.add_similar_range(&(0..1));
-            item_list.items.push(file_item);
+            fill_item_list(&mut item_list);
         }
         items_controller.populate_list_model(&filters);
         items_controller.selected_list_item(1, window_weak);
@@ -451,10 +456,7 @@ mod tests {
         let filters = build_filters();
         {
             let mut item_list = item_list.lock().unwrap();
-            item_list.items.push(FileItem::dummy("test2.mov", 1, true));
-            let mut file_item = FileItem::dummy("test1.jpg", 0, false);
-            file_item.add_similar_range(&(0..1));
-            item_list.items.push(file_item);
+            fill_item_list(&mut item_list);
         }
         items_controller.populate_list_model(&filters);
 
@@ -464,11 +466,11 @@ mod tests {
         assert_eq!(similar_items_model.row_count(), 2);
         assert_eq!(
             similar_items_model.row_data(0).unwrap().text,
-            "🔀 📷 🗑 test1.jpg - 1970-01-01 00:00:00, 0 KB"
+            "🔀 📷 🗑 test1.jpg - 1970-01-01 00:00:01, 0 KB"
         );
         assert_eq!(
             similar_items_model.row_data(1).unwrap().text,
-            "📹 test2.mov - 1970-01-01 00:00:01, 0 KB"
+            "📹 test2.mov - 1970-01-02 00:00:00, 0 KB"
         );
         assert_eq!(
             similar_items_model.row_data(0).unwrap().image.size().width as i32,
@@ -490,10 +492,7 @@ mod tests {
         let filters = build_filters();
         {
             let mut item_list = item_list.lock().unwrap();
-            item_list.items.push(FileItem::dummy("test2.mov", 1, true));
-            let mut file_item = FileItem::dummy("test1.jpg", 0, false);
-            file_item.add_similar_range(&(1..2));
-            item_list.items.push(file_item);
+            fill_item_list(&mut item_list);
         }
         items_controller.populate_list_model(&filters);
 
@@ -502,7 +501,7 @@ mod tests {
             item_list.events.push(crate::item_sort_list::Event::new(
                 "Test",
                 "1970-01-01",
-                "1970-01-01",
+                "1970-01-02",
             ));
         }
         assert!(items_controller.update_list_model());
@@ -510,5 +509,17 @@ mod tests {
         assert_eq!(list_model.row_count(), 2);
         assert_eq!(list_model.row_data(0).unwrap().text, "📅 🔀 📷 🗑 test1.jpg");
         assert_eq!(list_model.row_data(1).unwrap().text, "📅 📹 test2.mov");
+    }
+
+    #[test]
+    fn test_get_date_string() {
+        let item_list = Arc::new(Mutex::new(ItemList::new()));
+        let items_controller = ItemsController::new(item_list.clone());
+        {
+            let mut item_list = item_list.lock().unwrap();
+            fill_item_list(&mut item_list);
+        }
+        assert_eq!(items_controller.get_date_string(0), "1970-01-02");
+        assert_eq!(items_controller.get_date_string(1), "1970-01-01");
     }
 }
