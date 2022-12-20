@@ -134,7 +134,7 @@ fn get_frame(
 ) -> Option<ffmpeg::util::frame::Video> {
     let mut frame = ffmpeg::util::frame::Video::empty();
     decoder.send_packet(&packet).ok();
-    while decoder.receive_frame(&mut *frame).is_ok() {
+    while decoder.receive_frame(&mut frame).is_ok() {
         if frame.width() > 0 && frame.height() > 0 {
             return Some(frame);
         }

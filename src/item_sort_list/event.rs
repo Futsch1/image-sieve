@@ -160,11 +160,11 @@ mod tests {
     fn test_contains() {
         let event = Event::new("test", "2021-09-14", "2021-09-16");
 
-        assert!(event.contains(&NaiveDate::from_ymd(2021, 9, 14)));
-        assert!(event.contains(&NaiveDate::from_ymd(2021, 9, 15)));
-        assert!(event.contains(&NaiveDate::from_ymd(2021, 9, 16)));
-        assert!(!event.contains(&NaiveDate::from_ymd(2021, 9, 13)));
-        assert!(!event.contains(&NaiveDate::from_ymd(2021, 9, 17)));
+        assert!(event.contains(&NaiveDate::from_ymd_opt(2021, 9, 14).unwrap()));
+        assert!(event.contains(&NaiveDate::from_ymd_opt(2021, 9, 15).unwrap()));
+        assert!(event.contains(&NaiveDate::from_ymd_opt(2021, 9, 16).unwrap()));
+        assert!(!event.contains(&NaiveDate::from_ymd_opt(2021, 9, 13).unwrap()));
+        assert!(!event.contains(&NaiveDate::from_ymd_opt(2021, 9, 17).unwrap()));
     }
 
     #[test]

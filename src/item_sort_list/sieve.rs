@@ -4,9 +4,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use chrono::{Datelike, NaiveDateTime};
+use chrono::Datelike;
 
-use super::{file_item, DirectoryNames, ItemList, SieveMethod};
+use super::{file_item, timestamp_to_string, DirectoryNames, Format, ItemList, SieveMethod};
 
 /// Trait to encapsulate sieve file IO operations
 pub trait SieveIO {
@@ -198,22 +198,17 @@ fn get_sub_path(
             ));
         }
     } else {
-        let timestamp = NaiveDateTime::from_timestamp(item.get_timestamp(), 0);
-        match directory_names {
-            DirectoryNames::YearAndMonth => directories.push(timestamp.format("%Y-%m").to_string()),
-            DirectoryNames::Year => directories.push(timestamp.format("%Y").to_string()),
-            DirectoryNames::YearMonthAndDay => {
-                directories.push(timestamp.format("%Y-%m-%d").to_string())
-            }
-            DirectoryNames::YearAndQuarter => directories.push(
-                timestamp.format("%Y-Q").to_string()
-                    + &format!("{}", (timestamp.date().month() - 1) / 3 + 1),
-            ),
-            DirectoryNames::YearAndMonthInSubdirectory => {
-                directories.push(timestamp.format("%Y").to_string());
-                directories.push(timestamp.format("%m").to_string());
-            }
+        let format = match directory_names {
+            DirectoryNames::YearAndMonth => Format::YearAndMonth,
+            DirectoryNames::Year => Format::Year,
+            DirectoryNames::YearMonthAndDay => Format::Date,
+            DirectoryNames::YearAndQuarter => Format::YearAndQuarter,
+            DirectoryNames::YearAndMonthInSubdirectory => Format::Year,
         };
+        directories.push(timestamp_to_string(item.get_timestamp(), format));
+        if *directory_names == DirectoryNames::YearAndMonthInSubdirectory {
+            directories.push(timestamp_to_string(item.get_timestamp(), Format::Month))
+        }
     }
 
     directories
@@ -302,18 +297,18 @@ mod test {
             events: vec![
                 Event {
                     name: String::from("Test1"),
-                    start_date: NaiveDate::from_ymd(2021, 9, 14),
-                    end_date: NaiveDate::from_ymd(2021, 9, 14),
+                    start_date: NaiveDate::from_ymd_opt(2021, 9, 14).unwrap(),
+                    end_date: NaiveDate::from_ymd_opt(2021, 9, 14).unwrap(),
                 },
                 Event {
                     name: String::from("Test2"),
-                    start_date: NaiveDate::from_ymd(2021, 9, 20),
-                    end_date: NaiveDate::from_ymd(2021, 9, 21),
+                    start_date: NaiveDate::from_ymd_opt(2021, 9, 20).unwrap(),
+                    end_date: NaiveDate::from_ymd_opt(2021, 9, 21).unwrap(),
                 },
                 Event {
                     name: String::from("Test3"),
-                    start_date: NaiveDate::from_ymd(2021, 9, 24),
-                    end_date: NaiveDate::from_ymd(2022, 9, 27),
+                    start_date: NaiveDate::from_ymd_opt(2021, 9, 24).unwrap(),
+                    end_date: NaiveDate::from_ymd_opt(2022, 9, 27).unwrap(),
                 },
             ],
             path: PathBuf::from(""),

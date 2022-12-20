@@ -186,13 +186,12 @@ impl ItemList {
 
     /// Gets the event which a file item belongs to
     pub fn get_event(&self, item: &file_item::FileItem) -> Option<&event::Event> {
-        let naive_date = NaiveDateTime::from_timestamp(item.get_timestamp(), 0).date();
-        for event in &self.events {
-            if event.contains(&naive_date) {
-                return Some(event);
-            }
-        }
-        None
+        let naive_date = NaiveDateTime::from_timestamp_opt(item.get_timestamp(), 0)
+            .unwrap()
+            .date();
+        self.events
+            .iter()
+            .find(|&event| event.contains(&naive_date))
     }
 }
 

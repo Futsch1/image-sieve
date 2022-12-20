@@ -6,7 +6,7 @@ use std::{
 use slint::Model;
 
 use crate::{
-    item_sort_list::{FileItem, ItemList},
+    item_sort_list::{timestamp_to_string, FileItem, Format, ItemList},
     main_window,
     misc::image_cache,
 };
@@ -181,10 +181,7 @@ impl ItemsController {
     pub fn get_date_string(&self, local_index: i32) -> slint::SharedString {
         let item_list = self.item_list.lock().unwrap();
         let item = &item_list.items[local_index as usize];
-        let date = chrono::NaiveDateTime::from_timestamp(item.get_timestamp(), 0)
-            .format("%Y-%m-%d")
-            .to_string();
-        slint::SharedString::from(date)
+        slint::SharedString::from(timestamp_to_string(item.get_timestamp(), Format::Date))
     }
 
     /// Gets the image for an item
