@@ -25,6 +25,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: ./.github/actions/prepare_ubuntu
+    - name: Use nightly compiler
+      run: rustup override set nightly
     - name: Install prerequisites
       run: rustup component add llvm-tools-preview
     - name: Install cargo-llvm-cov
