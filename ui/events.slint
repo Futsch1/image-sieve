@@ -1,5 +1,4 @@
-import { ListView, Button, LineEdit, GroupBox, ScrollView, VerticalBox } from "std-widgets.slint";
-import { Palette } from "std-widgets-impl.slint";
+import { ListView, Button, LineEdit, GroupBox, ScrollView, VerticalBox, StyleMetrics } from "std-widgets.slint";
 
 
 struct Event := {
@@ -80,7 +79,7 @@ EventsView := ScrollView {
                 alignment: start;
                 new-name := LineEdit { 
                     placeholder-text: "Event name";
-                    background: highlight-new ? Palette.themePrimary : Palette.white;
+                    background: highlight-new ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
                     animate background {
                         duration: 3s;
                     }
@@ -88,7 +87,7 @@ EventsView := ScrollView {
                 new-start-date := LineEdit { 
                     min-width: 300px;
                     placeholder-text: "Start date (YYYY-MM-DD or DD-MM-YYYY)";
-                    background: highlight-new ? Palette.themePrimary : Palette.white;
+                    background: highlight-new ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
                     animate background {
                         duration: 3s;
                     }
@@ -96,7 +95,7 @@ EventsView := ScrollView {
                 new-end-date := LineEdit { 
                     min-width: 300px;
                     placeholder-text: "End date (YYYY-MM-DD or DD-MM-YYYY)";
-                    background: highlight-new ? Palette.themePrimary : Palette.white;
+                    background: highlight-new ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
                     animate background {
                         duration: 3s;
                     }
@@ -105,7 +104,7 @@ EventsView := ScrollView {
             Button {
                 text: "➕ Add";
                 width: 300px;
-                background: highlight-new ? Palette.themePrimary : Palette.white;
+                background: highlight-new ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
                 animate background {
                     duration: 3s;
                 }

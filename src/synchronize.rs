@@ -95,11 +95,14 @@ fn synchronize_run(
                     let mut item_list_loc = item_list.lock().unwrap();
                     item_list_loc.items.clear();
                 }
-                image_sieve.clone().upgrade_in_event_loop({
-                    move |h| {
-                        h.invoke_synchronization_finished();
-                    }
-                });
+                image_sieve
+                    .clone()
+                    .upgrade_in_event_loop({
+                        move |h| {
+                            h.invoke_synchronization_finished();
+                        }
+                    })
+                    .unwrap();
             }
             Command::Similarities(settings) => {
                 // First, find similars based on times, this is usually quick
@@ -122,11 +125,14 @@ fn synchronize_run(
 
 /// Tell the GUI that the similarities have been calculated
 fn similarities_calculated(image_sieve: &slint::Weak<ImageSieve>, finished: bool) {
-    image_sieve.clone().upgrade_in_event_loop({
-        move |h| {
-            h.invoke_similarities_calculated(finished);
-        }
-    });
+    image_sieve
+        .clone()
+        .upgrade_in_event_loop({
+            move |h| {
+                h.invoke_similarities_calculated(finished);
+            }
+        })
+        .unwrap();
 }
 
 /// Scan files in a path, update the item list with those found files and update the GUI models with the new data
@@ -235,9 +241,12 @@ fn calculate_similar_hashes(item_list: Arc<Mutex<ItemList>>, settings: &Settings
 
 /// Report a progress string back to the main window
 fn report_progress(image_sieve: &slint::Weak<ImageSieve>, progress: String) {
-    image_sieve.clone().upgrade_in_event_loop({
-        move |h| {
-            h.set_loading_progress(SharedString::from(progress));
-        }
-    });
+    image_sieve
+        .clone()
+        .upgrade_in_event_loop({
+            move |h| {
+                h.set_loading_progress(SharedString::from(progress));
+            }
+        })
+        .unwrap();
 }

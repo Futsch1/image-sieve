@@ -9,7 +9,7 @@ use super::lru_map::LruMap;
 use crate::item_sort_list::FileItem;
 use crate::misc::images::ImageBuffer;
 use slint::{
-    re_exports::{ImageInner, Slice},
+    private_unstable_api::re_exports::{load_image_from_embedded_data, Slice},
     Image,
 };
 
@@ -101,10 +101,10 @@ impl ImageCache {
     /// Gets the hourglass image to indicate waiting
     /// The image is compiled into the binary
     fn get_hourglass() -> Image {
-        Image::from(ImageInner::EmbeddedData {
-            data: Slice::from_slice(include_bytes!("hourglass.svg")),
-            format: Slice::from_slice(b"svg"),
-        })
+        load_image_from_embedded_data(
+            Slice::from_slice(include_bytes!("hourglass.svg")),
+            Slice::from_slice(b"svg"),
+        )
     }
 
     /// Purge all running commands

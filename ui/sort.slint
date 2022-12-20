@@ -1,5 +1,4 @@
-import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView, CheckBox, ComboBox } from "std-widgets.slint";
-import { Palette } from "std-widgets-impl.slint";
+import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView, CheckBox, ComboBox, StyleMetrics } from "std-widgets.slint";
 
 
 export struct SortItem := {
@@ -269,7 +268,7 @@ export SortView := HorizontalBox {
                             current-similar-image = i;
                         }
                     }
-                    if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: Palette.themePrimary;}
+                    if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: StyleMetrics.textedit-background-disabled;}
                 }
             }
         }
@@ -343,7 +342,7 @@ export SortView := HorizontalBox {
                 padding: 2px;
                 height: 20px;
                 width: parent.width;
-                background: i == parent.current-item ? Palette.themePrimary : Palette.white;
+                background: i == parent.current-item ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
                 HorizontalLayout { 
                     Text { 
                         text: item.text;

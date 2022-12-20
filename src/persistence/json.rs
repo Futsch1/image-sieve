@@ -18,7 +18,7 @@ pub fn get_settings_filename() -> PathBuf {
     let home = home::home_dir();
     if let Some(home) = home {
         if !Path::new(&home.join(".image_sieve")).exists() {
-            fs::create_dir_all(&home.join(".image_sieve")).unwrap();
+            fs::create_dir_all(home.join(".image_sieve")).unwrap();
         }
         home.join(".image_sieve").join(SETTINGS_FILE)
     } else {
@@ -108,8 +108,8 @@ mod tests {
             ],
             events: vec![Event {
                 name: String::from("Test1"),
-                start_date: NaiveDate::from_ymd(2021, 9, 14),
-                end_date: NaiveDate::from_ymd(2021, 9, 14),
+                start_date: NaiveDate::from_ymd_opt(2021, 9, 14).unwrap(),
+                end_date: NaiveDate::from_ymd_opt(2021, 9, 14).unwrap(),
             }],
             path: PathBuf::from("test"),
         };
