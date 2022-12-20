@@ -1,4 +1,4 @@
-import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSlint } from "std-widgets.slint";
+import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSlint, StyleMetrics } from "std-widgets.slint";
 
 export SettingsView := VerticalBox { 
     property use-timestamps <=> use-timestamps-checkbox.checked;
@@ -21,7 +21,7 @@ export SettingsView := VerticalBox {
 
                 Rectangle { 
                     border-width: 1px;
-                    border-color: #323130;            
+                    border-color: StyleMetrics.textedit-text-color;            
                     
                     GridLayout {
                         padding: 10px;             
@@ -71,10 +71,12 @@ export SettingsView := VerticalBox {
                             vertical-alignment: center;
                             horizontal-alignment: right;
                             row: 3;
+                            visible: false;
                         }
                         dark-mode := ComboBox {
                             model: ["Automatic", "On", "Off"];
                             current-value: "Automatic";
+                            visible: false;
                             selected => { 
                                 //apply-dark-mode();
                             }
@@ -99,7 +101,7 @@ export SettingsView := VerticalBox {
                 }
                 Text {
                     text: "🔗 https://www.github.com/Futsch1/image-sieve";
-                    color: #0078d4;
+                    color: StyleMetrics.textedit-text-color-disabled;
                 }
             }
             clicked => { 
