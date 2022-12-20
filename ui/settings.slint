@@ -1,6 +1,4 @@
-import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSlint } from "std-widgets.slint";
-
-import { Palette } from "std-widgets-impl.slint";
+import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSlint, StyleMetrics } from "std-widgets.slint";
 
 export SettingsView := VerticalBox { 
     property use-timestamps <=> use-timestamps-checkbox.checked;
@@ -12,58 +10,6 @@ export SettingsView := VerticalBox {
 
     callback recheck-similarities;
     callback open-url(string);
-    callback apply-dark-mode();
-    apply-dark-mode => { 
-        if ( (dark-mode.current-value == "Automatic" && system-dark) || dark-mode.current-value == "On") {
-            Palette.white = #0d1117;
-            Palette.black = #ffffff;
-            Palette.neutralDark = #edebe9;
-            Palette.neutralPrimary = #d2d0ce;
-            Palette.neutralPrimaryAlt = #e1dfdd;
-            Palette.neutralSecondary = #a19f9d;
-            Palette.neutralSecondaryAlt = #c8c6c4;
-            Palette.neutralTertiary = #605e5c;
-            Palette.neutralTertiaryAlt = #8a8886;
-            Palette.neutralQuaternary = #323130;
-            Palette.neutralQuaternaryAlt = #3b3a39;
-            Palette.neutralLight =  #504f4e;
-            Palette.neutralLighter = #333231;
-            Palette.neutralLighterAlt = #232221;
-            Palette.themeDarker = #deecf9;
-            Palette.themeDark = #c7e0f4;
-            Palette.themeDarkAlt = #eff6fc;
-            Palette.themePrimary = #71afe5;
-            Palette.themeSecondary = #2b88d8;
-            Palette.themeTertiary = #0078d4;
-            Palette.themeLight = #005a9e;
-            Palette.themeLighter = #004578;
-            Palette.themeLighterAlt = #106ebe;
-        } else {
-            Palette.white = #ffffff;
-            Palette.black = #000000;
-            Palette.neutralDark = #201f1e;
-            Palette.neutralPrimary = #323130;
-            Palette.neutralPrimaryAlt = #3b3a39;
-            Palette.neutralSecondary = #605e5c;
-            Palette.neutralSecondaryAlt = #8a8886;
-            Palette.neutralTertiary = #a19f9d;
-            Palette.neutralTertiaryAlt = #c8c6c4;
-            Palette.neutralQuaternary = #d2d0ce;
-            Palette.neutralQuaternaryAlt = #e1dfdd;
-            Palette.neutralLight = #edebe9;
-            Palette.neutralLighter =  #f3f2f1;
-            Palette.neutralLighterAlt = #faf9f8;
-            Palette.themeDarker = #004578;
-            Palette.themeDark = #005a9e;
-            Palette.themeDarkAlt = #106ebe;
-            Palette.themePrimary = #0078d4;
-            Palette.themeSecondary = #2b88d8;
-            Palette.themeTertiary = #71afe5;
-            Palette.themeLight = #c7e0f4;
-            Palette.themeLighter = #deecf9;
-            Palette.themeLighterAlt = #eff6fc;
-        }
-    }
     VerticalBox { 
         alignment: start;
 
@@ -75,7 +21,7 @@ export SettingsView := VerticalBox {
 
                 Rectangle { 
                     border-width: 1px;
-                    border-color: Palette.neutralPrimary;            
+                    border-color: StyleMetrics.textedit-text-color;            
                     
                     GridLayout {
                         padding: 10px;             
@@ -125,12 +71,14 @@ export SettingsView := VerticalBox {
                             vertical-alignment: center;
                             horizontal-alignment: right;
                             row: 3;
+                            visible: false;
                         }
                         dark-mode := ComboBox {
                             model: ["Automatic", "On", "Off"];
                             current-value: "Automatic";
+                            visible: false;
                             selected => { 
-                                apply-dark-mode();
+                                //apply-dark-mode();
                             }
                         } 
                     }
@@ -153,7 +101,7 @@ export SettingsView := VerticalBox {
                 }
                 Text {
                     text: "🔗 https://www.github.com/Futsch1/image-sieve";
-                    color: Palette.themePrimary;
+                    color: StyleMetrics.textedit-text-color-disabled;
                 }
             }
             clicked => { 

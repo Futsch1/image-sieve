@@ -1,6 +1,5 @@
 import { ListView, Button, LineEdit, TabWidget, GroupBox, VerticalBox, HorizontalBox, ScrollView, ComboBox } from "std-widgets.slint";
 
-
 import { SortView, Filters, SortItem, ListItem } from "sort.slint";
 import { EventsView } from "events.slint";
 import { SieveView, SieveComboValues } from "sieve.slint";
@@ -62,7 +61,6 @@ ImageSieve := Window {
     property system-dark <=> settings-view.system-dark;
     callback recheck-similarities <=> settings-view.recheck-similarities;
     callback open-url <=> settings-view.open-url;
-    callback apply-dark-mode <=> settings-view.apply-dark-mode;
 
     // Inter-tab callbacks
     callback fill-event-cb <=> sort-view.fill-event;
@@ -79,17 +77,17 @@ ImageSieve := Window {
     key-handler:= FocusScope {  
         key-pressed(event) => {
             if (tabs.current-index == 0) {
-                if (event.text == Keys.LeftArrow) {
+                if (event.text == Key.LeftArrow) {
                     if (current-list-item > 0) {
                         sort-view.prev-clicked();
                     }
                 }
-                if (event.text == Keys.RightArrow) {
+                if (event.text == Key.RightArrow) {
                     if (list-model.length > 0 && current-list-item < list-model.length - 1) {
                         sort-view.next-clicked();
                     }
                 }
-                if (event.text == Keys.UpArrow) {
+                if (event.text == Key.UpArrow) {
                     if (sort-view.current-similar-image < similar-images-model.length - 1) {
                         sort-view.current-similar-image = sort-view.current-similar-image + 1;
                         sort-view.current-image.image = similar-images-model[sort-view.current-similar-image].image;
@@ -98,7 +96,7 @@ ImageSieve := Window {
                         sort-view.current-image.local-index = similar-images-model[sort-view.current-similar-image].local-index;                        
                     }
                 }
-                if (event.text == Keys.DownArrow) {
+                if (event.text == Key.DownArrow) {
                     if (sort-view.current-similar-image > 0) {
                         sort-view.current-similar-image = sort-view.current-similar-image - 1;
                         sort-view.current-image.image = similar-images-model[sort-view.current-similar-image].image;
@@ -107,7 +105,7 @@ ImageSieve := Window {
                         sort-view.current-image.local-index = similar-images-model[sort-view.current-similar-image].local-index;                        
                     }
                 }
-                if (event.text == Keys.Return) {
+                if (event.text == Key.Return) {
                     if (list-model.length > 0) {
                         sort-view.open(current-image.local-index);
                     }

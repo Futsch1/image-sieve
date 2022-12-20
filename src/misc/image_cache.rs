@@ -8,8 +8,10 @@ use std::{
 use super::lru_map::LruMap;
 use crate::item_sort_list::FileItem;
 use crate::misc::images::ImageBuffer;
-use slint::private_unstable_api::re_exports::{load_image_from_embedded_data, Slice};
-use slint::Image;
+use slint::{
+    private_unstable_api::re_exports::{load_image_from_embedded_data, Slice},
+    Image,
+};
 
 /// The least recently used map used to store the images protected by a mutex.
 type ImagesMapMutex = Mutex<LruMap<ImageBuffer, String, 64>>;

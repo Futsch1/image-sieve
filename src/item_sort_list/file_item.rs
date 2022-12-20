@@ -16,6 +16,8 @@ use super::file_types::is_raw_image;
 use super::file_types::is_video;
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
+use super::timestamp_to_string;
+use super::Format;
 
 pub type HashType = ImageHash<Vec<u8>>;
 
@@ -142,9 +144,7 @@ impl FileItem {
 
     /// Get the time stamp of the file item formatted as string
     fn get_date_str(&self) -> String {
-        chrono::NaiveDateTime::from_timestamp(self.timestamp, 0)
-            .format("%Y-%m-%d %H:%M:%S")
-            .to_string()
+        timestamp_to_string(self.timestamp, Format::DateTime)
     }
 
     /// Get the size of a file item in bytes

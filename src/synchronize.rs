@@ -102,7 +102,7 @@ fn synchronize_run(
                             h.invoke_synchronization_finished();
                         }
                     })
-                    .ok();
+                    .unwrap();
             }
             Command::Similarities(settings) => {
                 // First, find similars based on times, this is usually quick
@@ -132,7 +132,7 @@ fn similarities_calculated(image_sieve: &slint::Weak<ImageSieve>, finished: bool
                 h.invoke_similarities_calculated(finished);
             }
         })
-        .ok();
+        .unwrap();
 }
 
 /// Scan files in a path, update the item list with those found files and update the GUI models with the new data
@@ -248,5 +248,5 @@ fn report_progress(image_sieve: &slint::Weak<ImageSieve>, progress: String) {
                 h.set_loading_progress(SharedString::from(progress));
             }
         })
-        .ok();
+        .unwrap();
 }

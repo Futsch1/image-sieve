@@ -11,7 +11,7 @@ edition = "2021"
 readme = "README.md"
 
 [dependencies]
-slint = "=0.3.0"
+slint = "=0.3.3"
 nfd = "0.0.4"
 image = "0.24"
 kamadak-exif = "0.5"
@@ -26,14 +26,16 @@ serde_with = "2.0"
 home = "0.5"
 walkdir = "2"
 ffmpeg-next = {version = "5.0", features = ["format", "codec", "software-scaling"], default_features = false}
-fast_image_resize = "1.0"
+fast_image_resize = "2.0"
 rawloader = "0.37.0"
 imagepipe = "0.5.0"
 dark-light = "0.2"
+strum = "0.24"
+strum_macros = "0.24"
 
 [dev-dependencies]
 base64 = "0.13"
 
 [build-dependencies]
-slint-build = "=0.3.0"
+slint-build = "=0.3.3"
 winres = "0.1"
