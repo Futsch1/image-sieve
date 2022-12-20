@@ -26,12 +26,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: ./.github/actions/prepare_ubuntu
-#    - name: Use nightly compiler
-#      run: rustup override set nightly
     - name: Install prerequisites
       run: rustup component add llvm-tools-preview
-    - name: Use rust nightly (temp fix because of E0554)
-      run: rustup default nightly
+#    - name: Use rust nightly (temp fix because of E0554)
+#      run: rustup default nightly
     - name: Install cargo-llvm-cov
       uses: taiki-e/install-action@cargo-llvm-cov
     - name: Generate code coverage
