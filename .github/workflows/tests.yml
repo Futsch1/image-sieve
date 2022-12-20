@@ -35,7 +35,7 @@ jobs:
     - name: Generate code coverage
       env:
         RUST_MIN_STACK: 4000000
-        run: cargo test -- --test-threads=1
+      run: cargo test -- --test-threads=1
 #      run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info -- --test-threads=1
 #    - name: Upload coverage to Codecov
 #      uses: codecov/codecov-action@v3
