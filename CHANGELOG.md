@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.10] - 2022-12-21
+
+### Fixed
+
+ - Build automation fixes
+
 ## [0.5.9] - 2022-12-21
 
 ### Changed
