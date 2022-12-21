@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.9] - 2022-12-21
+
+### Changed
+
+ - Updated to slint 0.3.3, updated further dependencies
+ - Removed setting for dark mode, only automatic is working now (restriction from slint)
+ - Dark mode has a differnt color set now
+
 ## [0.5.8] - 2022-09-10
 
 ### Changed

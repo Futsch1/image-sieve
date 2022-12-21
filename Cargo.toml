@@ -1,6 +1,6 @@
 [package]
 name = "image_sieve"
-version = "0.5.8"
+version = "0.5.9"
 authors = ["Florian Fetz <florian.fetz@googlemail.com>"]
 description = "GUI based tool to sort out and categorize images, raw images and videos"
 repository = "https://github.com/Futsch1/image-sieve"
