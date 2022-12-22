@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.11] - 2022-12-
+
+### Fixed
+
+ - Similarity calculation was broken for some time, fixed it
+
 ## [0.5.10] - 2022-12-21
 
 ### Fixed
