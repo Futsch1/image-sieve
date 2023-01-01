@@ -29,7 +29,7 @@ ffmpeg-next = {version = "5.0", features = ["format", "codec", "software-scaling
 fast_image_resize = "2.0"
 rawloader = "0.37.0"
 imagepipe = "0.5.0"
-dark-light = "0.2"
+dark-light = "1.0"
 strum = "0.24"
 strum_macros = "0.24"
 image-23 = { version = "=0.23", package="image" }
