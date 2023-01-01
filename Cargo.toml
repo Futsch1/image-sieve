@@ -35,7 +35,7 @@ strum_macros = "0.24"
 image-23 = { version = "=0.23", package="image" }
 
 [dev-dependencies]
-base64 = "0.13"
+base64 = "0.20"
 
 [build-dependencies]
 slint-build = "=0.3.3"
