@@ -38,5 +38,5 @@ image-23 = { version = "=0.23", package="image" }
 base64 = "0.13"
 
 [build-dependencies]
-slint-build = "=0.3.3"
+slint-build = "=0.3.4"
 winres = "0.1"
