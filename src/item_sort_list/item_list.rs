@@ -202,6 +202,7 @@ mod tests {
     use std::cell::RefCell;
     use std::rc::Rc;
     extern crate base64;
+    use base64::{engine::general_purpose, Engine as _};
 
     struct MockResolver {
         call_count: Rc<RefCell<usize>>,
@@ -262,7 +263,7 @@ mod tests {
         let mut items: Vec<file_item::FileItem> = vec![];
         let hashes = ["a", "b", "c", "h", "i", "j"];
         for hash in hashes {
-            let encoded = base64::encode(hash);
+            let encoded = general_purpose::STANDARD.encode(hash);
             items.push(file_item::FileItem::new(
                 PathBuf::from("test.jpg"),
                 Box::new(MockResolver::new(call_count.clone())),
