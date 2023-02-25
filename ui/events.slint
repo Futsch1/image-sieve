@@ -7,7 +7,7 @@ struct Event := {
     end-date: string
 }
 
-EventsView := ScrollView { 
+export EventsView := ScrollView { 
     property <[Event]> events-model;
     property <string> new-name <=> new-name.text;
     property <string> new-start-date <=> new-start-date.text;

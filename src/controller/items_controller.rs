@@ -339,6 +339,7 @@ fn list_item_from_file_item(file_item: &FileItem, item_list: &ItemList) -> main_
 #[cfg(test)]
 mod tests {
     use crate::main_window::ImageSieve;
+    use rusty_fork::rusty_fork_test;
     use slint::{ComponentHandle, SharedString};
 
     use super::*;
@@ -405,41 +406,43 @@ mod tests {
         assert_eq!(items_controller.get_list_model().row_count(), 0);
     }
 
-    #[test]
-    fn test_take_over() {
-        let item_list = Arc::new(Mutex::new(ItemList::new()));
-        let mut items_controller = ItemsController::new(item_list.clone());
-        let window = ImageSieve::new();
-        let window_weak = window.as_weak();
-        let filters = build_filters();
-        {
-            let mut item_list = item_list.lock().unwrap();
-            item_list.items.push(FileItem::dummy("test2.mov", 1, true));
-            let mut file_item = FileItem::dummy("test1.jpg", 0, false);
-            file_item.add_similar_range(&(0..1));
-            item_list.items.push(file_item);
-        }
-        items_controller.populate_list_model(&filters);
-        items_controller.selected_list_item(1, window_weak);
+    rusty_fork_test! {
+        #[test]
+        fn test_take_over() {
+            let item_list = Arc::new(Mutex::new(ItemList::new()));
+            let mut items_controller = ItemsController::new(item_list.clone());
+            let window = ImageSieve::new();
+            let window_weak = window.as_weak();
+            let filters = build_filters();
+            {
+                let mut item_list = item_list.lock().unwrap();
+                item_list.items.push(FileItem::dummy("test2.mov", 1, true));
+                let mut file_item = FileItem::dummy("test1.jpg", 0, false);
+                file_item.add_similar_range(&(0..1));
+                item_list.items.push(file_item);
+            }
+            items_controller.populate_list_model(&filters);
+            items_controller.selected_list_item(1, window_weak);
 
-        items_controller.set_take_over(0, false);
-        {
-            let item_list = item_list.lock().unwrap();
-            assert!(!item_list.items[0].get_take_over());
-        }
-        let list_model = items_controller.get_list_model();
-        let similar_items_model = items_controller.get_similar_items_model();
-        assert_eq!(list_model.row_data(1).unwrap().text, "📹 🗑 test2.mov");
-        assert!(!similar_items_model.row_data(0).unwrap().take_over);
+            items_controller.set_take_over(0, false);
+            {
+                let item_list = item_list.lock().unwrap();
+                assert!(!item_list.items[0].get_take_over());
+            }
+            let list_model = items_controller.get_list_model();
+            let similar_items_model = items_controller.get_similar_items_model();
+            assert_eq!(list_model.row_data(1).unwrap().text, "📹 🗑 test2.mov");
+            assert!(!similar_items_model.row_data(0).unwrap().take_over);
 
-        items_controller.set_take_over(0, true);
-        {
-            let item_list = item_list.lock().unwrap();
-            assert!(item_list.items[0].get_take_over());
+            items_controller.set_take_over(0, true);
+            {
+                let item_list = item_list.lock().unwrap();
+                assert!(item_list.items[0].get_take_over());
+            }
+            assert_eq!(list_model.row_data(1).unwrap().text, "📹 test2.mov");
+            assert!(window.get_current_image().take_over);
+            assert!(similar_items_model.row_data(0).unwrap().take_over);
         }
-        assert_eq!(list_model.row_data(1).unwrap().text, "📹 test2.mov");
-        assert!(window.get_current_image().take_over);
-        assert!(similar_items_model.row_data(0).unwrap().take_over);
     }
 
     #[test]

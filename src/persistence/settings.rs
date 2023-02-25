@@ -110,6 +110,8 @@ fn convert_u32_to_sensitivity(sensitivity: u32) -> &'static str {
 mod tests {
     use super::*;
 
+    use rusty_fork::rusty_fork_test;
+
     #[test]
     fn helpers() {
         assert_eq!(convert_timestamp_difference("5"), Some(5));
@@ -129,16 +131,18 @@ mod tests {
         assert_eq!(convert_u32_to_sensitivity(11), "High");
     }
 
-    #[test]
-    fn from_to_window() {
-        let window = ImageSieve::new();
+    rusty_fork_test! {
+        #[test]
+        fn from_to_window() {
+            let window = ImageSieve::new();
 
-        let settings = Settings::new();
-        let settings2 = Settings::from_window(&window);
-        assert_ne!(settings, settings2);
+            let settings = Settings::new();
+            let settings2 = Settings::from_window(&window);
+            assert_ne!(settings, settings2);
 
-        settings.to_window(&window);
-        let settings3 = Settings::from_window(&window);
-        assert_eq!(settings, settings3);
+            settings.to_window(&window);
+            let settings3 = Settings::from_window(&window);
+            assert_eq!(settings, settings3);
+        }
     }
 }
