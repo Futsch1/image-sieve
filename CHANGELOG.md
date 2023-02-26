@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 
  - Save and restore window position and size on certain platforms
  
-## [0.5.11] - 2022-12-
+## [0.5.11] - 2022-12-22
 
 ### Fixed
 
