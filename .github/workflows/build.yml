@@ -121,6 +121,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install ffmpeg
-      run: brew install ffmpeg
+      run: brew install ffmpeg@5
     - name: Build
       run: cargo build
