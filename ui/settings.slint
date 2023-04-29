@@ -1,121 +1,123 @@
 import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSlint, StyleMetrics } from "std-widgets.slint";
 
-export SettingsView := VerticalBox { 
-    property use-timestamps <=> use-timestamps-checkbox.checked;
-    property timestamp-difference <=> timestamp-difference-edit.text;
-    property use-similarity <=> use-similarity-checkbox.checked;
-    property similarity-sensitivity <=> sensitivity-combobox.current-value;
-    property dark-mode <=> dark-mode.current-value;
-    property <bool> system-dark;
+export component SettingsView {
+    in property use-timestamps <=> use-timestamps-checkbox.checked;
+    in property timestamp-difference <=> timestamp-difference-edit.text;
+    in property use-similarity <=> use-similarity-checkbox.checked;
+    in property similarity-sensitivity <=> sensitivity-combobox.current-value;
+    in property dark-mode <=> dark-mode.current-value;
+    in property <bool> system-dark;
 
     callback recheck-similarities;
     callback open-url(string);
+
     VerticalBox { 
-        alignment: start;
+        VerticalBox { 
+            alignment: start;
 
-        GroupBox { 
-            title: "Similar pictures";
+            GroupBox { 
+                title: "Similar pictures";
 
-            HorizontalBox { 
-                alignment: start;
-
-                Rectangle { 
-                    border-width: 1px;
-                    border-color: StyleMetrics.textedit-text-color;            
-                    
-                    GridLayout {
-                        padding: 10px;             
-                        spacing: 5px;
-                        use-timestamps-checkbox := CheckBox { 
-                            text: "Use timestamps";
-                            toggled => {
-                                recheck-similarities();
-                            }
-                        }
-                        Text {
-                            text: "⇔ Maximum timestamp difference (s): ";                
-                            vertical-alignment: center;
-                            horizontal-alignment: right;
-                        }
-                        timestamp-difference-edit := LineEdit {
-                            text: "5";
-                            width: 50px;
-                            enabled: use-timestamps-checkbox.checked;
-                            accepted => { 
-                                recheck-similarities();
-                            }
-                        }
-
-                        use-similarity-checkbox := CheckBox { 
-                            text: "Use image similarity";
-                            toggled => {
-                                recheck-similarities();
-                            }
-                            row: 1;
-                        }
-                        Text {
-                            text: "Sensitivity: ";
-                            vertical-alignment: center;
-                            horizontal-alignment: right;
-                        }
-                        sensitivity-combobox := ComboBox {
-                            model: ["Very low", "Low", "Medium", "High", "Very high"];
-                            current-value: "Medium";                
-                            enabled: use-similarity-checkbox.checked;
-                            selected => { 
-                                recheck-similarities();
-                            }
-                        }
-                        Text {
-                            text: "Dark mode: ";
-                            vertical-alignment: center;
-                            horizontal-alignment: right;
-                            row: 3;
-                            visible: false;
-                        }
-                        dark-mode := ComboBox {
-                            model: ["Automatic", "On", "Off"];
-                            current-value: "Automatic";
-                            visible: false;
-                            selected => { 
-                                //apply-dark-mode();
-                            }
-                        } 
-                    }
-                }
-            }            
-        }
-    }
-    HorizontalBox { 
-        TouchArea { 
-            VerticalBox {             
-                alignment: start;
-                HorizontalBox {                 
+                HorizontalBox { 
                     alignment: start;
-                    Image {
-                        source: @image-url("ImageSieve.png");
+
+                    Rectangle { 
+                        border-width: 1px;
+                        border-color: StyleMetrics.textedit-text-color;            
+                        
+                        GridLayout {
+                            padding: 10px;             
+                            spacing: 5px;
+                            use-timestamps-checkbox := CheckBox { 
+                                text: "Use timestamps";
+                                toggled => {
+                                    recheck-similarities();
+                                }
+                            }
+                            Text {
+                                text: "⇔ Maximum timestamp difference (s): ";                
+                                vertical-alignment: center;
+                                horizontal-alignment: right;
+                            }
+                            timestamp-difference-edit := LineEdit {
+                                text: "5";
+                                width: 50px;
+                                enabled: use-timestamps-checkbox.checked;
+                                accepted => { 
+                                    recheck-similarities();
+                                }
+                            }
+
+                            use-similarity-checkbox := CheckBox { 
+                                text: "Use image similarity";
+                                toggled => {
+                                    recheck-similarities();
+                                }
+                                row: 1;
+                            }
+                            Text {
+                                text: "Sensitivity: ";
+                                vertical-alignment: center;
+                                horizontal-alignment: right;
+                            }
+                            sensitivity-combobox := ComboBox {
+                                model: ["Very low", "Low", "Medium", "High", "Very high"];
+                                current-value: "Medium";                
+                                enabled: use-similarity-checkbox.checked;
+                                selected => { 
+                                    recheck-similarities();
+                                }
+                            }
+                            Text {
+                                text: "Dark mode: ";
+                                vertical-alignment: center;
+                                horizontal-alignment: right;
+                                row: 3;
+                                visible: false;
+                            }
+                            dark-mode := ComboBox {
+                                model: ["Automatic", "On", "Off"];
+                                current-value: "Automatic";
+                                visible: false;
+                                selected => { 
+                                    //apply-dark-mode();
+                                }
+                            } 
+                        }
+                    }
+                }            
+            }
+        }
+        HorizontalBox { 
+            TouchArea { 
+                VerticalBox {             
+                    alignment: start;
+                    HorizontalBox {                 
+                        alignment: start;
+                        Image {
+                            source: @image-url("ImageSieve.png");
+                        }
+                    }
+                    Text {
+                        text: "💻 Developed by Florian Fetz";
+                    }
+                    Text {
+                        text: "🔗 https://www.github.com/Futsch1/image-sieve";
+                        color: StyleMetrics.textedit-text-color-disabled;
                     }
                 }
-                Text {
-                    text: "💻 Developed by Florian Fetz";
-                }
-                Text {
-                    text: "🔗 https://www.github.com/Futsch1/image-sieve";
-                    color: StyleMetrics.textedit-text-color-disabled;
+                clicked => { 
+                    open-url("https://www.github.com/Futsch1/image-sieve");
                 }
             }
-            clicked => { 
-                open-url("https://www.github.com/Futsch1/image-sieve");
+            TouchArea { 
+                width: 256px;
+                height: 128px;
+                AboutSlint {  }
+                clicked => { 
+                    open-url("https://github.com/slint-ui/slint");
+                }
             }
         }
-        TouchArea { 
-            width: 256px;
-            height: 128px;
-            AboutSlint {  }
-            clicked => { 
-                open-url("https://github.com/slint-ui/slint");
-            }
-        }
-    }
-    
+    }    
 }
