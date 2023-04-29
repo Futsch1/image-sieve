@@ -82,7 +82,8 @@ export component SortView {
 
         VerticalLayout {
             spacing: 5px;
-            width: root.width - 320px;
+            //TODO: Check if this still works
+            //width: parent.width - 320px;
 
             selected := Image {
                 source: current-image.image;
