@@ -116,6 +116,7 @@ jobs:
         bodyFile: "CHANGELOG.md"
 
   build-mac:
+    if: false
     runs-on: macos-latest
 
     steps:
@@ -124,7 +125,5 @@ jobs:
       run: |
         brew install ffmpeg@5
         export PKG_CONFIG_PATH="/usr/local/opt/ffmpeg@5/lib/pkgconfig"
-        export LDFLAGS="-L/usr/local/opt/ffmpeg@5/lib"
-        export CPPFLAGS="-I/usr/local/opt/ffmpeg@5/include"
     - name: Build
       run: cargo build
