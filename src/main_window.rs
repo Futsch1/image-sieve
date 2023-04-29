@@ -74,7 +74,7 @@ impl MainWindow {
         let sieve_result_model = Rc::new(slint::VecModel::<SieveResult>::default());
 
         // Construct main window
-        let image_sieve = ImageSieve::new();
+        let image_sieve = ImageSieve::new().unwrap();
 
         let synchronizer = Synchronizer::new(item_list.clone(), &image_sieve);
         if !settings.source_directory.is_empty() {
@@ -135,7 +135,7 @@ impl MainWindow {
 
     /// Start the event loop
     pub fn run(&self) {
-        self.window.run();
+        self.window.run().ok();
 
         self.synchronizer.stop();
 
