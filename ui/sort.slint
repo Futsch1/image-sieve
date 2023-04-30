@@ -1,19 +1,19 @@
 import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView, CheckBox, ComboBox, StyleMetrics } from "std-widgets.slint";
 
 
-export struct SortItem := {
+export struct SortItem {
     image: image,
     take-over: bool,
     text: string,
     local-index: int
 }
 
-export struct ListItem := {
+export struct ListItem {
     text: string,
     local-index: int
 }
 
-export struct Filters := {
+export struct Filters {
     sorted-out: bool,
     images: bool,
     videos: bool,
@@ -21,38 +21,37 @@ export struct Filters := {
     direction: string
 }
 
-export global FilterComboValues := {
-    property <[string]> sort_by: ["Date", "Name", "Size", "Type"];
-    property <[string]> direction: ["Asc", "Desc"];
+export global FilterComboValues {
+    in property <[string]> sort_by: ["Date", "Name", "Size", "Type"];
+    in property <[string]> direction: ["Asc", "Desc"];
 }
 
-export SortView := HorizontalBox {
-
+export component SortView inherits HorizontalBox { 
     // List of image file names
-    property <[ListItem]> list-model;
+    in-out property <[ListItem]> list-model;
     // Index in image list
-    property current-list-item <=> image-list.current-item;
+    in-out property current-list-item <=> image-list.current-item;
 
     // Model of similar images selected
-    property <[SortItem]> similar-images-model;
+    in property <[SortItem]> similar-images-model;
 
     // Currently displayed large image
-    property <SortItem> current-image;
+    in-out property <SortItem> current-image;
 
     // Current source directory
-    property source-directory <=> source-directory-edit.text;
+    in property source-directory <=> source-directory-edit.text;
 
     // Visibility of similarity calculation text
-    property <bool> calculating-similarities: true;
+    in property <bool> calculating-similarities: true;
 
     // Visibility of filter setup
     property <bool> filter-visible: false;
 
     // Index of currently selected simiar image
-    property <int> current-similar-image;
+    in-out property <int> current-similar-image;
 
     // Filters
-    property <Filters> filters : {
+    in-out property <Filters> filters : {
         sorted-out: true,
         images: true,
         videos: true,
@@ -77,11 +76,15 @@ export SortView := HorizontalBox {
     // Called when a new event shall be created from the current image
     callback fill-event(int);
 
+    preferred-height: 100%;
+    preferred-width: 100%;
+
     spacing: 5px;
 
     VerticalLayout {
         spacing: 5px;
-        width: root.width - 320px;
+        //TODO: Check if this still works
+        //width: parent.width - 320px;
 
         selected := Image {
             source: current-image.image;

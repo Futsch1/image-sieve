@@ -8,15 +8,15 @@ import { HelpView } from "help.slint";
 
 export { SieveComboValues, Filters, SortItem, ListItem }
 
-ImageSieve := Window {
+export component ImageSieve inherits Window {
     min-width: 1600px;
     min-height: 800px;
     title: "ImageSieve";
     icon: @image-url("ImageSieve.png");
 
-    property <string> window-title <=> root.title;
-    property <bool> loading: true;    
-    property <string> loading-progress <=> loading-progress.text;
+    in property <string> window-title <=> root.title;
+    in property <bool> loading: true;    
+    in property <string> loading-progress <=> loading-progress.text;
     callback cancel-loading;
     // Callback required to signal that the synchronization process has finished
     callback synchronization-finished;
@@ -24,13 +24,13 @@ ImageSieve := Window {
     callback similarities-calculated(bool);
 
     // Map properties of SortView
-    property list-model <=> sort-view.list-model;
-    property current-list-item <=> sort-view.current-list-item;
-    property similar-images-model <=> sort-view.similar-images-model;
-    property current-image <=> sort-view.current-image;
-    property source-directory <=> sort-view.source-directory;
-    property calculating-similarities <=> sort-view.calculating-similarities;
-    property filters <=> sort-view.filters;
+    in property list-model <=> sort-view.list-model;
+    in property current-list-item <=> sort-view.current-list-item;
+    in property similar-images-model <=> sort-view.similar-images-model;
+    in-out property current-image <=> sort-view.current-image;
+    in property source-directory <=> sort-view.source-directory;
+    in property calculating-similarities <=> sort-view.calculating-similarities;
+    out property filters <=> sort-view.filters;
     callback item-selected <=> sort-view.item-selected;
     callback browse-source <=> sort-view.browse-source;
     callback set-take-over <=> sort-view.set-take-over;
@@ -38,27 +38,27 @@ ImageSieve := Window {
     callback filter <=> sort-view.filter;
 
     // Map properties of EventsView
-    property events-model <=> events-view.events-model;
+    in property events-model <=> events-view.events-model;
     callback add-event <=> events-view.add-event;
     callback update-event <=> events-view.update-event;
     callback remove-event <=> events-view.remove-event;
 
     // Map properties of SieveView
-    property sieve-result-model <=> sieve-view.sieve-result-model;
-    property target-directory <=> sieve-view.target-directory;
-    property sieve-method <=> sieve-view.sieve-method;
-    property sieve-directory-names <=> sieve-view.sieve-directory-names;
-    property sieve-running <=> sieve-view.sieve-running;
+    in property sieve-result-model <=> sieve-view.sieve-result-model;
+    in property target-directory <=> sieve-view.target-directory;
+    in property sieve-method <=> sieve-view.sieve-method;
+    in property sieve-directory-names <=> sieve-view.sieve-directory-names;
+    in property sieve-running <=> sieve-view.sieve-running;
     callback sieve <=> sieve-view.sieve;
     callback browse-target <=> sieve-view.browse-target;
 
     // Map properties of SettingsView
-    property use-timestamps <=> settings-view.use-timestamps;
-    property timestamp-difference <=> settings-view.timestamp-difference;
-    property use-similarity <=> settings-view.use-similarity;
-    property similarity-sensitivity <=> settings-view.similarity-sensitivity;
-    property dark-mode <=> settings-view.dark-mode;
-    property system-dark <=> settings-view.system-dark;
+    in property use-timestamps <=> settings-view.use-timestamps;
+    in property timestamp-difference <=> settings-view.timestamp-difference;
+    in property use-similarity <=> settings-view.use-similarity;
+    in property similarity-sensitivity <=> settings-view.similarity-sensitivity;
+    in property dark-mode <=> settings-view.dark-mode;
+    in property system-dark <=> settings-view.system-dark;
     callback recheck-similarities <=> settings-view.recheck-similarities;
     callback open-url <=> settings-view.open-url;
 
@@ -124,6 +124,8 @@ ImageSieve := Window {
                 
         tabs := TabWidget { 
             visible: !loading;
+            width: 100%;
+            height: 100%;
             Tab {
                 title: "📷 📹  Images & videos";
                 
@@ -191,4 +193,3 @@ ImageSieve := Window {
         }
     }
 }
-

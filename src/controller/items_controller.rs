@@ -411,7 +411,7 @@ mod tests {
         fn test_take_over() {
             let item_list = Arc::new(Mutex::new(ItemList::new()));
             let mut items_controller = ItemsController::new(item_list.clone());
-            let window = ImageSieve::new();
+            let window = ImageSieve::new().unwrap();
             let window_weak = window.as_weak();
             let filters = build_filters();
             {
@@ -449,7 +449,7 @@ mod tests {
     fn test_select_item() {
         let item_list = Arc::new(Mutex::new(ItemList::new()));
         let mut items_controller = ItemsController::new(item_list.clone());
-        let window = ImageSieve::new();
+        let window = ImageSieve::new().unwrap();
         let window_weak = window.as_weak();
         let filters = build_filters();
         {

@@ -14,12 +14,7 @@
 		},
 		{
 			"type": "shell",
-			"command": "cargo llvm-cov --html --release",
-			"options": {
-				"env": {
-					"RUST_MIN_STACK": "4000000"
-				}
-			},
+			"command": "cargo llvm-cov  --no-cfg-coverage --html",
 			"problemMatcher": [
 				"$rustc"
 			],
