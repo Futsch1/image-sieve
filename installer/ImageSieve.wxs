@@ -78,14 +78,14 @@
 
     <Feature Id="MainApplication" Title="Main Application" Level="1">
       <ComponentRef Id="image_sieve.exe" />
-      <ComponentRef Id="avcodec_59.dll" />
-      <ComponentRef Id="avutil_57.dll" />
-      <ComponentRef Id="avformat_59.dll" />
+      <ComponentRef Id="avcodec_60.dll" />
+      <ComponentRef Id="avutil_58.dll" />
+      <ComponentRef Id="avformat_60.dll" />
       <ComponentRef Id="swresample_4.dll" />
-      <ComponentRef Id="avdevice_59.dll" />
-      <ComponentRef Id="avfilter_8.dll" />
-      <ComponentRef Id="swscale_6.dll" />
-      <ComponentRef Id="postproc_56.dll" />
+      <ComponentRef Id="avdevice_60.dll" />
+      <ComponentRef Id="avfilter_9.dll" />
+      <ComponentRef Id="swscale_7.dll" />
+      <ComponentRef Id="postproc_57.dll" />
       <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 
