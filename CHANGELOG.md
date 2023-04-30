@@ -1,7 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.5.11] - 2022-12-
+## [0.5.12] - 2022-12-
+
+### Changed
+
+ - Updated to slint 1.0.2
+ - Highlighting of controls when adding an event disabled due to changes in slint
+
+## [0.5.11] - 2022-12-22
 
 ### Fixed
 
