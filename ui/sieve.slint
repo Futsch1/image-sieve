@@ -18,7 +18,7 @@ struct SieveResult {
     color: string,
 }
 
-export component SieveView {
+export component SieveView inherits HorizontalBox {
     in property <[SieveResult]> sieve-result-model;
     in property target-directory <=> target-directory-edit.text;
     in-out property <string> sieve-method;
@@ -37,119 +37,119 @@ export component SieveView {
     // Called when source or target was browsed
     callback browse-target;
 
-    HorizontalBox { 
+    preferred-height: 100%;
+    preferred-width: 100%;
 
-        VerticalBox { 
-            alignment: start;
+    VerticalBox { 
+        alignment: start;
 
-            GroupBox { 
-                title: "🎯 Target directory";
-                enabled: sieve-method-combo-box.current-index != 3;
+        GroupBox { 
+            title: "🎯 Target directory";
+            enabled: sieve-method-combo-box.current-index != 3;
 
-                Rectangle { 
-                    border-width: 1px;
-                    border-color: StyleMetrics.textedit-text-color;
-                    
-                    VerticalBox { 
-                        HorizontalBox { 
-                            spacing: 5px;
-                            target-directory-edit := LineEdit { 
-                                width: 400px;
-                                enabled: false;
-                                placeholder-text: "Select target directory";
-                            }
-                            Button {
-                                text: "📂 Browse...";
-                                width: 200px;
-                                enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
-                                clicked => { 
-                                    browse-target();
-                                }
+            Rectangle { 
+                border-width: 1px;
+                border-color: StyleMetrics.textedit-text-color;
+                
+                VerticalBox { 
+                    HorizontalBox { 
+                        spacing: 5px;
+                        target-directory-edit := LineEdit { 
+                            width: 400px;
+                            enabled: false;
+                            placeholder-text: "Select target directory";
+                        }
+                        Button {
+                            text: "📂 Browse...";
+                            width: 200px;
+                            enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                            clicked => { 
+                                browse-target();
                             }
                         }
+                    }
 
-                        HorizontalBox { 
-                            spacing: 5px;
-                            Text {
-                                text: "Directory names";
-                                vertical-alignment: center;
-                            }
-                            ComboBox {
-                                enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
-                                width: 400px;
-                                model: SieveComboValues.directory_names;
-                                current-value <=> sieve-directory-names;
-                            }
+                    HorizontalBox { 
+                        spacing: 5px;
+                        Text {
+                            text: "Directory names";
+                            vertical-alignment: center;
+                        }
+                        ComboBox {
+                            enabled: !sieve-running && sieve-method-combo-box.current-index != 3;
+                            width: 400px;
+                            model: SieveComboValues.directory_names;
+                            current-value <=> sieve-directory-names;
                         }
                     }
                 }
             }
-            GroupBox { 
-                title: "Sieve method";
-                HorizontalBox { 
-                    spacing: 5px;
-                    sieve-method-combo-box := ComboBox {
-                        enabled: !sieve-running;
-                        width: 400px;
-                        model: SieveComboValues.methods;
-                        current-value <=> sieve-method;
-                    }
+        }
+        GroupBox { 
+            title: "Sieve method";
+            HorizontalBox { 
+                spacing: 5px;
+                sieve-method-combo-box := ComboBox {
+                    enabled: !sieve-running;
+                    width: 400px;
+                    model: SieveComboValues.methods;
+                    current-value <=> sieve-method;
                 }
             }
+        }
 
-            Button {
-                text: "✅ Start";
-                width: 300px;
-                enabled: !sieve-running && target-directory-edit.text != "";
-                clicked => {
-                    if (sieve-method-combo-box.current-index == 2 || sieve-method-combo-box.current-index == 3) {
-                        show-warning = true;
-                        sieve-running = true;
-                    } else {
+        Button {
+            text: "✅ Start";
+            width: 300px;
+            enabled: !sieve-running && target-directory-edit.text != "";
+            clicked => {
+                if (sieve-method-combo-box.current-index == 2 || sieve-method-combo-box.current-index == 3) {
+                    show-warning = true;
+                    sieve-running = true;
+                } else {
+                    sieve-done = true;
+                    sieve();                    
+                }
+            }
+        }
+
+        GroupBox {
+            title: "Warning! The desired sieve method will delete files that cannot be recovered.\n\nAre you sure you want to proceed?";
+            visible: show-warning;
+            HorizontalBox { 
+                spacing: 5px;
+                Button {
+                    text: "✅ Yes";
+                    width: 300px;
+                    visible: show-warning;
+                    clicked => {            
+                        show-warning = false;
                         sieve-done = true;
                         sieve();                    
                     }
                 }
-            }
-
-            GroupBox {
-                title: "Warning! The desired sieve method will delete files that cannot be recovered.\n\nAre you sure you want to proceed?";
-                visible: show-warning;
-                HorizontalBox { 
-                    spacing: 5px;
-                    Button {
-                        text: "✅ Yes";
-                        width: 300px;
-                        visible: show-warning;
-                        clicked => {            
-                            show-warning = false;
-                            sieve-done = true;
-                            sieve();                    
-                        }
-                    }
-                    Button {
-                        text: "❌ No";
-                        width: 300px;
-                        visible: show-warning;
-                        clicked => {            
-                            show-warning = false;
-                            sieve-running = false;
-                        }
+                Button {
+                    text: "❌ No";
+                    width: 300px;
+                    visible: show-warning;
+                    clicked => {            
+                        show-warning = false;
+                        sieve-running = false;
                     }
                 }
             }
-        }  
+        }
+    }  
 
-        ScrollView {
-            visible: sieve-done;
+    ScrollView {
+        visible: sieve-done;
 
-            VerticalLayout { 
-                alignment: start;
-            for item[i] in sieve-result-model:
-                Text {
-                    text: item.result;               
-                    color: item.color == "red" ? red : (item.color == "green" ? green : StyleMetrics.default-text-color);
-                }
+        VerticalLayout { 
+            alignment: start;
+        for item[i] in sieve-result-model:
+            Text {
+                text: item.result;               
+                color: item.color == "red" ? red : (item.color == "green" ? green : StyleMetrics.default-text-color);
             }
         }
     }

@@ -26,7 +26,7 @@ export global FilterComboValues {
     in property <[string]> direction: ["Asc", "Desc"];
 }
 
-export component SortView { 
+export component SortView inherits HorizontalBox { 
     // List of image file names
     in-out property <[ListItem]> list-model;
     // Index in image list
@@ -76,293 +76,293 @@ export component SortView {
     // Called when a new event shall be created from the current image
     callback fill-event(int);
 
-    HorizontalBox {
+    preferred-height: 100%;
+    preferred-width: 100%;
 
+    spacing: 5px;
+
+    VerticalLayout {
         spacing: 5px;
+        //TODO: Check if this still works
+        //width: parent.width - 320px;
 
-        VerticalLayout {
-            spacing: 5px;
-            //TODO: Check if this still works
-            //width: parent.width - 320px;
-
-            selected := Image {
-                source: current-image.image;
-                opacity: current-image.take-over ? 1.0 : 0.2;
-                animate opacity {
-                    duration: 200ms;
-                }
-                image-fit: contain;
-
-                Rectangle {
-                    x: parent.width * 20%;
-                    width: 60%;
-                    height: 40%;
-                    Rectangle {
-                        border-radius: 10px;
-                        background: @linear-gradient(180deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
-                        opacity: selected-image-touch.has_hover && selected-image-touch.enabled ? 0.1 : 0;
-                        animate opacity {
-                            duration: 200ms;
-                        }
-                    }
-                    selected-image-touch := TouchArea { 
-                        enabled: list-model.length > 0;
-                        clicked => {
-                            if (list-model.length > 0) {
-                                current-image.take-over = !current-image.take-over;
-                                current-image.text = set-take-over(current-image.local-index, current-image.take-over);
-                            }
-                        }
-                    }
-                    HorizontalLayout {
-                        alignment: center;
-                        padding: 10px;
-                        Image {
-                            source: @image-url("trash3-fill.svg");
-                            opacity: selected-image-touch.has_hover && selected-image-touch.enabled ? 0.6: 0;
-                            animate opacity {
-                                duration: 200ms;
-                            }
-                            width: selected.width * 60%;
-                        }
-                    }
-                }
-                Rectangle {
-                    x: parent.width * 20%;
-                    y: parent.height * 80%;
-                    width: 60%;
-                    height: 20%;
-                    Rectangle {
-                        border-radius: 10px;
-                        background: @linear-gradient(0deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
-                        opacity: touch-open.has_hover && touch-open.enabled ? 0.1 : 0;
-                        animate opacity {
-                            duration: 200ms;
-                        }
-                    }
-                    touch-open := TouchArea { 
-                        enabled: list-model.length > 0;
-                        clicked => { 
-                            open(current-image.local-index);
-                        }
-                    }
-                    HorizontalLayout {
-                        alignment: center;
-                        padding: 10px;
-                        Image {
-                            source: @image-url("folder-fill.svg");
-                            opacity: touch-open.has_hover && touch-open.enabled ? 0.6 : 0;
-                            animate opacity {
-                                duration: 200ms;
-                            }
-                            width: selected.width * 60%;
-                        }
-                    }
-                }
-                Rectangle {
-                    width: 20%;
-                    Rectangle {
-                        border-radius: 10px;
-                        background: @linear-gradient(90deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
-                        opacity: touch-prev.has_hover && touch-prev.enabled ? 0.1 : 0;
-                        animate opacity {
-                            duration: 200ms;
-                        }
-                    }
-                    touch-prev := TouchArea {
-                        enabled: current-list-item > 0;
-                        clicked => { 
-                            if (current-list-item >= list-model.length) {
-                                current-list-item = 0;
-                            } else {
-                                current-list-item -= 1;
-                            }
-                            current-similar-image = 0;
-                            item-selected(current-list-item);
-                        }
-                    }
-                    VerticalLayout {
-                        alignment: center;
-                        padding: 10px;
-                        Image {
-                            source: @image-url("arrow-left-circle-fill.svg");
-                            opacity: touch-prev.has_hover && touch-prev.enabled ? 0.6: 0;
-                            animate opacity {
-                                duration: 200ms;
-                            }
-                        }
-                    }
-                }
-                Rectangle {
-                    x: parent.width * 80%;
-                    width: 20%;
-                    Rectangle {
-                        border-radius: 10px;
-                        background: @linear-gradient(270deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
-                        opacity: touch-next.has_hover && touch-next.enabled ? 0.1 : 0;
-                        animate opacity {
-                            duration: 200ms;
-                        }
-                    }
-                    touch-next := TouchArea {
-                        enabled: list-model.length > 0 && current-list-item < list-model.length - 1;
-                        clicked => { 
-                            current-list-item += 1;
-                            current-similar-image = 0;
-                            item-selected(current-list-item);
-                        }
-                    }
-                    VerticalLayout {
-                        alignment: center;
-                        padding: 10px;
-                        Image {
-                            source: @image-url("arrow-right-circle-fill.svg");
-                            opacity: touch-next.has_hover && touch-next.enabled ? 0.6 : 0;
-                            animate opacity {
-                                duration: 200ms;
-                            }
-                        }
-
-                    }
-                }              
+        selected := Image {
+            source: current-image.image;
+            opacity: current-image.take-over ? 1.0 : 0.2;
+            animate opacity {
+                duration: 200ms;
             }
-            HorizontalLayout { 
-                Text {
-                    text: current-image.text;
-                    font-size: 14px;
-                }
-                Text {
-                    text: "⌛ Please wait, calculating similarities...";
-                    font-size: 14px;
-                    visible: calculating-similarities;
-                }
-            }
-            ScrollView {
-                padding: 0px;
-                viewport-height: 100px;
-                height: similar-images-model.length > 1 ? 125px : 0px;
-                visible: similar-images-model.length > 1;
+            image-fit: contain;
 
-                animate height {
-                    duration: 200ms;
+            Rectangle {
+                x: parent.width * 20%;
+                width: 60%;
+                height: 40%;
+                Rectangle {
+                    border-radius: 10px;
+                    background: @linear-gradient(180deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
+                    opacity: selected-image-touch.has_hover && selected-image-touch.enabled ? 0.1 : 0;
+                    animate opacity {
+                        duration: 200ms;
+                    }
                 }
-
-                HorizontalBox { 
-                    alignment: start;
+                selected-image-touch := TouchArea { 
+                    enabled: list-model.length > 0;
+                    clicked => {
+                        if (list-model.length > 0) {
+                            current-image.take-over = !current-image.take-over;
+                            current-image.text = set-take-over(current-image.local-index, current-image.take-over);
+                        }
+                    }
+                }
+                HorizontalLayout {
+                    alignment: center;
+                    padding: 10px;
                     Image {
-                        source: @image-url("shuffle.svg");
-                        height: 100px;
+                        source: @image-url("trash3-fill.svg");
+                        opacity: selected-image-touch.has_hover && selected-image-touch.enabled ? 0.6: 0;
+                        animate opacity {
+                            duration: 200ms;
+                        }
+                        width: selected.width * 60%;
                     }
-
-                for item[i] in similar-images-model: 
+                }
+            }
+            Rectangle {
+                x: parent.width * 20%;
+                y: parent.height * 80%;
+                width: 60%;
+                height: 20%;
+                Rectangle {
+                    border-radius: 10px;
+                    background: @linear-gradient(0deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
+                    opacity: touch-open.has_hover && touch-open.enabled ? 0.1 : 0;
+                    animate opacity {
+                        duration: 200ms;
+                    }
+                }
+                touch-open := TouchArea { 
+                    enabled: list-model.length > 0;
+                    clicked => { 
+                        open(current-image.local-index);
+                    }
+                }
+                HorizontalLayout {
+                    alignment: center;
+                    padding: 10px;
                     Image {
-                        source: item.image;
-                        opacity: item.take-over ? 1.0 : 0.2;
-                        image-fit: contain;
-                        width: 180px;
-                        height: 100px;
-                        TouchArea { 
-                            clicked => {
-                                current-image.image = item.image;
-                                current-image.take-over = item.take-over;
-                                current-image.text = item.text;
-                                current-image.local-index = item.local-index;
-                                current-similar-image = i;
-                            }
+                        source: @image-url("folder-fill.svg");
+                        opacity: touch-open.has_hover && touch-open.enabled ? 0.6 : 0;
+                        animate opacity {
+                            duration: 200ms;
                         }
-                        if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: StyleMetrics.textedit-background-disabled;}
+                        width: selected.width * 60%;
                     }
                 }
             }
-        }            
+            Rectangle {
+                width: 20%;
+                Rectangle {
+                    border-radius: 10px;
+                    background: @linear-gradient(90deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
+                    opacity: touch-prev.has_hover && touch-prev.enabled ? 0.1 : 0;
+                    animate opacity {
+                        duration: 200ms;
+                    }
+                }
+                touch-prev := TouchArea {
+                    enabled: current-list-item > 0;
+                    clicked => { 
+                        if (current-list-item >= list-model.length) {
+                            current-list-item = 0;
+                        } else {
+                            current-list-item -= 1;
+                        }
+                        current-similar-image = 0;
+                        item-selected(current-list-item);
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    padding: 10px;
+                    Image {
+                        source: @image-url("arrow-left-circle-fill.svg");
+                        opacity: touch-prev.has_hover && touch-prev.enabled ? 0.6: 0;
+                        animate opacity {
+                            duration: 200ms;
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                x: parent.width * 80%;
+                width: 20%;
+                Rectangle {
+                    border-radius: 10px;
+                    background: @linear-gradient(270deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
+                    opacity: touch-next.has_hover && touch-next.enabled ? 0.1 : 0;
+                    animate opacity {
+                        duration: 200ms;
+                    }
+                }
+                touch-next := TouchArea {
+                    enabled: list-model.length > 0 && current-list-item < list-model.length - 1;
+                    clicked => { 
+                        current-list-item += 1;
+                        current-similar-image = 0;
+                        item-selected(current-list-item);
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    padding: 10px;
+                    Image {
+                        source: @image-url("arrow-right-circle-fill.svg");
+                        opacity: touch-next.has_hover && touch-next.enabled ? 0.6 : 0;
+                        animate opacity {
+                            duration: 200ms;
+                        }
+                    }
 
-        VerticalLayout { 
-            width: 300px;
-            spacing: 5px;
+                }
+            }              
+        }
+        HorizontalLayout { 
+            Text {
+                text: current-image.text;
+                font-size: 14px;
+            }
+            Text {
+                text: "⌛ Please wait, calculating similarities...";
+                font-size: 14px;
+                visible: calculating-similarities;
+            }
+        }
+        ScrollView {
+            padding: 0px;
+            viewport-height: 100px;
+            height: similar-images-model.length > 1 ? 125px : 0px;
+            visible: similar-images-model.length > 1;
 
-            source-directory-edit := LineEdit { 
-                enabled: false;
-                placeholder-text: "Select a folder with images";
+            animate height {
+                duration: 200ms;
             }
-            Button {
-                text: "📂 Browse...";
-                width: 200px;
-                enabled: !calculating-similarities;
-                clicked => { 
-                    browse-source();
-                }
-            }
-            Button {
-                text: "Filters " + (filter-visible ? "<<" : ">>");
-                clicked => {
-                    filter-visible = !filter-visible;
-                }
-            }
-            if filter-visible :
-                VerticalBox {
-                    alignment: start;
-                    CheckBox {
-                        text: "Show discarded";
-                        checked: filters.sorted-out;
-                        toggled => { filters.sorted-out = self.checked; filter(filters) }
-                    }
-                    CheckBox {
-                        text: "Show videos";
-                        checked: filters.videos;
-                        toggled => { filters.videos = self.checked; filter(filters) }
-                    }
-                    CheckBox {
-                        text: "Show images";
-                        checked: filters.images;
-                        toggled => { filters.images = self.checked; filter(filters) }
-                    }
-                    HorizontalBox { 
-                        alignment: start;
-                        Text {
-                            vertical-alignment: center;
-                            text: "Sort by";
-                        }
-                        ComboBox {
-                            current-value: "Date";
-                            model: FilterComboValues.sort_by;
-                            width: 100px;
-                            selected => { filters.sort_by = self.current-value; filter(filters) }
-                        }
-                        ComboBox {
-                            current-value: "Asc";
-                            model: FilterComboValues.direction;
-                            width: 80px;
-                            selected => { filters.direction = self.current-value; filter(filters) }
-                        }
-                    }
-                }
-            
-            image-list := ListView {
-                property<int> current-item: 0;
 
-                for item[i] in list-model: Rectangle {
-                    padding: 2px;
-                    height: 20px;
-                    width: parent.width;
-                    background: i == parent.current-item ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
-                    HorizontalLayout { 
-                        Text { 
-                            text: item.text;
-                        }
-                    }
+            HorizontalBox { 
+                alignment: start;
+                Image {
+                    source: @image-url("shuffle.svg");
+                    height: 100px;
+                }
+
+            for item[i] in similar-images-model: 
+                Image {
+                    source: item.image;
+                    opacity: item.take-over ? 1.0 : 0.2;
+                    image-fit: contain;
+                    width: 180px;
+                    height: 100px;
                     TouchArea { 
                         clicked => {
-                            image-list.current-item = i;
-                            current-similar-image = 0;
-                            item-selected(i);
+                            current-image.image = item.image;
+                            current-image.take-over = item.take-over;
+                            current-image.text = item.text;
+                            current-image.local-index = item.local-index;
+                            current-similar-image = i;
                         }
+                    }
+                    if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: StyleMetrics.textedit-background-disabled;}
+                }
+            }
+        }
+    }            
+
+    VerticalLayout { 
+        width: 300px;
+        spacing: 5px;
+
+        source-directory-edit := LineEdit { 
+            enabled: false;
+            placeholder-text: "Select a folder with images";
+        }
+        Button {
+            text: "📂 Browse...";
+            width: 200px;
+            enabled: !calculating-similarities;
+            clicked => { 
+                browse-source();
+            }
+        }
+        Button {
+            text: "Filters " + (filter-visible ? "<<" : ">>");
+            clicked => {
+                filter-visible = !filter-visible;
+            }
+        }
+        if filter-visible :
+            VerticalBox {
+                alignment: start;
+                CheckBox {
+                    text: "Show discarded";
+                    checked: filters.sorted-out;
+                    toggled => { filters.sorted-out = self.checked; filter(filters) }
+                }
+                CheckBox {
+                    text: "Show videos";
+                    checked: filters.videos;
+                    toggled => { filters.videos = self.checked; filter(filters) }
+                }
+                CheckBox {
+                    text: "Show images";
+                    checked: filters.images;
+                    toggled => { filters.images = self.checked; filter(filters) }
+                }
+                HorizontalBox { 
+                    alignment: start;
+                    Text {
+                        vertical-alignment: center;
+                        text: "Sort by";
+                    }
+                    ComboBox {
+                        current-value: "Date";
+                        model: FilterComboValues.sort_by;
+                        width: 100px;
+                        selected => { filters.sort_by = self.current-value; filter(filters) }
+                    }
+                    ComboBox {
+                        current-value: "Asc";
+                        model: FilterComboValues.direction;
+                        width: 80px;
+                        selected => { filters.direction = self.current-value; filter(filters) }
                     }
                 }
             }
-            Button {
-                text: "📅 Create event from image";
-                clicked => { fill-event(current-image.local-index); }
+        
+        image-list := ListView {
+            property<int> current-item: 0;
+
+            for item[i] in list-model: Rectangle {
+                padding: 2px;
+                height: 20px;
+                width: parent.width;
+                background: i == parent.current-item ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
+                HorizontalLayout { 
+                    Text { 
+                        text: item.text;
+                    }
+                }
+                TouchArea { 
+                    clicked => {
+                        image-list.current-item = i;
+                        current-similar-image = 0;
+                        item-selected(i);
+                    }
+                }
             }
+        }
+        Button {
+            text: "📅 Create event from image";
+            clicked => { fill-event(current-image.local-index); }
         }
     }  
 }

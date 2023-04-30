@@ -1,4 +1,4 @@
-import { ListView, Button, LineEdit, GroupBox, ScrollView, VerticalBox, StyleMetrics } from "std-widgets.slint";
+import { ListView, Button, LineEdit, GroupBox, ScrollView, VerticalBox, StyleMetrics , HorizontalBox} from "std-widgets.slint";
 
 
 struct Event {
@@ -7,7 +7,7 @@ struct Event {
     end-date: string
 }
 
-export component EventsView {
+export component EventsView inherits HorizontalBox {
     in property <[Event]> events-model;
     in-out property <string> new-name <=> new-name.text;
     in-out property <string> new-start-date <=> new-start-date.text;
@@ -16,6 +16,9 @@ export component EventsView {
     callback add-event(string, string, string) -> string;
     callback remove-event(int);
     callback update-event(int, string, string, string) -> string;
+
+    preferred-height: 100%;
+    preferred-width: 100%;
 
     ScrollView {         
         VerticalLayout { 
