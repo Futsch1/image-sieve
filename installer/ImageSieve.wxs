@@ -30,36 +30,36 @@
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\App" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
         <RemoveFolder Id="APPLICATIONROOTDIRECTORY" On="uninstall"/>
       </Component>
-      <Component Id="avcodec_59.dll" Guid="68113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="avcodec_59.dll" Source="ffmpeg\bin\avcodec-59.dll" Checksum="yes"/>
+      <Component Id="avcodec_60.dll" Guid="68113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="avcodec_60.dll" Source="ffmpeg\bin\avcodec-60.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avcodec" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
-      <Component Id="avutil_57.dll" Guid="78113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="avutil_57.dll" Source="ffmpeg\bin\avutil-57.dll" Checksum="yes"/>
+      <Component Id="avutil_58.dll" Guid="78113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="avutil_58.dll" Source="ffmpeg\bin\avutil-58.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avutil" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
-      <Component Id="avformat_59.dll" Guid="88113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="avformat_59.dll" Source="ffmpeg\bin\avformat-59.dll" Checksum="yes"/>
+      <Component Id="avformat_60.dll" Guid="88113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="avformat_60.dll" Source="ffmpeg\bin\avformat-60.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avformat" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
       <Component Id="swresample_4.dll" Guid="98113f46-5a8d-4045-ba85-3a74a8d11e6e">
         <File Id="swresample_4.dll" Source="ffmpeg\bin\swresample-4.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\SwResample" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
-      <Component Id="avdevice_59.dll" Guid="a8113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="avdevice_59.dll" Source="ffmpeg\bin\avdevice-59.dll" Checksum="yes"/>
+      <Component Id="avdevice_60.dll" Guid="a8113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="avdevice_60.dll" Source="ffmpeg\bin\avdevice-60.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avformat" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
-      <Component Id="avfilter_8.dll" Guid="b8113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="avfilter_8.dll" Source="ffmpeg\bin\avfilter-8.dll" Checksum="yes"/>
+      <Component Id="avfilter_9.dll" Guid="b8113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="avfilter_9.dll" Source="ffmpeg\bin\avfilter-9.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\Avformat" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
-      <Component Id="swscale_6.dll" Guid="c8113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="swscale_6.dll" Source="ffmpeg\bin\swscale-6.dll" Checksum="yes"/>
+      <Component Id="swscale_7.dll" Guid="c8113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="swscale_7.dll" Source="ffmpeg\bin\swscale-7.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\SwResample" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
-      <Component Id="postproc_56.dll" Guid="d8113f46-5a8d-4045-ba85-3a74a8d11e6e">
-        <File Id="postproc_56.dll" Source="ffmpeg\bin\postproc-56.dll" Checksum="yes"/>
+      <Component Id="postproc_57.dll" Guid="d8113f46-5a8d-4045-ba85-3a74a8d11e6e">
+        <File Id="postproc_57.dll" Source="ffmpeg\bin\postproc-57.dll" Checksum="yes"/>
         <RegistryValue Root="HKCU" Key="Software\ImageSieve\SwResample" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
