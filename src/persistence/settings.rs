@@ -134,7 +134,7 @@ mod tests {
     rusty_fork_test! {
         #[test]
         fn from_to_window() {
-            let window = ImageSieve::new();
+            let window = ImageSieve::new().unwrap();
 
             let settings = Settings::new();
             let settings2 = Settings::from_window(&window);

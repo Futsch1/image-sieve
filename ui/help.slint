@@ -1,7 +1,11 @@
 import { VerticalBox, ScrollView, HorizontalBox } from "std-widgets.slint";
 
-export HelpView := ScrollView { 
+export component HelpView inherits ScrollView {   
+    preferred-height: 100%;
+    preferred-width: 100%;
+
     VerticalBox { 
+
         alignment: start;
         Text {
             text: "📷 📹 Images";
