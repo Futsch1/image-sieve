@@ -1,12 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.5.12] - 2022-12-
+## [0.5.12] - 2023-05-01
 
 ### Changed
 
  - Updated to slint 1.0.2
  - Highlighting of controls when adding an event disabled due to changes in slint
+ - Updated to FFmpeg 6.0
 
 ## [0.5.11] - 2022-12-22
 

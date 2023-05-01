@@ -25,7 +25,7 @@ serde_json = "1.0"
 serde_with = "2.0"
 home = "0.5"
 walkdir = "2"
-ffmpeg-next = {version = "5.0", features = ["format", "codec", "software-scaling"], default_features = false}
+ffmpeg-next = {version = "6.0", features = ["format", "codec", "software-scaling"], default_features = false}
 fast_image_resize = "2.0"
 rawloader = "0.37.0"
 imagepipe = "0.5.0"
