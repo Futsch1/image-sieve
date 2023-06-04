@@ -95,7 +95,8 @@ export component SortView inherits HorizontalBox {
             image-fit: contain;
 
             Rectangle {
-                x: parent.width * 20%;
+                x: selected.width * 20%;
+                y: 0;
                 width: 60%;
                 height: 40%;
                 Rectangle {
@@ -129,8 +130,8 @@ export component SortView inherits HorizontalBox {
                 }
             }
             Rectangle {
-                x: parent.width * 20%;
-                y: parent.height * 80%;
+                x: selected.width * 20%;
+                y: selected.height * 80%;
                 width: 60%;
                 height: 20%;
                 Rectangle {
@@ -161,6 +162,7 @@ export component SortView inherits HorizontalBox {
                 }
             }
             Rectangle {
+                x: 0;
                 width: 20%;
                 Rectangle {
                     border-radius: 10px;
@@ -195,7 +197,7 @@ export component SortView inherits HorizontalBox {
                 }
             }
             Rectangle {
-                x: parent.width * 80%;
+                x: selected.width * 80%;
                 width: 20%;
                 Rectangle {
                     border-radius: 10px;
