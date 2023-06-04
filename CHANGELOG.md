@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.13] - 2023-05-01
+
+### Fixed
+ 
+ - Fixed a notorious crash on Linux with wayland backend
+
 ## [0.5.12] - 2023-05-01
 
 ### Changed
