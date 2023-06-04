@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
  
  - Fixed a notorious crash on Linux with wayland backend
+ - Correct location of on-image buttons
 
 ## [0.5.12] - 2023-05-01
 
