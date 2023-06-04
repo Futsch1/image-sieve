@@ -116,14 +116,11 @@ jobs:
         bodyFile: "CHANGELOG.md"
 
   build-mac:
-    if: false
     runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v3
     - name: Install ffmpeg
-      run: |
-        brew install ffmpeg@5
-        export PKG_CONFIG_PATH="/usr/local/opt/ffmpeg@5/lib/pkgconfig"
+      run: brew install ffmpeg
     - name: Build
       run: cargo build
