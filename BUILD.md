@@ -21,7 +21,9 @@ Then run ImageSieve via
 
 First, install Rust following the instructions [here](https://rustup.rs/).
 
-As a next step, you have to download the latest ffmpeg build from [here](https://github.com/Futsch1/FFmpeg-Builds/releases/download/latest/ffmpeg-n5.0-latest-win64-gpl-shared-5.0.zip). Extract the archive and set the environment variable "FFMPEG_DIR" to the extracted folder.
+As a next step, you have to download the latest ffmpeg build from [here](https://github.com/Futsch1/FFmpeg-Builds/releases/download/latest/ffmpeg-n6.0-latest-win64-gpl-shared-6.0.zip). Extract the archive and set the environment variable "FFMPEG_DIR" to the extracted folder.
+
+Install llvm/clang from [here](https://prereleases.llvm.org/win-snapshots/).
 
 Clone the repository using
 
