@@ -21,13 +21,11 @@ apt-get install -y \
 
 ## Install rustup and common components
 curl https://sh.rustup.rs -sSf | sh -s -- -y 
+source "$HOME/.cargo/env"
 rustup install
 rustup component add rustfmt
 rustup component add clippy 
-rustup component add  llvm-tools-preview
-
-cargo install cargo-expand
-cargo install cargo-edit
+rustup component add llvm-tools-preview
 
 ## setup and install oh-my-zsh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
