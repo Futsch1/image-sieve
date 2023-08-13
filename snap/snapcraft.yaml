@@ -25,26 +25,17 @@ apps:
       - network
 
 parts:
-  install-rust:
-    plugin: nil
-    override-build: |
-      apt update && apt upgrade -y
-      if ! command -v rustup 2>/dev/null; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile=minimal
-        export PATH="${HOME}/.cargo/bin:${PATH}"
-      fi
   image-sieve:
     plugin: rust
-    after: [install-rust]
     source: .
     override-pull: |
-      craftctl default
+      snapcraftctl pull
       ver=""
       ver=$(git describe --tags --abbrev=0 | sed 's/v//') || true
       if [ -z $ver ]
       then ver="0.0.0" 
       fi
-      craftctl set version=$ver
+      snapcraftctl set-version $ver
     build-packages:
       - cmake
       - git
@@ -58,8 +49,6 @@ parts:
       - libavutil-dev
       - libswscale-dev
       - libclang-dev
-      - rustc
-      - cargo
 
   deps:
     plugin: nil
