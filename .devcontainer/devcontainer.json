@@ -1,7 +1,7 @@
 {
     "name": "Codespaces Rust",
     "hostRequirements": {
-        "memory": "8gb"
+        "memory": "16gb"
     },
     "customizations": {
         "codespaces": {
