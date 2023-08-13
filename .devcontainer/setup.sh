@@ -17,7 +17,8 @@ apt-get install -y \
   libavcodec-dev \
   libavformat-dev \
   libavutil-dev \
-  libswscale-dev
+  libswscale-dev \
+  clang
 
 ## Install rustup and common components
 curl https://sh.rustup.rs -sSf | sh -s -- -y 
