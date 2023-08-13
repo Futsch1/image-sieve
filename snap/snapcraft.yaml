@@ -33,6 +33,7 @@ parts:
         export PATH="${HOME}/.cargo/bin:${PATH}"
       fi
   update-apt:
+    plugin: nil
     override-build: |
       apt update && apt upgrade -y
   image-sieve:
