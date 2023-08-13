@@ -11,7 +11,7 @@ edition = "2021"
 readme = "README.md"
 
 [dependencies]
-slint = {version = "=1.1.0", features = ["backend-winit-x11", "renderer-winit-femtovg", "compat-1-0"], default_features = false}
+slint = {version = "=1.1.1", features = ["backend-winit-x11", "renderer-winit-femtovg", "compat-1-0"], default_features = false}
 nfd = "0.0.4"
 image = "0.24"
 kamadak-exif = "0.5"
@@ -39,7 +39,7 @@ rusty-fork = "0.3.0"
 base64 = "0.21"
 
 [build-dependencies]
-slint-build = "=1.1.0"
+slint-build = "=1.1.1"
 winres = "0.1"
 
 [profile.dev]
