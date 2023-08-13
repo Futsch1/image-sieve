@@ -32,9 +32,12 @@ parts:
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile=minimal
         export PATH="${HOME}/.cargo/bin:${PATH}"
       fi
+  update-apt:
+    override-build: |
+      apt update && apt upgrade -y
   image-sieve:
     plugin: rust
-    after: [install-rust]
+    after: [update-apt]
     source: .
     override-pull: |
       craftctl default
