@@ -1,0 +1,42 @@
+{
+    "name": "Codespaces Rust",
+    "hostRequirements": {
+        "memory": "16gb"
+    },
+    "customizations": {
+        "codespaces": {
+            "extensions": [
+                "cschleiden.vscode-github-actions",
+                "ms-vsliveshare.vsliveshare",
+                "serayuzgur.crates",
+                "vadimcn.vscode-lldb",
+                "Slint.slint",
+                "rust-lang.rust-analyzer"
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "terminal.integrated.shell.linux": "/usr/bin/zsh",
+                "files.exclude": {
+                    "**/CODE_OF_CONDUCT.md": true,
+                    "**/LICENSE": true
+                },
+                "files.eol": "\n",
+                "[rust]": {
+                    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+                    "editor.formatOnSave": true
+                },
+                "remote.extensionKind": {
+                    "ms-azuretools.vscode-docker": "workspace"
+                },
+                "editor.codeActionsOnSaveTimeout": 3000,
+                "rust-analyzer.serverPath": "/usr/local/bin/rust-analyzer"
+            }
+        }
+    },
+    "dockerFile": "Dockerfile",
+    "features": {
+        "ghcr.io/devcontainers/features/sshd:1": {
+            "version": "latest"
+        }
+    }
+}
