@@ -11,13 +11,17 @@ edition = "2021"
 readme = "README.md"
 
 [dependencies]
-slint = {version = "=1.1.1", features = ["backend-winit-x11", "renderer-winit-femtovg", "compat-1-0"], default_features = false}
-nfd = "0.0.4"
+slint = { version = "=1.1.1", features = [
+    "backend-winit-x11",
+    "renderer-winit-femtovg",
+    "compat-1-0",
+], default_features = false }
+rfd = "0.11.4"
 image = "0.24"
 kamadak-exif = "0.5"
 chrono = "0.4"
 num-traits = "0.2"
-num-derive = "0.4"  
+num-derive = "0.4"
 opener = "0.6"
 img_hash = "3.2"
 serde = "1.0"
@@ -25,14 +29,18 @@ serde_json = "1.0"
 serde_with = "3.0"
 home = "0.5"
 walkdir = "2"
-ffmpeg-next = {version = "6.0", features = ["format", "codec", "software-scaling"], default_features = false}
+ffmpeg-next = { version = "6.0", features = [
+    "format",
+    "codec",
+    "software-scaling",
+], default_features = false }
 fast_image_resize = "2.0"
 rawloader = "0.37.0"
 imagepipe = "0.5.0"
 dark-light = "1.0"
 strum = "0.25"
 strum_macros = "0.25"
-image-23 = { version = "=0.23", package="image" }
+image-23 = { version = "=0.23", package = "image" }
 rusty-fork = "0.3.0"
 
 [dev-dependencies]
@@ -43,4 +51,4 @@ slint-build = "=1.1.1"
 winres = "0.1"
 
 [profile.dev]
-opt-level=1
+opt-level = 1

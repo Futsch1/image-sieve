@@ -1,8 +1,9 @@
 //! Module containing the main window of image_sieve
 
-extern crate nfd;
+extern crate rfd;
 extern crate slint;
 
+use rfd::FileDialog;
 use slint::{Model, ModelRc, SharedString};
 use std::cell::RefCell;
 use std::fmt::Debug;
@@ -198,9 +199,10 @@ impl MainWindow {
             let synchronizer = self.synchronizer.clone();
 
             move || {
-                if let Ok(nfd::Response::Okay(folder)) =
-                    nfd::open_pick_folder(get_folder(&window_weak.unwrap().get_source_directory()))
-                {
+                let path =
+                    get_folder_dialog(&window_weak.unwrap().get_source_directory()).pick_folder();
+
+                if let Some(folder) = path {
                     {
                         // Save current item list
                         let item_list = item_list.lock().unwrap();
@@ -221,7 +223,7 @@ impl MainWindow {
 
                     window_weak
                         .unwrap()
-                        .set_source_directory(SharedString::from(folder));
+                        .set_source_directory(SharedString::from(folder.to_str().unwrap()));
                 }
             }
         });
@@ -231,12 +233,13 @@ impl MainWindow {
             let window_weak = self.window.as_weak();
 
             move || {
-                if let Ok(nfd::Response::Okay(folder)) =
-                    nfd::open_pick_folder(get_folder(&window_weak.unwrap().get_target_directory()))
-                {
+                let path =
+                    get_folder_dialog(&window_weak.unwrap().get_target_directory()).pick_folder();
+
+                if let Some(folder) = path {
                     window_weak
                         .unwrap()
-                        .set_target_directory(SharedString::from(folder));
+                        .set_target_directory(SharedString::from(folder.to_str().unwrap()));
                 }
             }
         });
@@ -479,12 +482,12 @@ pub fn sieve(
     });
 }
 
-/// Convert a folder setting to an option if the folder exists
-fn get_folder(folder: &SharedString) -> Option<&str> {
+/// Get a folder dialog with the location set if the folder exists
+fn get_folder_dialog(folder: &SharedString) -> FileDialog {
     let folder = folder.as_str();
     if Path::new(folder).exists() {
-        Some(folder)
+        FileDialog::new().set_directory(folder)
     } else {
-        None
+        FileDialog::new()
     }
 }
