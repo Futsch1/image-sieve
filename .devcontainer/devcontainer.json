@@ -1,10 +1,17 @@
 {
     "name": "Codespaces Rust",
     "hostRequirements": {
-        "memory": "16gb"
+        "memory": "12gb"
     },
+    "containerEnv": {
+        "DISPLAY": "unix:0"
+    },
+    "mounts": [
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
+    ],
+    "initializeCommand": "xhost local:host",
     "customizations": {
-        "codespaces": {
+        "vscode": {
             "extensions": [
                 "cschleiden.vscode-github-actions",
                 "ms-vsliveshare.vsliveshare",
@@ -16,15 +23,7 @@
             "settings": {
                 "editor.formatOnSave": true,
                 "terminal.integrated.shell.linux": "/usr/bin/zsh",
-                "files.exclude": {
-                    "**/CODE_OF_CONDUCT.md": true,
-                    "**/LICENSE": true
-                },
                 "files.eol": "\n",
-                "[rust]": {
-                    "editor.defaultFormatter": "rust-lang.rust-analyzer",
-                    "editor.formatOnSave": true
-                },
                 "remote.extensionKind": {
                     "ms-azuretools.vscode-docker": "workspace"
                 },
