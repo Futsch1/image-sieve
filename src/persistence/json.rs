@@ -13,22 +13,34 @@ const SETTINGS_FILE: &str = "image_sieve_settings.json";
 /// Name of the project settings file
 const ITEM_LIST_FILE: &str = "image_sieve.json";
 
+/// Name of the trace file
+const TRACE_FILE: &str = "trace.txt";
+
+/// Get the directory and filename where traces are stored
+pub fn get_trace_filename() -> PathBuf {
+    get_and_create_home_dir().join(TRACE_FILE)
+}
+
 /// Get the directory and filename where the settings are stored
 pub fn get_settings_filename() -> PathBuf {
-    let home = home::home_dir();
-    if let Some(home) = home {
-        if !Path::new(&home.join(".image_sieve")).exists() {
-            fs::create_dir_all(home.join(".image_sieve")).unwrap();
-        }
-        home.join(".image_sieve").join(SETTINGS_FILE)
-    } else {
-        PathBuf::from(SETTINGS_FILE)
-    }
+    get_and_create_home_dir().join(SETTINGS_FILE)
 }
 
 /// Get the directory and filename where the item list is stored
 pub fn get_project_filename(path: &Path) -> PathBuf {
     Path::new(path).to_path_buf().join(ITEM_LIST_FILE)
+}
+
+fn get_and_create_home_dir() -> PathBuf {
+    let home = home::home_dir();
+    if let Some(home) = home {
+        if !Path::new(&home.join(".image_sieve")).exists() {
+            fs::create_dir_all(home.join(".image_sieve")).unwrap();            
+        }
+        home.join(".image_sieve")
+    } else {
+        PathBuf::from(".")
+    }
 }
 
 /// Trait to load and save data from/to a file
@@ -97,6 +109,7 @@ mod tests {
         let project_filename_str = project_filename.to_str().unwrap();
         assert!(project_filename_str.contains("test"));
         assert!(project_filename_str.contains(ITEM_LIST_FILE));
+        assert!(!get_trace_filename().as_os_str().is_empty());
     }
 
     #[test]

@@ -6,7 +6,7 @@ extern crate slint;
 use slint::{Model, ModelRc, SharedString};
 use std::cell::RefCell;
 use std::fmt::Debug;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -15,7 +15,7 @@ use crate::controller::events_controller::EventsController;
 use crate::controller::items_controller::ItemsController;
 use crate::item_sort_list::ItemList;
 use crate::misc::images::get_empty_image;
-use crate::persistence::json::{get_project_filename, get_settings_filename, JsonPersistence};
+use crate::persistence::json::{get_project_filename, get_settings_filename, JsonPersistence, self};
 use crate::persistence::model_to_enum::model_to_enum;
 use crate::persistence::settings::Settings;
 use crate::synchronize::Synchronizer;
@@ -487,4 +487,9 @@ fn get_folder(folder: &SharedString) -> Option<&str> {
     } else {
         None
     }
+}
+
+/// Gets the filename to store a crash trace
+pub fn get_trace_filename() -> PathBuf {
+    json::get_trace_filename()
 }
