@@ -34,6 +34,7 @@ strum = "0.25"
 strum_macros = "0.25"
 image-23 = { version = "=0.23", package="image" }
 rusty-fork = "0.3.0"
+backtrace = "0.3"
 
 [dev-dependencies]
 base64 = "0.21"
