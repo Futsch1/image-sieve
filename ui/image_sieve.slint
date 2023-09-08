@@ -5,6 +5,7 @@ import { EventsView } from "events.slint";
 import { SieveView, SieveComboValues } from "sieve.slint";
 import { SettingsView } from "settings.slint";
 import { HelpView } from "help.slint";
+import "fonts/NotoImageSieve.ttf";
 
 export { SieveComboValues, Filters, SortItem, ListItem }
 
@@ -13,6 +14,7 @@ export component ImageSieve inherits Window {
     min-height: 800px;
     title: "ImageSieve";
     icon: @image-url("ImageSieve.png");
+    default-font-family: "Noto Sans";
 
     in property <string> window-title <=> root.title;
     in property <bool> loading: true;    

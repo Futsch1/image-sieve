@@ -20,7 +20,9 @@ apt-get install -y \
   libswscale-dev \
   clang \
   dbus-x11 \
-  fonts-noto-color-emoji
+  fonts-noto-color-emoji \
+  python3-pip \
+  wget
 
 ## Install rustup and common components
 curl https://sh.rustup.rs -sSf | sh -s -- -y 
@@ -28,3 +30,6 @@ source "$HOME/.cargo/env"
 rustup component add rustfmt
 rustup component add clippy 
 rustup component add llvm-tools-preview
+
+## Install required Python packages
+pip install fonttools
