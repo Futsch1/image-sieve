@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.14] - 2023-09-08
+
+### Changed
+
+- Updated to slint 1.2.0
+- Create trace.txt on panic
+
 ## [0.5.13] - 2023-05-01
 
 ### Fixed
