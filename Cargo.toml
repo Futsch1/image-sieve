@@ -40,7 +40,7 @@ backtrace = "0.3"
 base64 = "0.21"
 
 [build-dependencies]
-slint-build = "=1.2.0"
+slint-build = "=1.2.1"
 winres = "0.1"
 
 [profile.dev]
