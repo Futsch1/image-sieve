@@ -27,8 +27,7 @@
                 "remote.extensionKind": {
                     "ms-azuretools.vscode-docker": "workspace"
                 },
-                "editor.codeActionsOnSaveTimeout": 3000,
-                "rust-analyzer.serverPath": "/usr/local/bin/rust-analyzer"
+                "editor.codeActionsOnSaveTimeout": 3000
             }
         }
     },
