@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.15] - 2023-10-07
+
+### Changed
+
+- Updated to slint 1.2.2
+
 ## [0.5.14] - 2023-09-08
 
 ### Changed
