@@ -25,18 +25,18 @@ fn get_alternative_image() -> ImageBuffer {
 fn get_position(orientation: Option<&Orientation>, i: u32, width: u32, height: u32) -> (u32, u32) {
     if let Some(orientation) = orientation {
         match orientation {
-            crate::item_sort_list::Orientation::Landscape => {
+            Orientation::Landscape => {
                 (i % SCREENSHOTS_X * width, i / SCREENSHOTS_Y * height)
             }
-            crate::item_sort_list::Orientation::Portrait90 => (
+            Orientation::Portrait90 => (
                 i / SCREENSHOTS_X * width,
                 ((SCREENSHOTS_Y - 1) - i % SCREENSHOTS_Y) * height,
             ),
-            crate::item_sort_list::Orientation::Landscape180 => (
+            Orientation::Landscape180 => (
                 ((SCREENSHOTS_X - 1) - i % SCREENSHOTS_X) * width,
                 ((SCREENSHOTS_Y - 1) - i / SCREENSHOTS_Y) * height,
             ),
-            crate::item_sort_list::Orientation::Portrait270 => (
+            Orientation::Portrait270 => (
                 ((SCREENSHOTS_X - 1) - i / SCREENSHOTS_X) * width,
                 i % SCREENSHOTS_Y * height,
             ),
@@ -101,15 +101,15 @@ fn create_image_from_video(
         // Rotate the image if necessary
         if let Some(orientation) = orientation {
             match orientation {
-                crate::item_sort_list::Orientation::Landscape => {}
-                crate::item_sort_list::Orientation::Portrait90 => {
-                    buffer = image::imageops::rotate90(&buffer);
+                Orientation::Landscape => {}
+                Orientation::Portrait90 => {
+                    buffer = imageops::rotate90(&buffer);
                 }
-                crate::item_sort_list::Orientation::Landscape180 => {
-                    buffer = image::imageops::rotate180(&buffer);
+                Orientation::Landscape180 => {
+                    buffer = imageops::rotate180(&buffer);
                 }
-                crate::item_sort_list::Orientation::Portrait270 => {
-                    buffer = image::imageops::rotate270(&buffer);
+                Orientation::Portrait270 => {
+                    buffer = imageops::rotate270(&buffer);
                 }
             };
         }

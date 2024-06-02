@@ -26,7 +26,8 @@ use crate::synchronize::Synchronizer;
     trivial_casts,
     trivial_numeric_casts,
     missing_docs,
-    missing_debug_implementations
+    missing_debug_implementations,
+    dead_code
 )]
 mod generated_code {
     slint::include_modules!();

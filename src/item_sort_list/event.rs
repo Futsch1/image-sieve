@@ -75,7 +75,7 @@ impl Event {
 pub fn parse_date(date: &str) -> Result<NaiveDate, String> {
     let possible_fmts = [EVENT_DATE_FORMAT, "%Y-%_m-%_d", "%d.%m.%Y", "%_d.%_m.%Y"];
     for fmt in possible_fmts {
-        if let Ok(parsed_date) = chrono::NaiveDate::parse_from_str(date, fmt) {
+        if let Ok(parsed_date) = NaiveDate::parse_from_str(date, fmt) {
             return Ok(parsed_date);
         }
     }
