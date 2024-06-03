@@ -163,7 +163,7 @@ impl FileItem {
 
     /// Add a range of similars
     pub fn add_similar_range(&mut self, similars: &Range<usize>) {
-        self.similar.extend(similars.clone().into_iter());
+        self.similar.extend(similars.clone());
     }
 
     /// Get the list of similar item indices.

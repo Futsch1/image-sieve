@@ -40,7 +40,7 @@ impl Event {
     pub fn update(&mut self, name: &str, start_date: &str, end_date: &str) -> bool {
         let start_date = parse_date(start_date);
         let end_date = parse_date(end_date);
-        if matches!(end_date, Ok(_)) && matches!(start_date, Ok(_)) {
+        if end_date.is_ok() && start_date.is_ok() {
             self.start_date = start_date.unwrap();
             self.end_date = end_date.unwrap();
             self.name = String::from(name);
