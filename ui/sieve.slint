@@ -1,4 +1,4 @@
-import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox, ScrollView, StyleMetrics } from "std-widgets.slint";
+import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox, ScrollView, Palette } from "std-widgets.slint";
 
 export global SieveComboValues {
     in property <[string]> methods: ["Copy to target directory", 
@@ -49,7 +49,7 @@ export component SieveView inherits HorizontalBox {
 
             Rectangle { 
                 border-width: 1px;
-                border-color: StyleMetrics.textedit-text-color;
+                border-color: Palette.foreground;
                 
                 VerticalBox { 
                     HorizontalBox { 
@@ -149,7 +149,7 @@ export component SieveView inherits HorizontalBox {
         for item[i] in sieve-result-model:
             Text {
                 text: item.result;               
-                color: item.color == "red" ? red : (item.color == "green" ? green : StyleMetrics.default-text-color);
+                color: item.color == "red" ? red : (item.color == "green" ? green : Palette.foreground);
             }
         }
     }

@@ -1,4 +1,4 @@
-import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSlint, StyleMetrics } from "std-widgets.slint";
+import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSlint, Palette } from "std-widgets.slint";
 
 export component SettingsView inherits VerticalBox {
     in property use-timestamps <=> use-timestamps-checkbox.checked;
@@ -25,7 +25,7 @@ export component SettingsView inherits VerticalBox {
 
                 Rectangle { 
                     border-width: 1px;
-                    border-color: StyleMetrics.textedit-text-color;            
+                    border-color: Palette.foreground;            
                     
                     GridLayout {
                         padding: 10px;             
@@ -101,11 +101,8 @@ export component SettingsView inherits VerticalBox {
                     }
                 }
                 Text {
-                    text: "💻 Developed by Florian Fetz";
-                }
-                Text {
                     text: "🔗 https://www.github.com/Futsch1/image-sieve";
-                    color: StyleMetrics.textedit-text-color-disabled;
+                    color: Palette.alternate_foreground;
                 }
             }
             clicked => { 
