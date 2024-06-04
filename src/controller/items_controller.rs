@@ -270,6 +270,9 @@ fn filter_file_items(file_item: &FileItem, filters: &main_window::Filters) -> bo
     if !filters.sorted_out && !file_item.get_take_over() {
         visible = false;
     }
+    if filters.only_similars && file_item.get_similars().is_empty() {
+        visible = false;
+    }
     visible
 }
 
@@ -349,6 +352,7 @@ mod tests {
             images: true,
             videos: true,
             sorted_out: true,
+            only_similars: false,
             sort_by: SharedString::from("Date"),
             direction: SharedString::from("Asc"),
         }
@@ -401,6 +405,13 @@ mod tests {
         assert_eq!(list_model.row_count(), 1);
         assert_eq!(list_model.row_data(0).unwrap().local_index, 0);
         assert_eq!(list_model.row_data(0).unwrap().text, "📹 test2.mov");
+
+        filters.sorted_out = true;
+        filters.only_similars = true;
+        items_controller.populate_list_model(&filters);
+        assert_eq!(list_model.row_count(), 1);
+        assert_eq!(list_model.row_data(0).unwrap().local_index, 1);
+        assert_eq!(list_model.row_data(0).unwrap().text, "🔀 📷 🗑 test1.jpg");
 
         items_controller.clear_list();
         assert_eq!(items_controller.get_list_model().row_count(), 0);
