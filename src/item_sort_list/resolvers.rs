@@ -283,10 +283,11 @@ mod tests {
         assert_eq!(None, get_orientation_from("tests/test.mp4"));
         assert_eq!(1640790497, get_timestamp_from("tests/test2.MP4"));
         //TODO: There seems to be an issue in FFMPEG with getting the orientation
-        /*assert_eq!(
-            Some(Orientation::Landscape180),
+        assert_eq!(
+            //Some(Orientation::Landscape180),
+            None,
             get_orientation_from("tests/test2.MP4")
-        );*/
+        );
         assert_eq!(
             get_file_timestamp("tests/test_invalid.mp4"),
             get_timestamp_from("tests/test_invalid.mp4")
