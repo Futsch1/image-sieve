@@ -1,6 +1,6 @@
 name: image-sieve 
 title: ImageSieve
-base: core20
+base: core22
 summary: Tool to sort out images and archive them in a target folder 
 description: |
   ImageSieve aims to help in the process of sorting through images taken by several 
@@ -18,7 +18,7 @@ icon: snap/gui/ImageSieve.png
 apps:
   image-sieve:
     command: bin/image_sieve
-    extensions: [gnome-3-38]
+    extensions: [gnome]
     plugs:
       - home
       - removable-media
