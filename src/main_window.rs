@@ -1,6 +1,6 @@
 //! Module containing the main window of image_sieve
 
-extern crate nfd;
+extern crate nfde;
 extern crate slint;
 
 use slint::{Model, ModelRc, SharedString};
@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use nfde::*;
 
 use crate::controller::events_controller::EventsController;
 use crate::controller::items_controller::ItemsController;
@@ -199,8 +200,12 @@ impl MainWindow {
             let synchronizer = self.synchronizer.clone();
 
             move || {
-                if let Ok(nfd::Response::Okay(folder)) =
-                    nfd::open_pick_folder(get_folder(&window_weak.unwrap().get_source_directory()))
+                let nfd = Nfd::new().unwrap();
+                let mut builder = nfd.pick_folder();
+                if let Some(path) = get_folder(&window_weak.unwrap().get_source_directory()) {
+                    builder.default_path(&path).ok();
+                }
+                if let DialogResult::Ok(folder) = builder.show()
                 {
                     {
                         // Save current item list
@@ -218,11 +223,11 @@ impl MainWindow {
 
                     // Synchronize in a background thread
                     window_weak.unwrap().set_loading(true);
-                    synchronizer.scan_path(Path::new(&folder));
+                    synchronizer.scan_path(folder.as_path());
 
                     window_weak
                         .unwrap()
-                        .set_source_directory(SharedString::from(folder));
+                        .set_source_directory(SharedString::from(folder.as_os_str().to_str().unwrap()));
                 }
             }
         });
@@ -232,12 +237,14 @@ impl MainWindow {
             let window_weak = self.window.as_weak();
 
             move || {
-                if let Ok(nfd::Response::Okay(folder)) =
-                    nfd::open_pick_folder(get_folder(&window_weak.unwrap().get_target_directory()))
+                let nfd = Nfd::new().unwrap();
+                let mut builder = nfd.pick_folder();
+                builder.default_path(&Path::new(&window_weak.unwrap().get_target_directory().to_string().as_str())).ok();
+                if let DialogResult::Ok(folder) = builder.show()
                 {
                     window_weak
                         .unwrap()
-                        .set_target_directory(SharedString::from(folder));
+                        .set_target_directory(SharedString::from(folder.as_os_str().to_str().unwrap()));
                 }
             }
         });
@@ -481,10 +488,10 @@ pub fn sieve(
 }
 
 /// Convert a folder setting to an option if the folder exists
-fn get_folder(folder: &SharedString) -> Option<&str> {
+fn get_folder(folder: &SharedString) -> Option<&Path> {
     let folder = folder.as_str();
     if Path::new(folder).exists() {
-        Some(folder)
+        Some(Path::new(folder))
     } else {
         None
     }
