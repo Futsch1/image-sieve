@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: ./.github/actions/prepare_ubuntu
     - name: Cargo publish
       if: startsWith(github.ref, 'refs/tags/v')
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build snap
       uses: snapcore/action-build@v1
       id: snapcraft
@@ -50,12 +50,12 @@ jobs:
     permissions:
       contents: write
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install FFmpeg
       run: |
           $VCINSTALLDIR = $(& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath)
           Add-Content $env:GITHUB_ENV "LIBCLANG_PATH=${VCINSTALLDIR}\VC\Tools\LLVM\x64\bin`n"
-          Invoke-WebRequest "https://github.com/Futsch1/FFmpeg-Builds/releases/download/latest/ffmpeg-n6.0-latest-win64-gpl-shared-6.0.zip" -OutFile ffmpeg-release-full-shared.zip
+          Invoke-WebRequest "https://github.com/Futsch1/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.0-latest-win64-gpl-shared-7.0.zip" -OutFile ffmpeg-release-full-shared.zip
           7z x ffmpeg-release-full-shared.zip
           mkdir ffmpeg
           mv ffmpeg-*/* ffmpeg/
@@ -66,7 +66,7 @@ jobs:
     - name: Zip executable files
       uses: papeloto/action-zip@v1
       with:
-        files: target\release\image_sieve.exe ffmpeg\bin\avcodec-60.dll ffmpeg\bin\avutil-58.dll ffmpeg\bin\avformat-60.dll ffmpeg\bin\avdevice-60.dll ffmpeg\bin\avfilter-9.dll ffmpeg\bin\swresample-4.dll ffmpeg\bin\swscale-7.dll ffmpeg\bin\postproc-57.dll
+        files: target\release\image_sieve.exe ffmpeg\bin\avcodec-61.dll ffmpeg\bin\avutil-59.dll ffmpeg\bin\avformat-61.dll ffmpeg\bin\avdevice-61.dll ffmpeg\bin\avfilter-10.dll ffmpeg\bin\swresample-5.dll ffmpeg\bin\swscale-8.dll ffmpeg\bin\postproc-58.dll
         dest: image_sieve_Windows_portable.zip
     - name: Archive zip for portable installation
       uses: actions/upload-artifact@v2
@@ -125,7 +125,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install ffmpeg
       run: brew install ffmpeg
     - name: Build
