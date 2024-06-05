@@ -99,7 +99,7 @@ impl PropertyResolver for ExifResolver {
                         if let Ok(date_time) =
                             NaiveDateTime::parse_from_str(&date_time_str, "%Y-%m-%d %H:%M:%S")
                         {
-                            date_time.timestamp()
+                            date_time.and_utc().timestamp()
                         } else {
                             file_resolver.get_timestamp()
                         }
@@ -162,7 +162,7 @@ impl PropertyResolver for FFmpegResolver {
             for (k, v) in context.metadata().iter() {
                 if k == "creation_time" {
                     if let Ok(date_time) = NaiveDateTime::parse_from_str(v, "%+") {
-                        return date_time.timestamp();
+                        return date_time.and_utc().timestamp();
                     }
                 }
             }

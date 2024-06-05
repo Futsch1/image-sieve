@@ -1,6 +1,6 @@
 extern crate chrono;
 
-use self::chrono::NaiveDateTime;
+use chrono::DateTime;
 use num_derive::{FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -186,9 +186,8 @@ impl ItemList {
 
     /// Gets the event which a file item belongs to
     pub fn get_event(&self, item: &file_item::FileItem) -> Option<&event::Event> {
-        let naive_date = NaiveDateTime::from_timestamp_opt(item.get_timestamp(), 0)
-            .unwrap()
-            .date();
+        let naive_date = DateTime::from_timestamp(item.get_timestamp(), 0)
+            .unwrap().date_naive();
         self.events
             .iter()
             .find(|&event| event.contains(&naive_date))
