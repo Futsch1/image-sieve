@@ -29,13 +29,13 @@ parts:
     plugin: rust
     source: .
     override-pull: |
-      snapcraftctl pull
+      craftctl default
       ver=""
       ver=$(git describe --tags --abbrev=0 | sed 's/v//') || true
       if [ -z $ver ]
       then ver="0.0.0" 
       fi
-      snapcraftctl set-version $ver
+      craftctl set version=$ver
     build-packages:
       - cmake
       - git
