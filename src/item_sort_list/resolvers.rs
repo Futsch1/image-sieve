@@ -99,7 +99,7 @@ impl PropertyResolver for ExifResolver {
                         if let Ok(date_time) =
                             NaiveDateTime::parse_from_str(&date_time_str, "%Y-%m-%d %H:%M:%S")
                         {
-                            date_time.timestamp()
+                            date_time.and_utc().timestamp()
                         } else {
                             file_resolver.get_timestamp()
                         }
@@ -162,7 +162,7 @@ impl PropertyResolver for FFmpegResolver {
             for (k, v) in context.metadata().iter() {
                 if k == "creation_time" {
                     if let Ok(date_time) = NaiveDateTime::parse_from_str(v, "%+") {
-                        return date_time.timestamp();
+                        return date_time.and_utc().timestamp();
                     }
                 }
             }
@@ -282,11 +282,10 @@ mod tests {
         );
         assert_eq!(None, get_orientation_from("tests/test.mp4"));
         assert_eq!(1640790497, get_timestamp_from("tests/test2.MP4"));
-        //TODO: There seems to be an issue in FFMPEG with getting the orientation
-        /*assert_eq!(
+        assert_eq!(
             Some(Orientation::Landscape180),
             get_orientation_from("tests/test2.MP4")
-        );*/
+        );
         assert_eq!(
             get_file_timestamp("tests/test_invalid.mp4"),
             get_timestamp_from("tests/test_invalid.mp4")

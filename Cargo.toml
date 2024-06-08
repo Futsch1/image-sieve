@@ -1,6 +1,6 @@
 [package]
 name = "image_sieve"
-version = "0.5.15"
+version = "0.5.16"
 authors = ["Florian Fetz <florian.fetz@googlemail.com>"]
 description = "GUI based tool to sort out and categorize images, raw images and videos"
 repository = "https://github.com/Futsch1/image-sieve"
@@ -12,7 +12,7 @@ readme = "README.md"
 
 [dependencies]
 slint = {version = "1.6.0", features = ["backend-winit-x11", "renderer-winit-femtovg", "compat-1-0"], default_features = false}
-nfd = "0.0.4"
+nfde = "0.0.8"
 image = "0.25"
 kamadak-exif = "0.5"
 chrono = "0.4"

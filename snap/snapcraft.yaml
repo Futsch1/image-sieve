@@ -1,6 +1,6 @@
 name: image-sieve 
 title: ImageSieve
-base: core20
+base: core22
 summary: Tool to sort out images and archive them in a target folder 
 description: |
   ImageSieve aims to help in the process of sorting through images taken by several 
@@ -18,7 +18,7 @@ icon: snap/gui/ImageSieve.png
 apps:
   image-sieve:
     command: bin/image_sieve
-    extensions: [gnome-3-38]
+    extensions: [gnome]
     plugs:
       - home
       - removable-media
@@ -29,13 +29,13 @@ parts:
     plugin: rust
     source: .
     override-pull: |
-      snapcraftctl pull
+      craftctl default
       ver=""
       ver=$(git describe --tags --abbrev=0 | sed 's/v//') || true
       if [ -z $ver ]
       then ver="0.0.0" 
       fi
-      snapcraftctl set-version $ver
+      craftctl set version=$ver
     build-packages:
       - cmake
       - git

@@ -380,6 +380,7 @@ mod test {
                         "test.jpg",
                         NaiveDateTime::parse_from_str(input, "%Y-%m-%d %H:%M")
                             .unwrap()
+                            .and_utc()
                             .timestamp(),
                         false,
                     ),

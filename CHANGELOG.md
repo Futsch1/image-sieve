@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.16] - 2024-06-07
+
+### Changed
+
+- Updated to slint 1.6.0
+
+### Added
+
+- Added a filter setting to show only items with duplicates
+
 ## [0.5.15] - 2023-10-07
 
 ### Changed

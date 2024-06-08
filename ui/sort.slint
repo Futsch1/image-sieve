@@ -17,6 +17,7 @@ export struct Filters {
     sorted-out: bool,
     images: bool,
     videos: bool,
+    only_similars: bool,
     sort_by: string,
     direction: string
 }
@@ -55,6 +56,7 @@ export component SortView inherits HorizontalBox {
         sorted-out: true,
         images: true,
         videos: true,
+        only_similars: false,
         sort_by: "Date",
         direction: "Asc"
     };
@@ -318,6 +320,11 @@ export component SortView inherits HorizontalBox {
                     text: "Show images";
                     checked: filters.images;
                     toggled => { filters.images = self.checked; filter(filters) }
+                }
+                CheckBox {
+                    text: "Only with similar";
+                    checked: filters.only_similars;
+                    toggled => { filters.only_similars = self.checked; filter(filters) }
                 }
                 HorizontalBox { 
                     alignment: start;
