@@ -1,6 +1,6 @@
 name: image-sieve 
 title: ImageSieve
-base: core22
+base: core24
 summary: Tool to sort out images and archive them in a target folder 
 description: |
   ImageSieve aims to help in the process of sorting through images taken by several 
@@ -55,8 +55,8 @@ parts:
     stage-packages:
       - libxcb-shape0
       - libxcb-xfixes0
-      - libavcodec58
-      - libavformat58
-      - libavutil56
-      - libswscale5
+      - libavcodec60
+      - libavformat60
+      - libavutil58
+      - libswscale7
       - libgtk-3-0

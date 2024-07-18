@@ -25,7 +25,6 @@ jobs:
 
   build-snap:
     runs-on: ubuntu-20.04
-    if: false
 
     steps:
     - uses: actions/checkout@v4
