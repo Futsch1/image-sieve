@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.17] - 2024-07-20
+
+### Fixed
+
+- Build infrastructure for all platforms fixed
+
 ## [0.5.16] - 2024-06-07
 
 ### Changed
