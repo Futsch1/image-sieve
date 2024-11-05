@@ -62,7 +62,13 @@ fn load_image_and_rotate(
     if let Ok(image) = image::open(path) {
         resize_and_rotate(image.to_rgba8(), rotate, max_width, max_height)
     } else {
-        None
+        let decoder =
+            jxl_oxide::integration::JxlDecoder::new(std::fs::File::open(path).ok()?).ok()?;
+        if let Ok(image) = image::DynamicImage::from_decoder(decoder) {
+            resize_and_rotate(image.to_rgba8(), rotate, max_width, max_height)
+        } else {
+            None
+        }
     }
 }
 
