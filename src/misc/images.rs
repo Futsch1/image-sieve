@@ -125,10 +125,7 @@ fn load_raw_image_and_rotate(
         image.data,
     );
 
-    let image = match image {
-        Some(image) => image,
-        None => return None,
-    };
+    let image = image?;
 
     let dyn_img = image::DynamicImage::ImageRgb8(image);
     let rgba_image: ImageBuffer = dyn_img.into_rgba8();

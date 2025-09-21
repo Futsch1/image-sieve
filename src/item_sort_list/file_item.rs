@@ -11,13 +11,13 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde::Serializer;
 
+use super::Format;
 use super::file_types::is_image;
 use super::file_types::is_raw_image;
 use super::file_types::is_video;
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
 use super::timestamp_to_string;
-use super::Format;
 
 pub type HashType = ImageHash<Vec<u8>>;
 
@@ -306,12 +306,10 @@ impl Ord for FileItem {
 
 /// Process an encoded hash and create an image hash from it
 fn process_encoded_hash(encoded_hash: &str) -> Option<ImageHash<Vec<u8>>> {
-    if !encoded_hash.is_empty() {
-        if let Ok(hash) = ImageHash::from_base64(encoded_hash) {
-            Some(hash)
-        } else {
-            None
-        }
+    if !encoded_hash.is_empty()
+        && let Ok(hash) = ImageHash::from_base64(encoded_hash)
+    {
+        Some(hash)
     } else {
         None
     }
@@ -320,7 +318,7 @@ fn process_encoded_hash(encoded_hash: &str) -> Option<ImageHash<Vec<u8>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::item_sort_list::{item_traits::PropertyResolver, Orientation};
+    use crate::item_sort_list::{Orientation, item_traits::PropertyResolver};
 
     struct MockResolver {
         timestamp: i64,
