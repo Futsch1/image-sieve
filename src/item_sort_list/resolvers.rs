@@ -2,6 +2,9 @@ extern crate chrono;
 extern crate exif;
 extern crate ffmpeg_next as ffmpeg;
 
+use ffmpeg_next::ffi::av_display_rotation_get;
+use ffmpeg_next::packet::side_data::Type;
+
 use self::chrono::NaiveDateTime;
 use self::exif::{In, Tag};
 
@@ -174,6 +177,22 @@ impl PropertyResolver for FFmpegResolver {
         if let Ok(context) = ffmpeg::format::input(&self.path)
             && let Some(video_stream) = context.streams().best(ffmpeg::media::Type::Video)
         {
+            for s in video_stream.side_data() {
+                match s.kind() {
+                    Type::DisplayMatrix => {
+                        let rotation = unsafe { av_display_rotation_get(s.data().as_ptr() as *const i32) };
+                        return Some(match rotation as i32 {
+                            0 => Orientation::Landscape,
+                            90 => Orientation::Portrait90,
+                            180 => Orientation::Landscape180,
+                            -180 => Orientation::Landscape180,
+                            -90 => Orientation::Portrait270,
+                            _ => Orientation::Landscape,
+                        })
+                    }
+                    _ => {}
+                }
+            }
             for (k, v) in video_stream.metadata().iter() {
                 if k == "rotate" {
                     return Some(match v {
