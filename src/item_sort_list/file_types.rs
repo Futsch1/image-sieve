@@ -1,7 +1,7 @@
 use std::path::Path;
 
 const IMAGE: &[&str] = &[
-    "jpg", "png", "tif", "jpeg", "jpe", "gif", "bmp", "webp", "tiff",
+    "jpg", "png", "tif", "jpeg", "jpe", "gif", "bmp", "webp", "tiff", "jxl",
 ];
 
 const RAW: &[&str] = &[
