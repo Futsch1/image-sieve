@@ -243,7 +243,6 @@ export component SortView inherits HorizontalBox {
             }
         }
         ScrollView {
-            padding: 0px;
             viewport-height: 100px;
             height: similar-images-model.length > 1 ? 125px : 0px;
             visible: similar-images-model.length > 1;
@@ -351,7 +350,6 @@ export component SortView inherits HorizontalBox {
             property<int> current-item: 0;
 
             for item[i] in list-model: Rectangle {
-                padding: 2px;
                 height: 20px;
                 width: parent.width;
                 background: i == parent.current-item ? Palette.accent_background : Palette.background;
