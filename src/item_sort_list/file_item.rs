@@ -14,6 +14,7 @@ use serde::Serializer;
 use super::Format;
 use super::file_types::is_image;
 use super::file_types::is_raw_image;
+use super::file_types::is_heif_image;
 use super::file_types::is_video;
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
@@ -22,10 +23,11 @@ use super::timestamp_to_string;
 pub type HashType = ImageHash<Vec<u8>>;
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
-enum ItemType {
+pub enum ItemType {
     Image,
     Video,
     RawImage,
+    HeifImage
 }
 
 /// A single file item with all properties required by image_sieve
@@ -72,10 +74,11 @@ where
 }
 
 fn get_item_type(path: &Path) -> ItemType {
-    match (is_image(path), is_video(path), is_raw_image(path)) {
-        (true, _, _) => ItemType::Image,
-        (_, true, _) => ItemType::Video,
-        (_, _, true) => ItemType::RawImage,
+    match (is_image(path), is_video(path), is_raw_image(path), is_heif_image(path)) {
+        (true, _, _, _) => ItemType::Image,
+        (_, true, _, _) => ItemType::Video,
+        (_, _, true, _) => ItemType::RawImage,
+        (_, _, _, true) => ItemType::HeifImage,
         _ => panic!("FileItem::new: File type not supported"),
     }
 }
@@ -225,6 +228,10 @@ impl FileItem {
     /// Check if the item is a video
     pub fn is_video(&self) -> bool {
         *self.item_type.as_ref().unwrap() == ItemType::Video
+    }
+
+    pub fn get_item_type(&self) -> &ItemType {
+        self.item_type.as_ref().unwrap()
     }
 
     /// Get the unicode icon for the extension

@@ -1,8 +1,10 @@
 extern crate image;
 extern crate slint;
 
+use libheif_rs::{ColorSpace, HeifContext, LibHeif, RgbChroma};
+
 use super::resize::{resize_image, restrict_size};
-use crate::item_sort_list::FileItem;
+use crate::item_sort_list::{FileItem, ItemType};
 
 /// Image buffer from the image crate
 pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
@@ -10,10 +12,17 @@ pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 /// Get an image buffer from a FileItem with a width and height constraint. If the image contains
 /// an orientation indication, it is rotated accordingly.
 pub fn get_image_buffer(item: &FileItem, max_width: u32, max_height: u32) -> ImageBuffer {
-    let image_buffer = if item.is_image() {
-        load_image_and_rotate(&item.path, get_rotation(item), max_width, max_height)
-    } else {
-        load_raw_image_and_rotate(&item.path, get_rotation(item), max_width, max_height)
+    let image_buffer = match item.get_item_type() {
+        ItemType::Image => {
+            load_image_and_rotate(&item.path, get_rotation(item), max_width, max_height)
+        }
+        ItemType::RawImage => {
+            load_raw_image_and_rotate(&item.path, get_rotation(item), max_width, max_height)
+        }
+        ItemType::HeifImage => {
+            load_heif_image_and_rotate(&item.path, get_rotation(item), max_width, max_height)
+        }
+        _ => None,
     };
 
     image_buffer.unwrap_or_else(|| ImageBuffer::new(1, 1))
@@ -130,6 +139,54 @@ fn load_raw_image_and_rotate(
     let dyn_img = image::DynamicImage::ImageRgb8(image);
     let rgba_image: ImageBuffer = dyn_img.into_rgba8();
     resize_and_rotate(rgba_image, rotate, max_width, max_height)
+}
+
+/// Loads a heif image from a path and rotates it by a given angle in degrees
+fn load_heif_image_and_rotate(
+    path: &std::path::Path,
+    rotate: i32,
+    max_width: u32,
+    max_height: u32,
+) -> Option<ImageBuffer> {
+    let lib_heif = LibHeif::new();
+    let ctx = match HeifContext::read_from_file(path.to_str().unwrap()) {
+        Ok(ctx) => ctx,
+        Err(_) => return None,
+    };
+    let handle = match ctx.primary_image_handle() {
+        Ok(handle) => handle,
+        Err(_) => return None,
+    };
+
+    // Decode the image
+    let image = match lib_heif.decode(&handle, ColorSpace::Rgb(RgbChroma::Rgba), None) {
+        Ok(image) => image,
+        Err(_) => return None,
+    };
+
+    let planes = image.planes();
+    let interleaved = planes
+        .interleaved.unwrap();
+
+    let data = interleaved.data;
+    let width = interleaved.width;
+    let height = interleaved.height;
+    let stride = interleaved.stride;
+
+    let mut res: Vec<u8> = Vec::new();
+    for y in 0..height {
+        let mut step = y as usize * stride;
+
+        for _ in 0..width {
+            res.extend_from_slice(&[data[step], data[step + 1], data[step + 2], data[step + 3]]);
+            step += 4;
+        }
+    }
+    let buf = match image::ImageBuffer::from_vec(width, height, res) {
+        Some(buf) => buf,
+        None => return None,
+    };
+    return resize_and_rotate(buf, rotate, max_width, max_height);
 }
 
 /// Converts a byte buffer to an image buffer

@@ -5,6 +5,8 @@ extern crate ffmpeg_next as ffmpeg;
 use ffmpeg_next::ffi::av_display_rotation_get;
 use ffmpeg_next::packet::side_data::Type;
 
+use crate::item_sort_list::file_types::is_heif_image;
+
 use self::chrono::NaiveDateTime;
 use self::exif::{In, Tag};
 
@@ -86,7 +88,7 @@ impl ExifResolver {
     }
 
     pub fn supports(path: &Path) -> bool {
-        is_image(path)
+        is_image(path) || is_heif_image(path)
     }
 }
 

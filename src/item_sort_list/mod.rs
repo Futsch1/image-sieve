@@ -9,7 +9,7 @@ mod timestamp;
 
 pub use event::parse_date;
 pub use event::Event;
-pub use file_item::FileItem;
+pub use file_item::{FileItem, ItemType};
 pub use item_list::DirectoryNames;
 pub use item_list::ItemList;
 pub use item_list::SieveMethod;
