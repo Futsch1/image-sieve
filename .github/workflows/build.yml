@@ -62,14 +62,16 @@ jobs:
           Add-Content $env:GITHUB_ENV "FFMPEG_DIR=${pwd}\ffmpeg`n"
           Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
     - name: Build release
-      run: cargo build --release
+      run: |
+        cargo vcpkg -v build
+        cargo build --release
     - name: Zip executable files
       uses: papeloto/action-zip@v1
       with:
         files: target\release\image_sieve.exe ffmpeg\bin\avcodec-61.dll ffmpeg\bin\avutil-59.dll ffmpeg\bin\avformat-61.dll ffmpeg\bin\avdevice-61.dll ffmpeg\bin\avfilter-10.dll ffmpeg\bin\swresample-5.dll ffmpeg\bin\swscale-8.dll ffmpeg\bin\postproc-58.dll
         dest: image_sieve_Windows_portable.zip
     - name: Archive zip for portable installation
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: windows-portable
         path: image_sieve_Windows_portable.zip
@@ -105,12 +107,12 @@ jobs:
         $env:Path += ";$sdkToolsPath"
         SignTool.exe sign /tr http://timestamp.digicert.com /fd SHA256 /a /f "$certificatePath" /p ${{ secrets.PFX_PRIVATE_KEY }} ImageSieve.msi
     - name: Archive install package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: windows-installer
         path: ImageSieve.msi
     - name: Archive msix package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: windows-msix
         path: ImageSieve.msix
@@ -127,6 +129,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install ffmpeg
-      run: brew install ffmpeg
+      run: brew install ffmpeg libheif
     - name: Build
       run: cargo build
