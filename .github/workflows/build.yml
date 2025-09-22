@@ -63,6 +63,8 @@ jobs:
           Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
     - name: Install vcpkg
       uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '120deac3062162151622ca4860575a33844ba10b'
     - name: Build release
       run: |
         cargo vcpkg -v build
@@ -131,6 +133,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install ffmpeg 7 and libheif
-      run: brew install ffmpeg@7 libheif
+      run: brew install ffmpeg@7 libheif pkg-config
     - name: Build
       run: cargo build
