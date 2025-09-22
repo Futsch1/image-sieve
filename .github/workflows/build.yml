@@ -61,12 +61,9 @@ jobs:
           mv ffmpeg-*/* ffmpeg/
           Add-Content $env:GITHUB_ENV "FFMPEG_DIR=${pwd}\ffmpeg`n"
           Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
-    - name: Install vcpkg
-      uses: lukka/run-vcpkg@v11
-      with:
-        vcpkgGitCommitId: '120deac3062162151622ca4860575a33844ba10b'
     - name: Build release
       run: |
+        cargo install cargo-vcpkg
         cargo vcpkg -v build
         cargo build --release
     - name: Zip executable files
@@ -133,6 +130,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install ffmpeg 7 and libheif
-      run: brew install ffmpeg@7 libheif pkg-config
+      run: |
+        brew tap homebrew-ffmpeg/ffmpeg
+        brew install homebrew-ffmpeg/ffmpeg/ffmpeg@7 libheif
     - name: Build
       run: cargo build

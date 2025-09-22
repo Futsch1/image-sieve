@@ -47,3 +47,7 @@ winres = "0.1"
 
 [profile.dev]
 opt-level=1
+
+[package.metadata.vcpkg]
+git = "https://github.com/microsoft/vcpkg"
+branch = "master"
