@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-crate:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
       run: cargo publish --token ${{ secrets.CRATES_IO_API_TOKEN }}
 
   build-snap:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -61,6 +61,8 @@ jobs:
           mv ffmpeg-*/* ffmpeg/
           Add-Content $env:GITHUB_ENV "FFMPEG_DIR=${pwd}\ffmpeg`n"
           Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
+    - name: Install vcpkg
+      uses: lukka/run-vcpkg@v11
     - name: Build release
       run: |
         cargo vcpkg -v build
@@ -128,7 +130,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install ffmpeg
-      run: brew install ffmpeg libheif
+    - name: Install ffmpeg 7 and libheif
+      run: brew install ffmpeg@7 libheif
     - name: Build
       run: cargo build
