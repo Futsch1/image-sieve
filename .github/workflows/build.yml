@@ -63,8 +63,9 @@ jobs:
           Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
     - name: Build release
       run: |
-        cargo install cargo-vcpkg
-        cargo vcpkg -v build --target x64-windows-static
+        vcpkg integrate install
+        vcpkg install libheif:x64-windows-static-md
+        vcpkg install libheif:x64-windows-static
         cargo build --release
     - name: Zip executable files
       uses: papeloto/action-zip@v1
