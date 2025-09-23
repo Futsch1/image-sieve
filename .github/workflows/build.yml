@@ -1,50 +1,12 @@
 name: Build
 
 on: 
-  workflow_dispatch:
-  pull_request:
-    branches:
-      - main
-  push:
-    tags:
-      - '*'
+  push
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-crate:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/actions/prepare_ubuntu
-    - name: Cargo publish
-      if: startsWith(github.ref, 'refs/tags/v')
-      run: cargo publish --token ${{ secrets.CRATES_IO_API_TOKEN }}
-
-  build-snap:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build snap
-      uses: snapcore/action-build@v1
-      id: snapcraft
-    - name: Archive snap
-      uses: actions/upload-artifact@v4
-      with:
-        name: snap
-        path: ${{ steps.snapcraft.outputs.snap }}
-    - name: Snap publish
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: snapcore/action-publish@v1
-      env:
-        SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.UBUNTU_STORE_LOGIN }}
-      with:
-        snap: ${{ steps.snapcraft.outputs.snap }}
-        release: stable
-
   build-windows:    
     runs-on: windows-latest
     permissions:
@@ -58,7 +20,7 @@ jobs:
     - name: Build release
       run: |
         vcpkg integrate install
-        vcpkg install ffmpeg[avcodec,avformat,avdevice,swscale]:x64-windows-static-md
+        vcpkg install ffmpeg[avcodec,avformat,avdevice,swscale]:x64-windows-rel-static
         vcpkg install libheif:x64-windows-static
         vcpkg install libheif:x64-windows-static
         cargo build --release
@@ -119,16 +81,3 @@ jobs:
       with:
         artifacts: "*.msix,*.msi,*.zip"
         bodyFile: "CHANGELOG.md"
-
-  build-mac:
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install libheif
-      run: |
-        brew install ffmpeg@7 libheif
-    - name: Build
-      run: |
-        export LIBRARY_PATH=$LIBRARY_PATH:$(brew --prefix)/lib
-        cargo build
