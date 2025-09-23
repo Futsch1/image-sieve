@@ -64,7 +64,7 @@ jobs:
     - name: Build release
       run: |
         cargo install cargo-vcpkg
-        cargo vcpkg -v build
+        cargo vcpkg -v build --target x64-windows-static
         cargo build --release
     - name: Zip executable files
       uses: papeloto/action-zip@v1
@@ -131,7 +131,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install ffmpeg 7 and libheif
       run: |
-        brew tap homebrew-ffmpeg/ffmpeg
-        brew install homebrew-ffmpeg/ffmpeg/ffmpeg@7 libheif
+        brew install ffmpeg@7 libheif
     - name: Build
-      run: cargo build
+      run: |
+        export LIBRARY_PATH=$LIBRARY_PATH:$(brew --prefix)/lib
+        cargo build
