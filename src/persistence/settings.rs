@@ -139,11 +139,7 @@ impl Settings {
 }
 
 fn convert_timestamp_difference(timestamp_difference: &str) -> Option<i64> {
-    if let Ok(timestamp_difference) = timestamp_difference.parse::<i64>() {
-        Some(timestamp_difference)
-    } else {
-        None
-    }
+    timestamp_difference.parse::<i64>().ok()
 }
 
 fn convert_sensitivity_to_u32(sensitivity: &str) -> u32 {
@@ -195,7 +191,7 @@ mod tests {
     rusty_fork_test! {
         #[test]
         fn from_to_window() {
-            let window = ImageSieve::new();
+            let window = ImageSieve::new().unwrap();
 
             let settings = Settings::new();
             let settings2 = Settings::from_window(&window);

@@ -1,15 +1,19 @@
-import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSlint, StyleMetrics } from "std-widgets.slint";
+import { Button, CheckBox, GroupBox, LineEdit, VerticalBox, ComboBox, HorizontalBox, AboutSlint, Palette } from "std-widgets.slint";
 
-export SettingsView := VerticalBox { 
-    property use-timestamps <=> use-timestamps-checkbox.checked;
-    property timestamp-difference <=> timestamp-difference-edit.text;
-    property use-similarity <=> use-similarity-checkbox.checked;
-    property similarity-sensitivity <=> sensitivity-combobox.current-value;
-    property dark-mode <=> dark-mode.current-value;
-    property <bool> system-dark;
+export component SettingsView inherits VerticalBox {
+    in-out property use-timestamps <=> use-timestamps-checkbox.checked;
+    in-out property timestamp-difference <=> timestamp-difference-edit.text;
+    in-out property use-similarity <=> use-similarity-checkbox.checked;
+    in-out property similarity-sensitivity <=> sensitivity-combobox.current-value;
+    in-out property dark-mode <=> dark-mode.current-value;
+    in property <bool> system-dark;
 
     callback recheck-similarities;
     callback open-url(string);
+
+    preferred-height: 100%;
+    preferred-width: 100%;
+
     VerticalBox { 
         alignment: start;
 
@@ -21,7 +25,7 @@ export SettingsView := VerticalBox {
 
                 Rectangle { 
                     border-width: 1px;
-                    border-color: StyleMetrics.textedit-text-color;            
+                    border-color: Palette.foreground;            
                     
                     GridLayout {
                         padding: 10px;             
@@ -97,11 +101,8 @@ export SettingsView := VerticalBox {
                     }
                 }
                 Text {
-                    text: "💻 Developed by Florian Fetz";
-                }
-                Text {
                     text: "🔗 https://www.github.com/Futsch1/image-sieve";
-                    color: StyleMetrics.textedit-text-color-disabled;
+                    color: Palette.alternate_foreground;
                 }
             }
             clicked => { 
@@ -117,5 +118,4 @@ export SettingsView := VerticalBox {
             }
         }
     }
-    
 }

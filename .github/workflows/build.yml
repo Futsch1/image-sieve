@@ -1,5 +1,6 @@
 name: Build
 
+
 on: 
   workflow_dispatch:
   pull_request:
@@ -13,20 +14,26 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-ubuntu:
+  build-crate:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: ./.github/actions/prepare_ubuntu
     - name: Cargo publish
       if: startsWith(github.ref, 'refs/tags/v')
       run: cargo publish --token ${{ secrets.CRATES_IO_API_TOKEN }}
+
+  build-snap:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
     - name: Build snap
       uses: snapcore/action-build@v1
       id: snapcraft
     - name: Archive snap
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: snap
         path: ${{ steps.snapcraft.outputs.snap }}
@@ -44,26 +51,23 @@ jobs:
     permissions:
       contents: write
     steps:
-    - uses: actions/checkout@v3
-    - name: Install FFmpeg
-      run: |
-          $VCINSTALLDIR = $(& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath)
-          Add-Content $env:GITHUB_ENV "LIBCLANG_PATH=${VCINSTALLDIR}\VC\Tools\LLVM\x64\bin`n"
-          Invoke-WebRequest "https://github.com/Futsch1/FFmpeg-Builds/releases/download/latest/ffmpeg-n5.0-latest-win64-gpl-shared-5.0.zip" -OutFile ffmpeg-release-full-shared.zip
-          7z x ffmpeg-release-full-shared.zip
-          mkdir ffmpeg
-          mv ffmpeg-*/* ffmpeg/
-          Add-Content $env:GITHUB_ENV "FFMPEG_DIR=${pwd}\ffmpeg`n"
-          Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: C:\vcpkg\installed
+        key: ${{ runner.os }}
     - name: Build release
-      run: cargo build --release
+      run: |
+        vcpkg integrate install
+        vcpkg install ffmpeg[avcodec,avformat,avdevice,swscale]:x64-windows-static libheif:x64-windows-static
+        cargo build --release
     - name: Zip executable files
       uses: papeloto/action-zip@v1
       with:
-        files: target\release\image_sieve.exe ffmpeg\bin\avcodec-59.dll ffmpeg\bin\avutil-57.dll ffmpeg\bin\avformat-59.dll ffmpeg\bin\avdevice-59.dll ffmpeg\bin\avfilter-8.dll ffmpeg\bin\swresample-4.dll ffmpeg\bin\swscale-6.dll ffmpeg\bin\postproc-56.dll
+        files: target\release\image_sieve.exe
         dest: image_sieve_Windows_portable.zip
     - name: Archive zip for portable installation
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: windows-portable
         path: image_sieve_Windows_portable.zip
@@ -84,7 +88,7 @@ jobs:
         }
         echo "Set version to $version"
         ((Get-Content -path installer\appmanifest.xml -Raw) -replace 'MSIXVERSION',$version) | Set-Content -Path installer\appmanifest_$version.xml
-        $sdkToolsPath = Join-Path -Path 'C:\Program Files (x86)\Windows Kits\10\bin' -ChildPath 10.0.19041.0 -AdditionalChildPath x86
+        $sdkToolsPath = Join-Path -Path 'C:\Program Files (x86)\Windows Kits\10\bin' -ChildPath 10.0.26100.0 -AdditionalChildPath x86
         $env:Path += ";$sdkToolsPath"
         & makeappx.exe pack /m installer\appmanifest_$version.xml /f installer\mapping.txt /p ImageSieve.msix
     - name: Signing packages
@@ -95,16 +99,16 @@ jobs:
         $currentDirectory = Get-Location
         $certificatePath = Join-Path -Path $currentDirectory -ChildPath "MyCertificate.pfx"
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-        $sdkToolsPath = Join-Path -Path 'C:\Program Files (x86)\Windows Kits\10\bin' -ChildPath 10.0.19041.0 -AdditionalChildPath x86
+        $sdkToolsPath = Join-Path -Path 'C:\Program Files (x86)\Windows Kits\10\bin' -ChildPath 10.0.26100.0 -AdditionalChildPath x86
         $env:Path += ";$sdkToolsPath"
-        SignTool.exe sign /tr http://timestamp.digicert.com /fd SHA256 /a /f "$certificatePath" /p ${{ secrets.PFX_PRIVATE_KEY }} ImageSieve.msi
+        SignTool.exe sign /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 /a /f "$certificatePath" /p ${{ secrets.PFX_PRIVATE_KEY }} ImageSieve.msi
     - name: Archive install package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: windows-installer
         path: ImageSieve.msi
     - name: Archive msix package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: windows-msix
         path: ImageSieve.msix
@@ -115,12 +119,15 @@ jobs:
         artifacts: "*.msix,*.msi,*.zip"
         bodyFile: "CHANGELOG.md"
 
+  
   build-mac:
+    if: false  # temporarily disable mac build due to pkg-config issues with ffmpeg 7
     runs-on: macos-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Install ffmpeg
-      run: brew install ffmpeg
+    - uses: actions/checkout@v4
+    - name: Install libheif and ffmpeg
+      run: |
+        brew install ffmpeg@7 libheif
     - name: Build
-      run: cargo build
+      run: |
+        cargo build

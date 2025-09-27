@@ -1,61 +1,62 @@
-import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView, CheckBox, ComboBox, StyleMetrics } from "std-widgets.slint";
+import { ListView, Button, LineEdit, GroupBox, VerticalBox, HorizontalBox, ScrollView, CheckBox, ComboBox, Palette } from "std-widgets.slint";
 
 
-export struct SortItem := {
+export struct SortItem {
     image: image,
     take-over: bool,
     text: string,
     local-index: int
 }
 
-export struct ListItem := {
+export struct ListItem {
     text: string,
     local-index: int
 }
 
-export struct Filters := {
+export struct Filters {
     sorted-out: bool,
     images: bool,
     videos: bool,
+    only_similars: bool,
     sort_by: string,
     direction: string
 }
 
-export global FilterComboValues := {
-    property <[string]> sort_by: ["Date", "Name", "Size", "Type"];
-    property <[string]> direction: ["Asc", "Desc"];
+export global FilterComboValues {
+    in property <[string]> sort_by: ["Date", "Name", "Size", "Type"];
+    in property <[string]> direction: ["Asc", "Desc"];
 }
 
-export SortView := HorizontalBox {
-
+export component SortView inherits HorizontalBox { 
     // List of image file names
-    property <[ListItem]> list-model;
+    in-out property <[ListItem]> list-model;
     // Index in image list
-    property current-list-item <=> image-list.current-item;
+    in-out property current-list-item <=> image-list.current-item;
 
     // Model of similar images selected
-    property <[SortItem]> similar-images-model;
+    in property <[SortItem]> similar-images-model;
 
     // Currently displayed large image
-    property <SortItem> current-image;
+    in-out property <SortItem> current-image;
 
     // Current source directory
-    property source-directory <=> source-directory-edit.text;
+    in-out property source-directory <=> source-directory-edit.text;
 
     // Visibility of similarity calculation text
-    property <bool> calculating-similarities: true;
+    in property <bool> calculating-similarities: true;
 
     // Visibility of filter setup
     property <bool> filter-visible: false;
 
     // Index of currently selected simiar image
-    property <int> current-similar-image;
+    in-out property <int> current-similar-image;
 
     // Filters
-    property <Filters> filters : {
+    in-out property <Filters> filters : {
         sorted-out: true,
         images: true,
         videos: true,
+        only_similars: false,
         sort_by: "Date",
         direction: "Asc"
     };
@@ -77,11 +78,15 @@ export SortView := HorizontalBox {
     // Called when a new event shall be created from the current image
     callback fill-event(int);
 
+    preferred-height: 100%;
+    preferred-width: 100%;
+
     spacing: 5px;
 
     VerticalLayout {
         spacing: 5px;
-        width: root.width - 320px;
+        //TODO: Check if this still works
+        //width: parent.width - 320px;
 
         selected := Image {
             source: current-image.image;
@@ -92,7 +97,8 @@ export SortView := HorizontalBox {
             image-fit: contain;
 
             Rectangle {
-                x: parent.width * 20%;
+                x: selected.width * 20%;
+                y: 0;
                 width: 60%;
                 height: 40%;
                 Rectangle {
@@ -126,8 +132,8 @@ export SortView := HorizontalBox {
                 }
             }
             Rectangle {
-                x: parent.width * 20%;
-                y: parent.height * 80%;
+                x: selected.width * 20%;
+                y: selected.height * 80%;
                 width: 60%;
                 height: 20%;
                 Rectangle {
@@ -158,6 +164,7 @@ export SortView := HorizontalBox {
                 }
             }
             Rectangle {
+                x: 0;
                 width: 20%;
                 Rectangle {
                     border-radius: 10px;
@@ -192,7 +199,7 @@ export SortView := HorizontalBox {
                 }
             }
             Rectangle {
-                x: parent.width * 80%;
+                x: selected.width * 80%;
                 width: 20%;
                 Rectangle {
                     border-radius: 10px;
@@ -236,7 +243,6 @@ export SortView := HorizontalBox {
             }
         }
         ScrollView {
-            padding: 0px;
             viewport-height: 100px;
             height: similar-images-model.length > 1 ? 125px : 0px;
             visible: similar-images-model.length > 1;
@@ -268,7 +274,7 @@ export SortView := HorizontalBox {
                             current-similar-image = i;
                         }
                     }
-                    if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: StyleMetrics.textedit-background-disabled;}
+                    if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: Palette.accent_background;}
                 }
             }
         }
@@ -314,6 +320,11 @@ export SortView := HorizontalBox {
                     checked: filters.images;
                     toggled => { filters.images = self.checked; filter(filters) }
                 }
+                CheckBox {
+                    text: "Only with similar";
+                    checked: filters.only_similars;
+                    toggled => { filters.only_similars = self.checked; filter(filters) }
+                }
                 HorizontalBox { 
                     alignment: start;
                     Text {
@@ -339,10 +350,10 @@ export SortView := HorizontalBox {
             property<int> current-item: 0;
 
             for item[i] in list-model: Rectangle {
-                padding: 2px;
                 height: 20px;
                 width: parent.width;
-                background: i == parent.current-item ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
+                background: i == parent.current-item ? Palette.accent_background : Palette.background;
+                opacity: i == parent.current-item ? 0.4 : 1.0;
                 HorizontalLayout { 
                     Text { 
                         text: item.text;

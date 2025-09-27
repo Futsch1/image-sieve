@@ -1,128 +1,115 @@
-import { ListView, Button, LineEdit, GroupBox, ScrollView, VerticalBox, StyleMetrics } from "std-widgets.slint";
+import { ListView, Button, LineEdit, GroupBox, ScrollView, VerticalBox, StyleMetrics , HorizontalBox} from "std-widgets.slint";
 
 
-struct Event := {
+struct Event {
     name: string,
     start-date: string,
     end-date: string
 }
 
-export EventsView := ScrollView { 
-    property <[Event]> events-model;
-    property <string> new-name <=> new-name.text;
-    property <string> new-start-date <=> new-start-date.text;
-    property <string> new-end-date <=> new-end-date.text;
-    property <bool> highlight-new: false;
+export component EventsView inherits HorizontalBox {
+    in property <[Event]> events-model;
+    in-out property <string> new-name <=> new-name.text;
+    in-out property <string> new-start-date <=> new-start-date.text;
+    in-out property <string> new-end-date <=> new-end-date.text;
+    in-out property <bool> highlight-new: false;
     callback add-event(string, string, string) -> string;
     callback remove-event(int);
     callback update-event(int, string, string, string) -> string;
-     
-    VerticalLayout { 
-        alignment: start;
 
-        for item[i] in events-model: 
-        GroupBox {             
-            title: item.name + ", " + item.start-date + " - " + item.end-date;
-            padding: 5px;
+    preferred-height: 100%;
+    preferred-width: 100%;
 
-            GridLayout {
-                spacing: 5px;
-                padding: 5px;
-                Text {
-                    text: "Event name";
-                    vertical-alignment: center;
+    ScrollView {         
+        VerticalLayout { 
+            alignment: start;
+
+            for item[i] in events-model: 
+            GroupBox {             
+                title: item.name + ", " + item.start-date + " - " + item.end-date;
+
+                GridLayout {
+                    spacing: 5px;
+                    padding: 5px;
+                    Text {
+                        text: "Event name";
+                        vertical-alignment: center;
+                    }
+                    event-name := LineEdit { 
+                        text: item.name;
+                    }
+                    Text {
+                        text: "📅 Start date";
+                        row: 1;
+                        vertical-alignment: center;
+                    }
+                    start-date := LineEdit { 
+                        text: item.start-date;
+                        min-width: 300px;
+                    }
+                    Text {
+                        text: "📅 End date";
+                        row: 2;
+                        vertical-alignment: center;
+                    }
+                    end-date := LineEdit { 
+                        text: item.end-date;
+                        min-width: 300px;
+                    }
                 }
-                event-name := LineEdit { 
-                    text: item.name;
-                }
-                Text {
-                    text: "📅 Start date";
-                    row: 1;
-                    vertical-alignment: center;
-                }
-                start-date := LineEdit { 
-                    text: item.start-date;
-                    min-width: 300px;
-                }
-                Text {
-                    text: "📅 End date";
-                    row: 2;
-                    vertical-alignment: center;
-                }
-                end-date := LineEdit { 
-                    text: item.end-date;
-                    min-width: 300px;
-                }
+
+                HorizontalLayout { 
+                    spacing: 5px;
+                    Button {
+                        width: 150px;
+                        text: "💾 Update";
+                        clicked => { 
+                            error-message.text = update-event(i, event-name.text, start-date.text, end-date.text);
+                        }
+                    }
+                    Button {
+                        width: 150px;
+                        text: "🗑 Remove";
+                        clicked => { remove-event(i) }
+                    }
+                }            
             }
-
-            HorizontalLayout { 
-                spacing: 5px;
+            
+            GroupBox { 
+                title: "New event";
+                VerticalBox { 
+                    alignment: start;
+                    new-name := LineEdit { 
+                        placeholder-text: "Event name";
+                    }
+                    new-start-date := LineEdit { 
+                        min-width: 300px;
+                        placeholder-text: "Start date (YYYY-MM-DD or DD-MM-YYYY)";
+                    }
+                    new-end-date := LineEdit { 
+                        min-width: 300px;
+                        placeholder-text: "End date (YYYY-MM-DD or DD-MM-YYYY)";
+                    }
+                }
                 Button {
-                    width: 150px;
-                    text: "💾 Update";
+                    text: "➕ Add";
+                    width: 300px;
                     clicked => { 
-                        error-message.text = update-event(i, event-name.text, start-date.text, end-date.text);
-                    }
-                }
-                Button {
-                    width: 150px;
-                    text: "🗑 Remove";
-                    clicked => { remove-event(i) }
-                }
-            }            
-        }
-        
-        GroupBox { 
-            padding: 5px;
-            title: "New event";
-            VerticalBox { 
-                alignment: start;
-                new-name := LineEdit { 
-                    placeholder-text: "Event name";
-                    background: highlight-new ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
-                    animate background {
-                        duration: 3s;
-                    }
-                }
-                new-start-date := LineEdit { 
-                    min-width: 300px;
-                    placeholder-text: "Start date (YYYY-MM-DD or DD-MM-YYYY)";
-                    background: highlight-new ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
-                    animate background {
-                        duration: 3s;
-                    }
-                }
-                new-end-date := LineEdit { 
-                    min-width: 300px;
-                    placeholder-text: "End date (YYYY-MM-DD or DD-MM-YYYY)";
-                    background: highlight-new ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
-                    animate background {
-                        duration: 3s;
+                        highlight-new = false;
+                        error-message.text = add-event(new-name.text, new-start-date.text, new-end-date.text);
+                        if (error-message.text == "") {                            
+                            new-name.text = "";
+                            new-start-date.text = "";
+                            new-end-date.text = "";
+                        }
                     }
                 }
             }
-            Button {
-                text: "➕ Add";
-                width: 300px;
-                background: highlight-new ? StyleMetrics.textedit-background-disabled : StyleMetrics.window-background;
-                animate background {
-                    duration: 3s;
-                }
-                clicked => { 
-                    highlight-new = false;
-                    error-message.text = add-event(new-name.text, new-start-date.text, new-end-date.text);
-                    if (error-message.text == "") {                            
-                        new-name.text = "";
-                        new-start-date.text = "";
-                        new-end-date.text = "";
-                    }
-                }
+            error-message := Text {
+                text: "";
+                color: red;
+                visible: self.text != "";
             }
-        }
-        error-message := Text {
-            text: "";
-            color: red;
-            visible: text != "";
         }
     }
 }

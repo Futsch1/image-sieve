@@ -1,33 +1,31 @@
-import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox, ScrollView, StyleMetrics } from "std-widgets.slint";
+import { Button, LineEdit, GroupBox, VerticalBox, ComboBox, HorizontalBox, ScrollView, Palette } from "std-widgets.slint";
 
-export global SieveComboValues := {
-    property <[string]> methods: ["Copy to target directory", 
-                                  "Move to target directory", 
-                                  "Move to target directory and delete in source directory",
-                                  "Delete in source directory"];
+export global SieveComboValues {
+    in property <[string]> methods: ["Copy to target directory", 
+                                     "Move to target directory", 
+                                     "Move to target directory and delete in source directory",
+                                     "Delete in source directory"];
 
-    property <[string]> directory_names: ["Year and month (2021-12)", 
-                                          "Year (2021)", 
-                                          "Year, month and day (2021-12-27)", 
-                                          "Year and quarter (2021-Q4)",
-                                          "Year and month in subdirectory (2021/12)"];
+    in property <[string]> directory_names: ["Year and month (2021-12)", 
+                                             "Year (2021)", 
+                                             "Year, month and day (2021-12-27)", 
+                                             "Year and quarter (2021-Q4)",
+                                             "Year and month in subdirectory (2021/12)"];
 }
 
-struct SieveResult := {
+struct SieveResult {
     result: string,
     color: string,
 }
 
-export SieveView := HorizontalBox { 
-    property <[SieveResult]> sieve-result-model;
-    property target-directory <=> target-directory-edit.text;
-    property <string> sieve-method;
-    sieve-method: SieveComboValues.methods[0];
-    property <string> sieve-directory-names;
-    sieve-directory-names: SieveComboValues.directory_names[0];
+export component SieveView inherits HorizontalBox {
+    in property <[SieveResult]> sieve-result-model;
+    in-out property target-directory <=> target-directory-edit.text;
+    in-out property <string> sieve-method;
+    in-out property <string> sieve-directory-names;
 
     // sieve
-    property <bool> sieve-running: false;
+    in-out property <bool> sieve-running: false;
     property <bool> sieve-done: false;
 
     // Warning
@@ -39,6 +37,9 @@ export SieveView := HorizontalBox {
     // Called when source or target was browsed
     callback browse-target;
 
+    preferred-height: 100%;
+    preferred-width: 100%;
+
     VerticalBox { 
         alignment: start;
 
@@ -48,7 +49,7 @@ export SieveView := HorizontalBox {
 
             Rectangle { 
                 border-width: 1px;
-                border-color: StyleMetrics.textedit-text-color;
+                border-color: Palette.foreground;
                 
                 VerticalBox { 
                     HorizontalBox { 
@@ -148,7 +149,7 @@ export SieveView := HorizontalBox {
         for item[i] in sieve-result-model:
             Text {
                 text: item.result;               
-                color: item.color == "red" ? red : (item.color == "green" ? green : StyleMetrics.default-text-color);
+                color: item.color == "red" ? red : (item.color == "green" ? green : Palette.foreground);
             }
         }
     }

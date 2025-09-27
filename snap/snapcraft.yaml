@@ -1,6 +1,6 @@
 name: image-sieve 
 title: ImageSieve
-base: core22 
+base: core24
 summary: Tool to sort out images and archive them in a target folder 
 description: |
   ImageSieve aims to help in the process of sorting through images taken by several 
@@ -25,16 +25,8 @@ apps:
       - network
 
 parts:
-  install-rust:
-    plugin: nil
-    override-build: |
-      if ! command -v rustup 2>/dev/null; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile=minimal
-        export PATH="${HOME}/.cargo/bin:${PATH}"
-      fi
   image-sieve:
     plugin: rust
-    after: [install-rust]
     source: .
     override-pull: |
       craftctl default
@@ -57,16 +49,16 @@ parts:
       - libavutil-dev
       - libswscale-dev
       - libclang-dev
-      - rustc
-      - cargo
+      - libheif-dev
 
   deps:
     plugin: nil
     stage-packages:
       - libxcb-shape0
       - libxcb-xfixes0
-      - libavcodec58
-      - libavformat58
-      - libavutil56
-      - libswscale5
+      - libavcodec60
+      - libavformat60
+      - libavutil58
+      - libswscale7
       - libgtk-3-0
+      - libheif1

@@ -11,5 +11,10 @@ fn main() {
         let mut res = winres::WindowsResource::new();
         res.set_icon("ImageSieve.ico");
         res.compile().unwrap();
+        println!("cargo::rerun-if-changed=ImageSieve.ico");
+
+        println!("cargo::rustc-link-lib=strmiids");
+        println!("cargo::rustc-link-lib=mfuuid");
+        println!("cargo::rustc-link-lib=mfplat");
     }
 }

@@ -2,6 +2,11 @@ extern crate chrono;
 extern crate exif;
 extern crate ffmpeg_next as ffmpeg;
 
+use ffmpeg_next::ffi::av_display_rotation_get;
+use ffmpeg_next::packet::side_data::Type;
+
+use crate::item_sort_list::file_types::is_heif_image;
+
 use self::chrono::NaiveDateTime;
 use self::exif::{In, Tag};
 
@@ -83,7 +88,7 @@ impl ExifResolver {
     }
 
     pub fn supports(path: &Path) -> bool {
-        is_image(path)
+        is_image(path) || is_heif_image(path)
     }
 }
 
@@ -99,7 +104,7 @@ impl PropertyResolver for ExifResolver {
                         if let Ok(date_time) =
                             NaiveDateTime::parse_from_str(&date_time_str, "%Y-%m-%d %H:%M:%S")
                         {
-                            date_time.timestamp()
+                            date_time.and_utc().timestamp()
                         } else {
                             file_resolver.get_timestamp()
                         }
@@ -160,10 +165,10 @@ impl PropertyResolver for FFmpegResolver {
         let file_resolver = FileResolver::new(&self.path);
         if let Ok(context) = ffmpeg::format::input(&self.path) {
             for (k, v) in context.metadata().iter() {
-                if k == "creation_time" {
-                    if let Ok(date_time) = NaiveDateTime::parse_from_str(v, "%+") {
-                        return date_time.timestamp();
-                    }
+                if k == "creation_time"
+                    && let Ok(date_time) = NaiveDateTime::parse_from_str(v, "%+")
+                {
+                    return date_time.and_utc().timestamp();
                 }
             }
         }
@@ -171,18 +176,34 @@ impl PropertyResolver for FFmpegResolver {
     }
 
     fn get_orientation(&self) -> Option<Orientation> {
-        if let Ok(context) = ffmpeg::format::input(&self.path) {
-            if let Some(video_stream) = context.streams().best(ffmpeg::media::Type::Video) {
-                for (k, v) in video_stream.metadata().iter() {
-                    if k == "rotate" {
-                        return Some(match v {
-                            "0" => Orientation::Landscape,
-                            "90" => Orientation::Portrait90,
-                            "270" => Orientation::Portrait270,
-                            "180" => Orientation::Landscape180,
+        if let Ok(context) = ffmpeg::format::input(&self.path)
+            && let Some(video_stream) = context.streams().best(ffmpeg::media::Type::Video)
+        {
+            for s in video_stream.side_data() {
+                match s.kind() {
+                    Type::DisplayMatrix => {
+                        let rotation = unsafe { av_display_rotation_get(s.data().as_ptr() as *const i32) };
+                        return Some(match rotation as i32 {
+                            0 => Orientation::Landscape,
+                            90 => Orientation::Portrait90,
+                            180 => Orientation::Landscape180,
+                            -180 => Orientation::Landscape180,
+                            -90 => Orientation::Portrait270,
                             _ => Orientation::Landscape,
-                        });
+                        })
                     }
+                    _ => {}
+                }
+            }
+            for (k, v) in video_stream.metadata().iter() {
+                if k == "rotate" {
+                    return Some(match v {
+                        "0" => Orientation::Landscape,
+                        "90" => Orientation::Portrait90,
+                        "270" => Orientation::Portrait270,
+                        "180" => Orientation::Landscape180,
+                        _ => Orientation::Landscape,
+                    });
                 }
             }
         }

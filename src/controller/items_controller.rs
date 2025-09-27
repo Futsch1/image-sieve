@@ -270,6 +270,9 @@ fn filter_file_items(file_item: &FileItem, filters: &main_window::Filters) -> bo
     if !filters.sorted_out && !file_item.get_take_over() {
         visible = false;
     }
+    if filters.only_similars && file_item.get_similars().is_empty() {
+        visible = false;
+    }
     visible
 }
 
@@ -351,6 +354,7 @@ mod tests {
             images: true,
             videos: true,
             sorted_out: true,
+            only_similars: false,
             sort_by: SharedString::from("Date"),
             direction: SharedString::from("Asc"),
         }
@@ -410,6 +414,13 @@ mod tests {
         assert_eq!(list_model.row_data(0).unwrap().local_index, 0);
         assert_eq!(list_model.row_data(0).unwrap().text, "📹 test2.mov");
 
+        filters.sorted_out = true;
+        filters.only_similars = true;
+        items_controller.populate_list_model(&filters);
+        assert_eq!(list_model.row_count(), 1);
+        assert_eq!(list_model.row_data(0).unwrap().local_index, 1);
+        assert_eq!(list_model.row_data(0).unwrap().text, "🔀 📷 🗑 test1.jpg");
+
         items_controller.clear_list();
         assert_eq!(items_controller.get_list_model().row_count(), 0);
     }
@@ -419,12 +430,15 @@ mod tests {
         fn test_take_over() {
             let item_list = Arc::new(Mutex::new(ItemList::new()));
             let mut items_controller = ItemsController::new(item_list.clone());
-            let window = ImageSieve::new();
+            let window = ImageSieve::new().unwrap();
             let window_weak = window.as_weak();
             let filters = build_filters();
             {
                 let mut item_list = item_list.lock().unwrap();
-                fill_item_list(&mut item_list);
+                item_list.items.push(FileItem::dummy("test2.mov", 1, true));
+                let mut file_item = FileItem::dummy("test1.jpg", 0, false);
+                file_item.add_similar_range(&(0..1));
+                item_list.items.push(file_item);
             }
             items_controller.populate_list_model(&filters);
             items_controller.selected_list_item(1, window_weak);
@@ -454,7 +468,7 @@ mod tests {
     fn test_select_item() {
         let item_list = Arc::new(Mutex::new(ItemList::new()));
         let mut items_controller = ItemsController::new(item_list.clone());
-        let window = ImageSieve::new();
+        let window = ImageSieve::new().unwrap();
         let window_weak = window.as_weak();
         let filters = build_filters();
         {

@@ -12,19 +12,20 @@ jobs:
 
   clippy_check:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare_ubuntu
       - run: rustup component add clippy
-      - uses: actions-rs/clippy-check@v1
+      - uses: clechasseur/rs-clippy-check@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
 
   tests-ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: ./.github/actions/prepare_ubuntu
     - name: Install prerequisites
       run: rustup component add llvm-tools-preview
@@ -33,7 +34,7 @@ jobs:
     - name: Install cargo-llvm-cov
       uses: taiki-e/install-action@cargo-llvm-cov
     - name: Generate code coverage
-      run: cargo llvm-cov --no-cfg-coverage --workspace --lcov --output-path lcov.info
+      run: xvfb-run --auto-servernum cargo llvm-cov --no-cfg-coverage --workspace --lcov --output-path lcov.info
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:

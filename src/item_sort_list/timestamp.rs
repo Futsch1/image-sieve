@@ -18,10 +18,10 @@ pub enum Format {
 }
 
 pub fn timestamp_to_string(timestamp: i64, fmt: Format) -> String {
-    let d = chrono::NaiveDateTime::from_timestamp_opt(timestamp, 0);
+    let d = chrono::DateTime::from_timestamp(timestamp, 0);
     if let Some(d) = d {
         if fmt == Format::YearAndQuarter {
-            d.format("%Y-Q").to_string() + &format!("{}", (d.date().month() - 1) / 3 + 1)
+            d.format("%Y-Q").to_string() + &format!("{}", (d.date_naive().month() - 1) / 3 + 1)
         } else {
             d.format(&fmt.to_string()).to_string()
         }
