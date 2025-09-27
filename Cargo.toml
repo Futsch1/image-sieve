@@ -42,7 +42,7 @@ libheif-rs = { version = "2.1", default-features = false, features = ["v1_17"] }
 base64 = "0.22"
 
 [build-dependencies]
-slint-build = "1.6.0"
+slint-build = "1.13.1"
 winres = "0.1"
 
 [profile.dev]
