@@ -30,7 +30,7 @@ fast_image_resize = "3.0"
 rawloader = "0.37.0"
 imagepipe = "0.5.0"
 dark-light = "1.0"
-strum = "0.26"
+strum = "0.27"
 strum_macros = "0.26"
 image-23 = { version = "=0.23", package="image" }
 rusty-fork = "0.3.0"
