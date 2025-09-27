@@ -194,3 +194,72 @@ pub fn image_from_buffer(bytes: &[u8]) -> Result<ImageBuffer, image::ImageError>
     let cat_image = image::load_from_memory(bytes)?;
     Ok(cat_image.into_rgba8())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_load_image() {
+        let img = load_image_and_rotate(
+            std::path::Path::new("tests/test.jpg"),
+            0,
+            1000,
+            1000,
+        );
+        assert!(img.is_some());
+        let img = img.unwrap();
+        assert_eq!(img.width(), 1);
+        assert_eq!(img.height(), 1);
+
+        let img = load_image_and_rotate(
+            std::path::Path::new("tests/test.jxl"),
+            0,
+            1000,
+            1000,
+        );
+        assert!(img.is_some());
+        let img = img.unwrap();
+        assert_eq!(img.width(), 50);
+        assert_eq!(img.height(), 34);
+    }
+
+    #[test]
+    fn test_load_heif_image() {
+        let img = load_heif_image_and_rotate(
+            std::path::Path::new("tests/test.heif"),
+            0,
+            1000,
+            1000,
+        );
+        assert!(img.is_some());
+        let img = img.unwrap();
+        assert_eq!(img.width(), 50);
+        assert_eq!(img.height(), 34);
+
+        let img = load_heif_image_and_rotate(
+            std::path::Path::new("tests/test.heif"),
+            90,
+            1000,
+            1000,
+        );
+        assert!(img.is_some());
+        let img = img.unwrap();
+        assert_eq!(img.width(), 34);
+        assert_eq!(img.height(), 50);
+    }
+
+    #[test]
+    fn test_load_raw_image() {    
+        let img = load_raw_image_and_rotate(
+            std::path::Path::new("tests/test.nef"),
+            180,
+            1000,
+            1000,
+        );
+        assert!(img.is_some());
+        let img = img.unwrap();
+        assert_eq!(img.width(), 1000);
+        assert_eq!(img.height(), 656);
+    }
+}
