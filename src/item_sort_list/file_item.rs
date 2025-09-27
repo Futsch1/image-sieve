@@ -367,6 +367,7 @@ mod tests {
 
         let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
         FileItem::new(PathBuf::from("tests/not_existing.jpg"), resolver, true, "");
+        assert_eq!(ItemType::Image, file_item.get_item_type().clone());
     }
 
     #[test]
@@ -429,5 +430,28 @@ mod tests {
 
         file_item.set_take_over(false);
         assert!(!file_item.get_take_over());
+    }
+
+    #[test]
+    fn test_get_item_type() {
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.jpg"), resolver, true, "");
+        assert_eq!(ItemType::Image, file_item.get_item_type().clone());
+
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.heif"), resolver, true, "");
+        assert_eq!(ItemType::HeifImage, file_item.get_item_type().clone());
+
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.heic"), resolver, true, "");
+        assert_eq!(ItemType::HeifImage, file_item.get_item_type().clone());
+
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.cr2"), resolver, true, "");
+        assert_eq!(ItemType::RawImage, file_item.get_item_type().clone());
+
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.mp4"), resolver, true, "");
+        assert_eq!(ItemType::Video, file_item.get_item_type().clone());
     }
 }
