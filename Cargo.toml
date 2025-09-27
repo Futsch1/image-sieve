@@ -35,7 +35,7 @@ strum_macros = "0.26"
 image-23 = { version = "=0.23", package="image" }
 rusty-fork = "0.3.0"
 backtrace = "0.3"
-jxl-oxide = { version = "0.10.0", features = ["image"] }
+jxl-oxide = { version = "0.12.4", features = ["image"] }
 libheif-rs = { version = "2.1", default-features = false, features = ["v1_17"] }
 
 [dev-dependencies]
