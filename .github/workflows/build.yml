@@ -20,8 +20,7 @@ jobs:
     - name: Build release
       run: |
         vcpkg integrate install
-        vcpkg install ffmpeg:x64-windows-static
-        vcpkg install libheif:x64-windows-static
+        vcpkg install ffmpeg[avcodec,avformat,avdevice,swscale]:x64-windows-static libheif:x64-windows-static
         cargo build --release
     - name: Zip executable files
       uses: papeloto/action-zip@v1
