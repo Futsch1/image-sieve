@@ -13,6 +13,6 @@ fn main() {
         res.compile().unwrap();
         println!("cargo::rerun-if-changed=ImageSieve.ico");
 
-        print!("cargo::rustc-link-lib=strmiids.lib");
+        print!("cargo::rustc-link-lib=strmiids");
     }
 }
