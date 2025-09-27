@@ -3,7 +3,6 @@
     missing_debug_implementations,
     trivial_casts,
     trivial_numeric_casts,
-    unsafe_code,
     unstable_features,
     unstable_name_collisions,
     unused_import_braces,

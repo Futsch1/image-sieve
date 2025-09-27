@@ -11,21 +11,23 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde::Serializer;
 
+use super::Format;
 use super::file_types::is_image;
 use super::file_types::is_raw_image;
+use super::file_types::is_heif_image;
 use super::file_types::is_video;
 use super::item_traits::Orientation;
 use super::item_traits::PropertyResolver;
 use super::timestamp_to_string;
-use super::Format;
 
 pub type HashType = ImageHash<Vec<u8>>;
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
-enum ItemType {
+pub enum ItemType {
     Image,
     Video,
     RawImage,
+    HeifImage
 }
 
 /// A single file item with all properties required by image_sieve
@@ -72,10 +74,11 @@ where
 }
 
 fn get_item_type(path: &Path) -> ItemType {
-    match (is_image(path), is_video(path), is_raw_image(path)) {
-        (true, _, _) => ItemType::Image,
-        (_, true, _) => ItemType::Video,
-        (_, _, true) => ItemType::RawImage,
+    match (is_image(path), is_video(path), is_raw_image(path), is_heif_image(path)) {
+        (true, _, _, _) => ItemType::Image,
+        (_, true, _, _) => ItemType::Video,
+        (_, _, true, _) => ItemType::RawImage,
+        (_, _, _, true) => ItemType::HeifImage,
         _ => panic!("FileItem::new: File type not supported"),
     }
 }
@@ -227,6 +230,10 @@ impl FileItem {
         *self.item_type.as_ref().unwrap() == ItemType::Video
     }
 
+    pub fn get_item_type(&self) -> &ItemType {
+        self.item_type.as_ref().unwrap()
+    }
+
     /// Get the unicode icon for the extension
     fn extension_to_unicode_icon(&self) -> &str {
         if self.is_image() || self.is_raw_image() {
@@ -306,12 +313,10 @@ impl Ord for FileItem {
 
 /// Process an encoded hash and create an image hash from it
 fn process_encoded_hash(encoded_hash: &str) -> Option<ImageHash<Vec<u8>>> {
-    if !encoded_hash.is_empty() {
-        if let Ok(hash) = ImageHash::from_base64(encoded_hash) {
-            Some(hash)
-        } else {
-            None
-        }
+    if !encoded_hash.is_empty()
+        && let Ok(hash) = ImageHash::from_base64(encoded_hash)
+    {
+        Some(hash)
     } else {
         None
     }
@@ -320,7 +325,7 @@ fn process_encoded_hash(encoded_hash: &str) -> Option<ImageHash<Vec<u8>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::item_sort_list::{item_traits::PropertyResolver, Orientation};
+    use crate::item_sort_list::{Orientation, item_traits::PropertyResolver};
 
     struct MockResolver {
         timestamp: i64,
@@ -362,6 +367,7 @@ mod tests {
 
         let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
         FileItem::new(PathBuf::from("tests/not_existing.jpg"), resolver, true, "");
+        assert_eq!(ItemType::Image, file_item.get_item_type().clone());
     }
 
     #[test]
@@ -424,5 +430,28 @@ mod tests {
 
         file_item.set_take_over(false);
         assert!(!file_item.get_take_over());
+    }
+
+    #[test]
+    fn test_get_item_type() {
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.jpg"), resolver, true, "");
+        assert_eq!(ItemType::Image, file_item.get_item_type().clone());
+
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.heif"), resolver, true, "");
+        assert_eq!(ItemType::HeifImage, file_item.get_item_type().clone());
+
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.heic"), resolver, true, "");
+        assert_eq!(ItemType::HeifImage, file_item.get_item_type().clone());
+
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.cr2"), resolver, true, "");
+        assert_eq!(ItemType::RawImage, file_item.get_item_type().clone());
+
+        let resolver = Box::new(MockResolver::new(10, Some(Orientation::Landscape180)));
+        let file_item = FileItem::new(PathBuf::from("tests/test.mp4"), resolver, true, "");
+        assert_eq!(ItemType::Video, file_item.get_item_type().clone());
     }
 }

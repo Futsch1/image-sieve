@@ -49,6 +49,7 @@ parts:
       - libavutil-dev
       - libswscale-dev
       - libclang-dev
+      - libheif-dev
 
   deps:
     plugin: nil
@@ -60,3 +61,4 @@ parts:
       - libavutil58
       - libswscale7
       - libgtk-3-0
+      - libheif1
