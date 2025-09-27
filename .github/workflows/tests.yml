@@ -35,6 +35,9 @@ jobs:
       run: xvfb-run --auto-servernum cargo llvm-cov --no-cfg-coverage --workspace --lcov --output-path lcov.info
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      if: ${{ env.CODECOV_TOKEN != '' }}
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: lcov.info
