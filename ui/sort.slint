@@ -40,7 +40,7 @@ export component SortView inherits HorizontalBox {
     in-out property <SortItem> current-image;
 
     // Current source directory
-    in property source-directory <=> source-directory-edit.text;
+    in-out property source-directory <=> source-directory-edit.text;
 
     // Visibility of similarity calculation text
     in property <bool> calculating-similarities: true;
@@ -243,7 +243,6 @@ export component SortView inherits HorizontalBox {
             }
         }
         ScrollView {
-            padding: 0px;
             viewport-height: 100px;
             height: similar-images-model.length > 1 ? 125px : 0px;
             visible: similar-images-model.length > 1;
@@ -351,7 +350,6 @@ export component SortView inherits HorizontalBox {
             property<int> current-item: 0;
 
             for item[i] in list-model: Rectangle {
-                padding: 2px;
                 height: 20px;
                 width: parent.width;
                 background: i == parent.current-item ? Palette.accent_background : Palette.background;

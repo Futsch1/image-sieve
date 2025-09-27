@@ -27,7 +27,6 @@ export component EventsView inherits HorizontalBox {
             for item[i] in events-model: 
             GroupBox {             
                 title: item.name + ", " + item.start-date + " - " + item.end-date;
-                padding: 5px;
 
                 GridLayout {
                     spacing: 5px;
@@ -77,7 +76,6 @@ export component EventsView inherits HorizontalBox {
             }
             
             GroupBox { 
-                padding: 5px;
                 title: "New event";
                 VerticalBox { 
                     alignment: start;

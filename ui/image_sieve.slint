@@ -24,11 +24,11 @@ export component ImageSieve inherits Window {
     callback similarities-calculated(bool);
 
     // Map properties of SortView
-    in property list-model <=> sort-view.list-model;
-    in property current-list-item <=> sort-view.current-list-item;
+    in-out property list-model <=> sort-view.list-model;
+    in-out property current-list-item <=> sort-view.current-list-item;
     in property similar-images-model <=> sort-view.similar-images-model;
     in-out property current-image <=> sort-view.current-image;
-    in property source-directory <=> sort-view.source-directory;
+    in-out property source-directory <=> sort-view.source-directory;
     in property calculating-similarities <=> sort-view.calculating-similarities;
     out property filters <=> sort-view.filters;
     callback item-selected <=> sort-view.item-selected;
@@ -45,19 +45,19 @@ export component ImageSieve inherits Window {
 
     // Map properties of SieveView
     in property sieve-result-model <=> sieve-view.sieve-result-model;
-    in property target-directory <=> sieve-view.target-directory;
-    in property sieve-method <=> sieve-view.sieve-method;
-    in property sieve-directory-names <=> sieve-view.sieve-directory-names;
-    in property sieve-running <=> sieve-view.sieve-running;
+    in-out property target-directory <=> sieve-view.target-directory;
+    in-out property sieve-method <=> sieve-view.sieve-method;
+    in-out property sieve-directory-names <=> sieve-view.sieve-directory-names;
+    in-out property sieve-running <=> sieve-view.sieve-running;
     callback sieve <=> sieve-view.sieve;
     callback browse-target <=> sieve-view.browse-target;
 
     // Map properties of SettingsView
-    in property use-timestamps <=> settings-view.use-timestamps;
-    in property timestamp-difference <=> settings-view.timestamp-difference;
-    in property use-similarity <=> settings-view.use-similarity;
-    in property similarity-sensitivity <=> settings-view.similarity-sensitivity;
-    in property dark-mode <=> settings-view.dark-mode;
+    in-out property use-timestamps <=> settings-view.use-timestamps;
+    in-out property timestamp-difference <=> settings-view.timestamp-difference;
+    in-out property use-similarity <=> settings-view.use-similarity;
+    in-out property similarity-sensitivity <=> settings-view.similarity-sensitivity;
+    in-out property dark-mode <=> settings-view.dark-mode;
     in property system-dark <=> settings-view.system-dark;
     callback recheck-similarities <=> settings-view.recheck-similarities;
     callback open-url <=> settings-view.open-url;

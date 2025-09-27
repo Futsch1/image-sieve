@@ -1,17 +1,17 @@
 [package]
 name = "image_sieve"
-version = "0.5.17"
+version = "0.6.0"
 authors = ["Florian Fetz <florian.fetz@googlemail.com>"]
 description = "GUI based tool to sort out and categorize images, raw images and videos"
 repository = "https://github.com/Futsch1/image-sieve"
 license = "GPL-3.0+"
 categories = ["multimedia::images"]
 build = "build.rs"
-edition = "2021"
+edition = "2024"
 readme = "README.md"
 
 [dependencies]
-slint = {version = "1.6.0", features = ["backend-winit-x11", "renderer-winit-femtovg", "compat-1-0"], default_features = false}
+slint = {version = "1.6.0", features = ["backend-winit-x11", "renderer-winit-femtovg", "compat-1-0"], default-features = false}
 nfde = "0.0.8"
 image = "0.25"
 kamadak-exif = "0.5"
@@ -25,7 +25,7 @@ serde_json = "1.0"
 serde_with = "3.0"
 home = "0.5"
 walkdir = "2"
-ffmpeg-next = {version = "7.0", features = ["format", "codec", "software-scaling"], default_features = false}
+ffmpeg-next = {version = "7.1.0", features = ["format", "codec", "software-scaling"], default-features = false}
 fast_image_resize = "3.0"
 rawloader = "0.37.0"
 imagepipe = "0.5.0"
@@ -36,6 +36,7 @@ image-23 = { version = "=0.23", package="image" }
 rusty-fork = "0.3.0"
 backtrace = "0.3"
 jxl-oxide = { version = "0.10.0", features = ["image"] }
+libheif-rs = { version = "2.1", default-features = false, features = ["v1_17"] }
 
 [dev-dependencies]
 base64 = "0.22"
@@ -46,3 +47,7 @@ winres = "0.1"
 
 [profile.dev]
 opt-level=1
+
+[package.metadata.vcpkg]
+git = "https://github.com/microsoft/vcpkg"
+branch = "master"

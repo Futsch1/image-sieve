@@ -78,11 +78,7 @@ impl Settings {
 }
 
 fn convert_timestamp_difference(timestamp_difference: &str) -> Option<i64> {
-    if let Ok(timestamp_difference) = timestamp_difference.parse::<i64>() {
-        Some(timestamp_difference)
-    } else {
-        None
-    }
+    timestamp_difference.parse::<i64>().ok()
 }
 
 fn convert_sensitivity_to_u32(sensitivity: &str) -> u32 {

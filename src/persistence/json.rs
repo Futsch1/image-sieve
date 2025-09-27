@@ -58,11 +58,7 @@ impl JsonPersistence for Settings {
         let settings = fs::read_to_string(file_name).unwrap_or_default();
 
         let contents = serde_json::from_str::<Settings>(&settings);
-        if let Ok(settings) = contents {
-            Some(settings)
-        } else {
-            None
-        }
+        contents.ok()
     }
 
     /// Try saving the settings to a json file

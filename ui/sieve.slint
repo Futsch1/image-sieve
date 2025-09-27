@@ -20,7 +20,7 @@ struct SieveResult {
 
 export component SieveView inherits HorizontalBox {
     in property <[SieveResult]> sieve-result-model;
-    in property target-directory <=> target-directory-edit.text;
+    in-out property target-directory <=> target-directory-edit.text;
     in-out property <string> sieve-method;
     in-out property <string> sieve-directory-names;
 

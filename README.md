@@ -3,6 +3,7 @@
 [![codecov](https://codecov.io/gh/Futsch1/image-sieve/branch/main/graph/badge.svg?token=JJ6ZVFSSVB)](https://codecov.io/gh/Futsch1/image-sieve)
 
 # ImageSieve
+
 ImageSieve is a GUI based tool to assist in sorting images based on taken date and similarity, categorize them according to their creation date and archive them in a target folder.
 
 ![Screenshot](doc/screenshot.png?raw=true "ImageSieve")
@@ -12,7 +13,8 @@ Imagine all the images and videos taken by you and your family with your cameras
 To help with the process, ImageSieve will mark images as similar which are taken close to each other in time. This is useful to avoid duplicates and bad images. It can also try to find images which are similar to each other in terms of content.
 
 ## Features
-- Supports plenty of image formats (jpg, tiff, gif, bmp, webp, png), many raw image formats and videos (mp4, avi, mov, mts, mpeg) format
+
+- Supports plenty of image formats (jpg, tiff, gif, bmp, webp, png, heif), many raw image formats and videos (mp4, avi, mov, mts, mpeg) format
 - Browse images and videos from a folder structure in the order of their creation
 - Select which images to discard
 - Images which resemble each other and images being taken within a customizable number of seconds are considered similar and are highlighted to support sorting
@@ -21,6 +23,7 @@ To help with the process, ImageSieve will mark images as similar which are taken
 - Sieve the images by either deleting discarded ones, copying or moving kept images to a target folder
 
 ## Installation
+
 A Windows installer or a portable zip is available for every release for [download](https://github.com/Futsch1/image-sieve/releases) or the app can be installed via the [Microsoft Store](https://www.microsoft.com/en-us/p/imagesieve/9nwlt9phl39d). For Linux, ImageSieve is
 available on the [Snap Store](https://snapcraft.io/image-sieve).
 
@@ -37,6 +40,7 @@ After the compilation, you can run the tool by typing
 ## Operation
 
 ### 📷 📹 Images
+
 To get started, first open a folder containing images and videos in the "📷 📹  Images" tab. A folder can be selected by pressing the "📂 Browse..." button. All images and videos from the folder and from all subfolders will be analyzed. Depending on the amount of images, this might take a while. Note that the last selected folder will be re-opened when ImageSieve is started for the next time.
 
 Once the folder has been processed, a list of file names will appear in the box to the right. This list contains the files that have been found in the folder and that will be considered in the sieving process. Each file has a set of icons that indicate its state. 
@@ -58,6 +62,7 @@ Note that video files are also displayed in the list of images and previewed as 
 ![Screenshot](doc/screenshot2.png?raw=true "ImageSieve")
 
 ### 📅 Events
+
 Per default, the images will be sorted in folders corresponding to the months they were taken, like "2021-09", "2021-10" etc. To be able to find images more quickly in an archive, ImageSieve supports grouping pictures with the help of events in the "Events" tab. Events are named date spans that will provide a target folder name during the sieve process, like "2021-10-07 - 2021-10-10 Cool trip". All images taken in the given period of time will be put into that folder. You can specify an arbitrary number of events, but be aware that in case of overlapping dates, an image is put into the folder of the first matching event.
 
 To add an event, fill the start date, end date and name text box and click the "➕ Add" button. Valid date formats are YYYY-MM-DD or DD.MM.YYYY. You can edit existing events by modifying their fields and pressing enter - the updated values will be taken over and be visible in the event's caption when you click the "💾 Update" button. To remove an event, click the "🗑 Remove" button.
@@ -67,6 +72,7 @@ Be aware that the events are saved in the currently selected folder along with t
 ![Screenshot](doc/screenshot3.png?raw=true "ImageSieve")
 
 ### 💾 Sieve
+
 When you are done sorting the images, the sieving process can be started. Go to the "💾  Sieve" tab and select a sieving mode. The following modes are supported:
 
 - Copy to target directory: Copies only the kept items to the target directory creating folders for the items, the source directory will be left untouched.
@@ -78,14 +84,17 @@ Depending on the mode, you need to indicate a target directory that is used for 
 ![Screenshot](doc/screenshot4.png?raw=true "ImageSieve")
 
 ### ⚙ Settings
+
 In the settings tab, you can specify the behavior of the similarity detection process. You can turn on and off both the use of the file/capture date as an indicator for similarity and the similarity calculation.
 
 Note that the similarity calculation takes some time and will not be available right from the start of the tool, especially if the number of files is huge. The similarity can be tweaked in order to provide better results.
 
 ## Misc
+
 ImageSieve is published under [GPL-3.0](https://github.com/Futsch1/image-sieve/blob/main/LICENSE).
 
 If you want to help, clone and pull-request. The tool uses the [slint](https://github.com/slint-ui/slint) GUI framework and a few of the great [bootstrap icons](https://icons.getbootstrap.com/). For previewing video files, [FFmpeg](https://ffmpeg.org) is used.
 
 ## Disclaimer
+
 This tool is free software. The author does not take any responsibility or liability for data lost due to bugs or faulty use of the software. Note that the software is in constant development and may contain bugs. Use at your own risk!
