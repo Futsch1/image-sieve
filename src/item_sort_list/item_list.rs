@@ -87,6 +87,11 @@ impl ItemList {
         self.items.iter().position(|i| i.path == item.path)
     }
 
+    /// Returns the index of a file item by its path
+    pub fn index_of_path(&self, path: &str) -> Option<usize> {
+        self.items.iter().position(|i| i.path.to_str().unwrap_or("") == path)
+    }
+
     /// Finish the synchronization progress
     pub fn finish_synchronizing(&mut self, base_path: &Path) {
         self.items.sort();
@@ -297,6 +302,7 @@ mod tests {
         item_list.check_and_add(Path::new("tests/test_invalid.jpg"));
         item_list.check_and_add(Path::new("tests/test"));
         assert_eq!(4, item_list.items.len());
+        assert_eq!(Some(0), item_list.index_of_path("tests/test_no_date.jpg"));
 
         item_list.finish_synchronizing(Path::new("tests"));
         assert_eq!("tests", item_list.path.to_str().unwrap());

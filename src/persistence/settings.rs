@@ -22,6 +22,8 @@ pub struct Settings {
     pub position: (i32, i32),
     #[serde(default = "size_default")]
     pub size: (u32, u32),
+    #[serde(default)]
+    pub last_selected_image: String,
 }
 
 fn size_default() -> (u32, u32) {
@@ -43,11 +45,11 @@ impl Settings {
             is_maximized: false,
             position: {(0, 0)},
             size: {(800, 600)},
+            last_selected_image: String::new(),
         }
     }
 
     pub fn from_window(window: &ImageSieve) -> Self {
-        //TODO: Also save last selected image and restart there
         let methods: ModelRc<SharedString> = window.global::<SieveComboValues>().get_methods();
         let directory_names: ModelRc<SharedString> =
             window.global::<SieveComboValues>().get_directory_names();
@@ -73,7 +75,8 @@ impl Settings {
             size: {
                 let size = window.window().size();
                 (size.width, size.height)
-            }
+            },
+            last_selected_image: String::new(),
         }
     }
 
