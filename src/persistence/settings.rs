@@ -1,7 +1,7 @@
 use crate::item_sort_list::{DirectoryNames, SieveMethod};
 use crate::main_window::{ImageSieve, SieveComboValues};
 use serde::{Deserialize, Serialize};
-use slint::{ComponentHandle, ModelRc, SharedString};
+use slint::{ComponentHandle, ModelRc, PhysicalPosition, SharedString};
 
 use super::model_to_enum::{enum_to_model, model_to_enum};
 
@@ -16,6 +16,16 @@ pub struct Settings {
     pub hash_max_diff: u32,
     pub sieve_directory_names: Option<DirectoryNames>,
     pub dark_mode: String,
+    #[serde(default)]
+    pub is_maximized: bool,
+    #[serde(default)]
+    pub position: (i32, i32),
+    #[serde(default = "size_default")]
+    pub size: (u32, u32),
+}
+
+fn size_default() -> (u32, u32) {
+    (800, 600)
 }
 
 impl Settings {
@@ -30,6 +40,9 @@ impl Settings {
             hash_max_diff: 14,
             sieve_directory_names: Some(DirectoryNames::YearAndMonth),
             dark_mode: String::from("Automatic"),
+            is_maximized: false,
+            position: {(0, 0)},
+            size: {(800, 600)},
         }
     }
 
@@ -52,6 +65,15 @@ impl Settings {
                 &window.get_sieve_directory_names(),
             )),
             dark_mode: window.get_dark_mode().to_string(),
+            is_maximized: window.window().is_maximized(),
+            position: {
+                let pos = window.window().position();
+                (pos.x, pos.y)
+            },
+            size: {
+                let size = window.window().size();
+                (size.width, size.height)
+            }
         }
     }
 
@@ -73,7 +95,22 @@ impl Settings {
             .as_ref()
             .unwrap_or(&DirectoryNames::YearAndMonth);
         window.set_sieve_directory_names(enum_to_model(&directory_names, directory_name));
-        window.set_dark_mode(SharedString::from(self.dark_mode.clone()))
+        window.set_dark_mode(SharedString::from(self.dark_mode.clone()));
+        window.window().set_maximized(self.is_maximized);
+        window.window().set_position(PhysicalPosition {
+            x: self.position.0,
+            y: self.position.1,
+        });
+        window.window().set_size(slint::PhysicalSize {
+            width: self.size.0,
+            height: self.size.1,
+        });
+    }
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
