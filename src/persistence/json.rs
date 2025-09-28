@@ -153,10 +153,31 @@ mod tests {
 
         JsonPersistence::save(Path::new("test.json"), &settings);
 
-        let loaded_settings = JsonPersistence::load(Path::new("test.json")).unwrap();
-        assert_eq!(settings, loaded_settings);
+        let loaded_settings = JsonPersistence::load(Path::new("test.json"));
+        assert!(loaded_settings.is_some());
+        assert_eq!(settings, loaded_settings.unwrap());
 
         let loaded_settings: Option<Settings> = JsonPersistence::load(Path::new("invalid.json"));
         assert!(loaded_settings.is_none());
+    }
+
+    #[test]
+    fn test_default_settings() {
+        let json_content = "
+        {
+  \"source_directory\": \"\",
+  \"target_directory\": \"\",
+  \"sieve_method\": \"Copy\",
+  \"use_timestamps\": true,
+  \"timestamp_max_diff\": 5,
+  \"use_hash\": false,
+  \"hash_max_diff\": 14,
+  \"sieve_directory_names\": \"YearAndMonth\",
+  \"dark_mode\": \"Automatic\"
+}";
+        let contents = serde_json::from_str::<Settings>(json_content);
+        assert!(contents.is_ok());
+        let settings = contents.unwrap();
+        assert_eq!(settings, Settings::new());
     }
 }
