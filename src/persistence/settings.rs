@@ -108,12 +108,6 @@ impl Settings {
     }
 }
 
-impl Default for Settings {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 fn convert_timestamp_difference(timestamp_difference: &str) -> Option<i64> {
     timestamp_difference.parse::<i64>().ok()
 }
