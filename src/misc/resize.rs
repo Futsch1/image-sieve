@@ -1,8 +1,7 @@
-use std::{cmp::max, num::NonZeroU32};
+use std::cmp::max;
 
 use fast_image_resize::{
-    DifferentTypesOfPixelsError, Image, ImageBufferError, MulDiv, MulDivImageError,
-    MulDivImagesError, PixelType, ResizeAlg, Resizer,
+    images::Image, ImageBufferError, MulDivImagesError, PixelType, Resizer
 };
 
 use super::images::ImageBuffer;
@@ -19,58 +18,37 @@ impl From<ImageBufferError> for ResizeImageError {
     }
 }
 
-impl From<MulDivImageError> for ResizeImageError {
-    fn from(_: MulDivImageError) -> Self {
-        ResizeImageError::Error
-    }
-}
-
 impl From<MulDivImagesError> for ResizeImageError {
     fn from(_: MulDivImagesError) -> Self {
         ResizeImageError::Error
     }
 }
 
-impl From<DifferentTypesOfPixelsError> for ResizeImageError {
-    fn from(_: DifferentTypesOfPixelsError) -> Self {
-        ResizeImageError::Error
-    }
-}
-
 /// Resize an image buffer with the nearest neighbor method
 pub fn resize_image(
-    mut src_image: ImageBuffer,
+    src_image: ImageBuffer,
     new_width: u32,
     new_height: u32,
 ) -> Result<ImageBuffer, ResizeImageError> {
-    let width = src_image.width();
-    let height = src_image.height();
-    let src_image_data = Image::from_slice_u8(
-        NonZeroU32::new(width).unwrap(),
-        NonZeroU32::new(height).unwrap(),
-        &mut src_image,
+    let src_image = Image::from_vec_u8(
+        src_image.width(),
+        src_image.height(),
+        src_image.to_vec(),
         PixelType::U8x4,
     )?;
-    let src_view = src_image_data.view();
-    let mut premultiplied_src_image = Image::new(
-        NonZeroU32::new(width).unwrap(),
-        NonZeroU32::new(height).unwrap(),
-        PixelType::U8x4,
-    );
+
     let mut dst_image = Image::new(
-        NonZeroU32::new(new_width).unwrap(),
-        NonZeroU32::new(new_height).unwrap(),
-        PixelType::U8x4,
+        new_width,
+        new_height,
+        src_image.pixel_type(),
     );
-    let mut dst_view = dst_image.view_mut();
-    let mul_div = MulDiv::default();
+    let mut fast_resizer = Resizer::new();
 
-    let mut fast_resizer = Resizer::new(ResizeAlg::Nearest);
+    let result = fast_resizer.resize(&src_image, &mut dst_image, None);
 
-    mul_div.multiply_alpha(&src_view, &mut premultiplied_src_image.view_mut())?;
-    fast_resizer.resize(&premultiplied_src_image.view(), &mut dst_view)?;
-    mul_div.divide_alpha_inplace(&mut dst_view)?;
-
+    if result.is_err() {
+        return Err(ResizeImageError::Error);
+    }
     Ok(ImageBuffer::from_raw(new_width, new_height, dst_image.buffer().to_vec()).unwrap())
 }
 

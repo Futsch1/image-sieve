@@ -6,8 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Supporting HEIC image format
+- Support HEIC image format
 - Support JXL image format
+- Restore window state
 
 ## [0.5.17]- 2024-07-20
 
