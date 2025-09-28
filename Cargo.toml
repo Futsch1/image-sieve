@@ -11,7 +11,7 @@ edition = "2024"
 readme = "README.md"
 
 [dependencies]
-slint = {version = "1.6.0", features = ["backend-winit-x11", "renderer-winit-femtovg", "compat-1-0"], default-features = false}
+slint = "1.13.1"
 nfde = "0.0.8"
 image = "0.25"
 kamadak-exif = "0.5"
@@ -42,7 +42,7 @@ libheif-rs = { version = "2.1", default-features = false, features = ["v1_17"] }
 base64 = "0.22"
 
 [build-dependencies]
-slint-build = "1.6.0"
+slint-build = "1.13.1"
 winres = "0.1"
 
 [profile.dev]
