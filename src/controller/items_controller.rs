@@ -54,6 +54,12 @@ impl ItemsController {
         helper::clear_model(self.similar_items_model.clone());
     }
 
+    /// Gets the index of an item by its path
+    pub fn find_index_by_path(&self, path: &str) -> Option<usize> {
+        let item_list = self.item_list.lock().unwrap();
+        item_list.index_of_path(path)
+    }
+
     /// Notifies that a model from the list was selected and performs all necessary actions
     /// to fill the similar items model and the current image
     pub fn selected_list_item(
@@ -377,6 +383,7 @@ mod tests {
         assert_eq!(list_model.row_data(0).unwrap().text, "🔀 📷 🗑 test1.jpg");
         assert_eq!(list_model.row_data(1).unwrap().local_index, 0);
         assert_eq!(list_model.row_data(1).unwrap().text, "📹 test2.mov");
+        assert_eq!(Some(1), items_controller.find_index_by_path("test1.jpg"));
 
         filters.direction = SharedString::from("Desc");
         items_controller.populate_list_model(&filters);

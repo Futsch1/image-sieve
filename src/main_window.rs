@@ -43,6 +43,7 @@ pub struct MainWindow {
     events_controller: Rc<RefCell<EventsController>>,
     sieve_result_model: Rc<slint::VecModel<SieveResult>>,
     synchronizer: Rc<Synchronizer>,
+    initial_selection: String
 }
 
 impl Default for MainWindow {
@@ -84,13 +85,14 @@ impl MainWindow {
             synchronizer.scan_path(Path::new(&settings.source_directory));
         }
 
-        let main_window = Self {
+        let mut main_window = Self {
             window: image_sieve,
             item_list,
             items_controller,
             events_controller,
             sieve_result_model,
             synchronizer: Rc::new(synchronizer),
+            initial_selection: String::from(""),
         };
 
         // Set initial values
@@ -103,10 +105,7 @@ impl MainWindow {
             main_window.window.set_loading(false);
             main_window.window.set_calculating_similarities(false);
         }
-        /*main_window
-            .window
-            .set_system_dark(dark_light::detect() == dark_light::Mode::Dark);
-        */
+        main_window.initial_selection = settings.last_selected_image.clone();
 
         // Set model references
         main_window.window.set_list_model(
@@ -134,7 +133,7 @@ impl MainWindow {
 
         main_window
     }
-
+    
     /// Start the event loop
     pub fn run(&self) {
         self.window.run().ok();
@@ -142,7 +141,13 @@ impl MainWindow {
         self.synchronizer.stop();
 
         // Save settings when program exits
-        let settings = Settings::from_window(&self.window);
+        let mut settings = Settings::from_window(&self.window);
+        let item_index = self.window.get_current_image().local_index;
+        if item_index > 0 {
+            let item_list = self.item_list.lock().unwrap();
+            let item = &item_list.items[item_index as usize];
+            settings.last_selected_image = item.path.as_os_str().to_string_lossy().to_string();
+        }        
         JsonPersistence::save(&get_settings_filename(), &settings);
 
         // and save item list
@@ -255,6 +260,7 @@ impl MainWindow {
             let events_controller = self.events_controller.clone();
             let items_controller = self.items_controller.clone();
             let synchronizer = self.synchronizer.clone();
+            let initial_selection = self.initial_selection.clone();
 
             move || {
                 let window = window_weak.unwrap();
@@ -267,8 +273,16 @@ impl MainWindow {
 
                 // Update the selection variables
                 if num_items > 0 {
-                    window.set_current_list_item(0);
-                    window.invoke_item_selected(0);
+                    let index: i32 =
+                    if !initial_selection.is_empty() {
+                        items_controller
+                            .borrow()
+                            .find_index_by_path(&initial_selection).unwrap_or_else(|| 0)
+                    } else {
+                        0
+                    } as i32;
+                    window.set_current_list_item(index);
+                    window.invoke_item_selected(index);
                 } else {
                     let empty_image = SortItem {
                         image: get_empty_image(),
