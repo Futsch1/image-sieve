@@ -120,6 +120,7 @@ impl ItemsController {
         window
             .unwrap()
             .set_current_image(self.similar_items_model.row_data(0).unwrap());
+        window.unwrap().invoke_current_image_changed();
 
         // And prefetch the next images
         self.prefetch_images(list_model_index);
@@ -229,6 +230,7 @@ impl ItemsController {
                                 current_image.image =
                                     crate::misc::images::get_slint_image(&image_buffer);
                                 handle.set_current_image(current_image);
+                                handle.invoke_current_image_changed();
                             }
                         }
                     })
