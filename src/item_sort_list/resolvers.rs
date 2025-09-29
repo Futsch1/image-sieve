@@ -185,10 +185,10 @@ impl PropertyResolver for FFmpegResolver {
                         let rotation = unsafe { av_display_rotation_get(s.data().as_ptr() as *const i32) };
                         return Some(match rotation as i32 {
                             0 => Orientation::Landscape,
-                            90 => Orientation::Portrait90,
+                            90 => Orientation::Portrait270,
                             180 => Orientation::Landscape180,
                             -180 => Orientation::Landscape180,
-                            -90 => Orientation::Portrait270,
+                            -90 => Orientation::Portrait90,
                             _ => Orientation::Landscape,
                         })
                     }
