@@ -119,8 +119,6 @@ export component SortView inherits HorizontalBox {
                     selected.source-clip-width = new_clip_width_zoom;
                     selected.source-clip-height = new_clip_height_zoom;
 
-                    debug("clip: " + selected.source-clip-x + " " + selected.source-clip-y + " " + selected.source-clip-width + " " + selected.source-clip-height);
-                    debug("width/height: " + selected.width / 1px + " " + selected.height / 1px + " initial: " + selected.source.width + " " + selected.source.height);
                     selected.source-clip-width = min(selected.source.width, new_clip_width_zoom);
                     selected.source-clip-height = min(selected.source.height, new_clip_height_zoom);
                     selected.source-clip-x = max(0, min(selected.source-clip-x, selected.source.width - selected.source-clip-width));
