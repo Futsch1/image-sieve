@@ -36,7 +36,10 @@ export component ImageSieve inherits Window {
     callback set-take-over <=> sort-view.set-take-over;
     callback open <=> sort-view.open;
     callback filter <=> sort-view.filter;
-
+    public function current_image_changed() {
+        sort-view.reset-zoom();
+    }
+    
     // Map properties of EventsView
     in property events-model <=> events-view.events-model;
     callback add-event <=> events-view.add-event;

@@ -5,13 +5,11 @@ export struct SortItem {
     image: image,
     take-over: bool,
     text: string,
-    local-index: int
-}
+    local-index: int}
 
 export struct ListItem {
     text: string,
-    local-index: int
-}
+    local-index: int}
 
 export struct Filters {
     sorted-out: bool,
@@ -19,8 +17,7 @@ export struct Filters {
     videos: bool,
     only_similars: bool,
     sort_by: string,
-    direction: string
-}
+    direction: string}
 
 export global FilterComboValues {
     in property <[string]> sort_by: ["Date", "Name", "Size", "Type"];
@@ -52,7 +49,7 @@ export component SortView inherits HorizontalBox {
     in-out property <int> current-similar-image;
 
     // Filters
-    in-out property <Filters> filters : {
+    in-out property <Filters> filters: {
         sorted-out: true,
         images: true,
         videos: true,
@@ -78,6 +75,13 @@ export component SortView inherits HorizontalBox {
     // Called when a new event shall be created from the current image
     callback fill-event(int);
 
+    public function reset-zoom() {
+        selected.source-clip-x = 0;
+        selected.source-clip-y = 0;
+        selected.source-clip-height = selected.source.height;
+        selected.source-clip-width = selected.source.width;
+    }
+
     preferred-height: 100%;
     preferred-width: 100%;
 
@@ -85,16 +89,45 @@ export component SortView inherits HorizontalBox {
 
     VerticalLayout {
         spacing: 5px;
-        //TODO: Check if this still works
-        //width: parent.width - 320px;
 
         selected := Image {
             source: current-image.image;
             opacity: current-image.take-over ? 1.0 : 0.2;
-            animate opacity {
-                duration: 200ms;
-            }
+            animate opacity { duration: 200ms; }
             image-fit: contain;
+
+            image-touch := TouchArea {
+                property <float> zoom_factor: 1.1;
+                property <int> new_clip_width_zoom;
+                property <int> new_clip_height_zoom;
+
+                scroll-event(event) => {
+                    let rel_x = (self.mouse-x / 1px - selected.source-clip-x) / selected.source-clip-width;
+                    let rel_y = (self.mouse-y / 1px - selected.source-clip-y) / selected.source-clip-height;
+                    if (event.delta_y > 0) {
+                        // Zoom in
+                        new_clip_width_zoom = max(40, selected.source-clip-width / zoom_factor);
+                        new_clip_height_zoom = max(40, selected.source-clip-height / zoom_factor);
+                    } else {
+                        // Zoom out
+                        new_clip_width_zoom = min(selected.source.width, selected.source-clip-width * zoom_factor);
+                        new_clip_height_zoom = min(selected.source.height, selected.source-clip-height * zoom_factor);
+                    }
+
+                    selected.source-clip-x = self.mouse-x / 1px - rel_x * new_clip_width_zoom;
+                    selected.source-clip-y = self.mouse-y / 1px - rel_y * new_clip_height_zoom;
+                    selected.source-clip-width = new_clip_width_zoom;
+                    selected.source-clip-height = new_clip_height_zoom;
+
+                    debug("clip: " + selected.source-clip-x + " " + selected.source-clip-y + " " + selected.source-clip-width + " " + selected.source-clip-height);
+                    debug("width/height: " + selected.width / 1px + " " + selected.height / 1px + " initial: " + selected.source.width + " " + selected.source.height);
+                    selected.source-clip-width = min(selected.source.width, new_clip_width_zoom);
+                    selected.source-clip-height = min(selected.source.height, new_clip_height_zoom);
+                    selected.source-clip-x = max(0, min(selected.source-clip-x, selected.source.width - selected.source-clip-width));
+                    selected.source-clip-y = max(0, min(selected.source-clip-y, selected.source.height - selected.source-clip-height));
+                    accept;
+                }
+            }
 
             Rectangle {
                 x: selected.width * 20%;
@@ -105,11 +138,10 @@ export component SortView inherits HorizontalBox {
                     border-radius: 10px;
                     background: @linear-gradient(180deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
                     opacity: selected-image-touch.has_hover && selected-image-touch.enabled ? 0.1 : 0;
-                    animate opacity {
-                        duration: 200ms;
-                    }
+                    animate opacity { duration: 200ms; }
                 }
-                selected-image-touch := TouchArea { 
+
+                selected-image-touch := TouchArea {
                     enabled: list-model.length > 0;
                     clicked => {
                         if (list-model.length > 0) {
@@ -118,19 +150,19 @@ export component SortView inherits HorizontalBox {
                         }
                     }
                 }
+
                 HorizontalLayout {
                     alignment: center;
                     padding: 10px;
                     Image {
                         source: @image-url("trash3-fill.svg");
-                        opacity: selected-image-touch.has_hover && selected-image-touch.enabled ? 0.6: 0;
-                        animate opacity {
-                            duration: 200ms;
-                        }
+                        opacity: selected-image-touch.has_hover && selected-image-touch.enabled ? 0.6 : 0;
+                        animate opacity { duration: 200ms; }
                         width: selected.width * 60%;
                     }
                 }
             }
+
             Rectangle {
                 x: selected.width * 20%;
                 y: selected.height * 80%;
@@ -140,29 +172,28 @@ export component SortView inherits HorizontalBox {
                     border-radius: 10px;
                     background: @linear-gradient(0deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
                     opacity: touch-open.has_hover && touch-open.enabled ? 0.1 : 0;
-                    animate opacity {
-                        duration: 200ms;
-                    }
+                    animate opacity { duration: 200ms; }
                 }
-                touch-open := TouchArea { 
+
+                touch-open := TouchArea {
                     enabled: list-model.length > 0;
-                    clicked => { 
+                    clicked => {
                         open(current-image.local-index);
                     }
                 }
+
                 HorizontalLayout {
                     alignment: center;
                     padding: 10px;
                     Image {
                         source: @image-url("folder-fill.svg");
                         opacity: touch-open.has_hover && touch-open.enabled ? 0.6 : 0;
-                        animate opacity {
-                            duration: 200ms;
-                        }
+                        animate opacity { duration: 200ms; }
                         width: selected.width * 60%;
                     }
                 }
             }
+
             Rectangle {
                 x: 0;
                 width: 20%;
@@ -170,13 +201,12 @@ export component SortView inherits HorizontalBox {
                     border-radius: 10px;
                     background: @linear-gradient(90deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
                     opacity: touch-prev.has_hover && touch-prev.enabled ? 0.1 : 0;
-                    animate opacity {
-                        duration: 200ms;
-                    }
+                    animate opacity { duration: 200ms; }
                 }
+
                 touch-prev := TouchArea {
                     enabled: current-list-item > 0;
-                    clicked => { 
+                    clicked => {
                         if (current-list-item >= list-model.length) {
                             current-list-item = 0;
                         } else {
@@ -186,18 +216,18 @@ export component SortView inherits HorizontalBox {
                         item-selected(current-list-item);
                     }
                 }
+
                 VerticalLayout {
                     alignment: center;
                     padding: 10px;
                     Image {
                         source: @image-url("arrow-left-circle-fill.svg");
-                        opacity: touch-prev.has_hover && touch-prev.enabled ? 0.6: 0;
-                        animate opacity {
-                            duration: 200ms;
-                        }
+                        opacity: touch-prev.has_hover && touch-prev.enabled ? 0.6 : 0;
+                        animate opacity { duration: 200ms; }
                     }
                 }
             }
+
             Rectangle {
                 x: selected.width * 80%;
                 width: 20%;
@@ -205,67 +235,64 @@ export component SortView inherits HorizontalBox {
                     border-radius: 10px;
                     background: @linear-gradient(270deg, #0000ffff 0%, #0000ff88 80%, #0000ff00 100%);
                     opacity: touch-next.has_hover && touch-next.enabled ? 0.1 : 0;
-                    animate opacity {
-                        duration: 200ms;
-                    }
+                    animate opacity { duration: 200ms; }
                 }
+
                 touch-next := TouchArea {
                     enabled: list-model.length > 0 && current-list-item < list-model.length - 1;
-                    clicked => { 
+                    clicked => {
                         current-list-item += 1;
                         current-similar-image = 0;
                         item-selected(current-list-item);
                     }
                 }
+
                 VerticalLayout {
                     alignment: center;
                     padding: 10px;
                     Image {
                         source: @image-url("arrow-right-circle-fill.svg");
                         opacity: touch-next.has_hover && touch-next.enabled ? 0.6 : 0;
-                        animate opacity {
-                            duration: 200ms;
-                        }
+                        animate opacity { duration: 200ms; }
                     }
-
                 }
-            }              
+            }
         }
-        HorizontalLayout { 
+
+        HorizontalLayout {
             Text {
                 text: current-image.text;
                 font-size: 14px;
             }
+
             Text {
                 text: "⌛ Please wait, calculating similarities...";
                 font-size: 14px;
                 visible: calculating-similarities;
             }
         }
+
         ScrollView {
             viewport-height: 100px;
             height: similar-images-model.length > 1 ? 125px : 0px;
             visible: similar-images-model.length > 1;
 
-            animate height {
-                duration: 200ms;
-            }
+            animate height { duration: 200ms; }
 
-            HorizontalBox { 
+            HorizontalBox {
                 alignment: start;
                 Image {
                     source: @image-url("shuffle.svg");
                     height: 100px;
                 }
 
-            for item[i] in similar-images-model: 
-                Image {
+                for item[i] in similar-images-model: Image {
                     source: item.image;
                     opacity: item.take-over ? 1.0 : 0.2;
                     image-fit: contain;
                     width: 180px;
                     height: 100px;
-                    TouchArea { 
+                    TouchArea {
                         clicked => {
                             current-image.image = item.image;
                             current-image.take-over = item.take-over;
@@ -274,92 +301,123 @@ export component SortView inherits HorizontalBox {
                             current-similar-image = i;
                         }
                     }
-                    if (item.local-index == current-image.local-index) : Rectangle { opacity: 0.4; background: Palette.accent_background;}
+
+                    if (item.local-index == current-image.local-index): Rectangle {
+                        opacity: 0.4;
+                        background: Palette.accent_background;
+                    }
                 }
             }
         }
-    }            
+    }
 
-    VerticalLayout { 
+    VerticalLayout {
         width: 300px;
         spacing: 5px;
 
-        source-directory-edit := LineEdit { 
+        source-directory-edit := LineEdit {
             enabled: false;
             placeholder-text: "Select a folder with images";
         }
+
         Button {
             text: "📂 Browse...";
             width: 200px;
             enabled: !calculating-similarities;
-            clicked => { 
+            clicked => {
                 browse-source();
             }
         }
+
         Button {
             text: "Filters " + (filter-visible ? "<<" : ">>");
             clicked => {
                 filter-visible = !filter-visible;
             }
         }
-        if filter-visible :
+
+        if filter-visible:
             VerticalBox {
+            alignment: start;
+            CheckBox {
+                text: "Show discarded";
+                checked: filters.sorted-out;
+                toggled => {
+                    filters.sorted-out = self.checked;
+                    filter(filters)
+                }
+            }
+
+            CheckBox {
+                text: "Show videos";
+                checked: filters.videos;
+                toggled => {
+                    filters.videos = self.checked;
+                    filter(filters)
+                }
+            }
+
+            CheckBox {
+                text: "Show images";
+                checked: filters.images;
+                toggled => {
+                    filters.images = self.checked;
+                    filter(filters)
+                }
+            }
+
+            CheckBox {
+                text: "Only with similar";
+                checked: filters.only_similars;
+                toggled => {
+                    filters.only_similars = self.checked;
+                    filter(filters)
+                }
+            }
+
+            HorizontalBox {
                 alignment: start;
-                CheckBox {
-                    text: "Show discarded";
-                    checked: filters.sorted-out;
-                    toggled => { filters.sorted-out = self.checked; filter(filters) }
+                Text {
+                    vertical-alignment: center;
+                    text: "Sort by";
                 }
-                CheckBox {
-                    text: "Show videos";
-                    checked: filters.videos;
-                    toggled => { filters.videos = self.checked; filter(filters) }
-                }
-                CheckBox {
-                    text: "Show images";
-                    checked: filters.images;
-                    toggled => { filters.images = self.checked; filter(filters) }
-                }
-                CheckBox {
-                    text: "Only with similar";
-                    checked: filters.only_similars;
-                    toggled => { filters.only_similars = self.checked; filter(filters) }
-                }
-                HorizontalBox { 
-                    alignment: start;
-                    Text {
-                        vertical-alignment: center;
-                        text: "Sort by";
+
+                ComboBox {
+                    current-value: "Date";
+                    model: FilterComboValues.sort_by;
+                    width: 100px;
+                    selected => {
+                        filters.sort_by = self.current-value;
+                        filter(filters)
                     }
-                    ComboBox {
-                        current-value: "Date";
-                        model: FilterComboValues.sort_by;
-                        width: 100px;
-                        selected => { filters.sort_by = self.current-value; filter(filters) }
-                    }
-                    ComboBox {
-                        current-value: "Asc";
-                        model: FilterComboValues.direction;
-                        width: 80px;
-                        selected => { filters.direction = self.current-value; filter(filters) }
+                }
+
+                ComboBox {
+                    current-value: "Asc";
+                    model: FilterComboValues.direction;
+                    width: 80px;
+                    selected => {
+                        filters.direction = self.current-value;
+                        filter(filters)
                     }
                 }
             }
-        
+        }
         image-list := ListView {
-            property<int> current-item: 0;
+            property <int> current-item: 0;
 
             for item[i] in list-model: Rectangle {
                 height: 20px;
                 width: parent.width;
                 background: i == parent.current-item ? Palette.accent_background : Palette.background;
                 opacity: i == parent.current-item ? 0.4 : 1.0;
-                HorizontalLayout { 
-                    Text { 
+                HorizontalLayout {
+                    Text {
                         text: item.text;
                     }
                 }
-                TouchArea { 
+
+                TouchArea {
                     clicked => {
                         image-list.current-item = i;
                         current-similar-image = 0;
@@ -368,9 +426,12 @@ export component SortView inherits HorizontalBox {
                 }
             }
         }
+
         Button {
             text: "📅 Create event from image";
-            clicked => { fill-event(current-image.local-index); }
+            clicked => {
+                fill-event(current-image.local-index);
+            }
         }
-    }  
+    }
 }
