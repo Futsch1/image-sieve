@@ -12,7 +12,7 @@ readme = "README.md"
 
 [dependencies]
 slint = "1.13.1"
-nfde = "0.0.8"
+nfde = "0.0.9"
 image = "0.25"
 kamadak-exif = "0.6"
 chrono = "0.4"
