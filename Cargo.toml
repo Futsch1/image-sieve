@@ -39,7 +39,7 @@ jxl-oxide = { version = "0.12.4", features = ["image"] }
 libheif-rs = { version = "2.1", default-features = false, features = ["v1_17"] }
 
 [dev-dependencies]
-base64 = "0.22"
+base64 = "0.23"
 
 [build-dependencies]
 slint-build = "1.13.1"
